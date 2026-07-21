@@ -10,11 +10,11 @@ Show the session-log directory for the current project and list recent summaries
 
 ## Steps
 
-1. Compute the logs directory for the current project. The directory name is the **encoded `$PWD`** — same encoding Claude Code uses for `~/.claude/projects/` (both `/` and `.` become `-`):
+1. Compute the logs directory for the current project. The directory name is the **encoded `$PWD`** — same encoding Antigravity uses for `~/.gemini/antigravity-cli/projects/` (both `/` and `.` become `-`):
 
    ```bash
    # CLAUDE_PLUGIN_DATA is set in hook context; may not be set in skill context.
-   # Fallback mirrors what Claude Code uses: ~/.claude/plugins/data/<plugin>-<marketplace>/
+   # Fallback mirrors what Antigravity uses: ~/.gemini/antigravity-cli/data/data/<plugin>-<marketplace>/
    DATA_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/session-log-kratocz}"
    CWD_ENCODED=$(printf '%s' "$PWD" | tr './' '--')
    LOGS_DIR="$DATA_DIR/logs/$CWD_ENCODED"
@@ -38,7 +38,7 @@ Show the session-log directory for the current project and list recent summaries
 
    ```
    Logs for '/home/user/code/my-app':
-     ~/.claude/plugins/data/session-log-kratocz/logs/-home-user-code-my-app/
+     ~/.gemini/antigravity-cli/data/data/session-log-kratocz/logs/-home-user-code-my-app/
 
    Recent sessions:
    - 2026-04-18_fe19949a.md
@@ -51,6 +51,6 @@ Show the session-log directory for the current project and list recent summaries
 
 ## Notes
 
-- The plugin writes one summary per Claude Code session via the `SessionEnd` hook.
-- The encoded directory name is the same key Claude Code uses for session JSONL in `~/.claude/projects/<encoded>/`. So `ls ~/.claude/plugins/data/session-log-kratocz/logs/<encoded>/` and `ls ~/.claude/projects/<encoded>/` list logs and raw transcripts for the same working directory.
+- The plugin writes one summary per Antigravity session via the `SessionEnd` hook.
+- The encoded directory name is the same key Antigravity uses for session JSONL in `~/.gemini/antigravity-cli/projects/<encoded>/`. So `ls ~/.gemini/antigravity-cli/data/data/session-log-kratocz/logs/<encoded>/` and `ls ~/.gemini/antigravity-cli/projects/<encoded>/` list logs and raw transcripts for the same working directory.
 - Each summary frontmatter contains a `transcript:` link pointing to the raw JSONL.

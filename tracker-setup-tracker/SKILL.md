@@ -38,7 +38,7 @@ Configure session-tracker to connect to a time tracking service.
 
 5. Ask whether time entries should be marked as **billable** ([Y/n], default `yes`). Store as `billable: true` or `false` at the top level of the config.
 
-6. Ask for the preferred **language code** (default `en`). Common codes: `en`, `cs`, `de`, `fr`, `es` — accept any ISO 639-1 / BCP-47 code. This language is used for Claude-generated text (prompts, confirmations, descriptions derived from a URL title). Store as `language: "<code>"` at the top level of the config.
+6. Ask for the preferred **language code** (default `en`). Common codes: `en`, `cs`, `de`, `fr`, `es` — accept any ISO 639-1 / BCP-47 code. This language is used for Antigravity agent-generated text (prompts, confirmations, descriptions derived from a URL title). Store as `language: "<code>"` at the top level of the config.
 
 7. (Optional) Ask if the user wants a default project. If yes, fetch projects for the selected workspace and let them choose. If no, `default_project_id` will be `null`.
 
@@ -54,10 +54,10 @@ Configure session-tracker to connect to a time tracking service.
    curl -s -H "X-Api-Key: <api_key>" "https://api.clockify.me/api/v1/workspaces/<workspace_id>/projects"
    ```
 
-8. Create the config directory and write `~/.claude/plugins/session-tracker/config.json`:
+8. Create the config directory and write `~/.gemini/antigravity-cli/data/session-tracker/config.json`:
 
    ```bash
-   mkdir -p ~/.claude/plugins/session-tracker
+   mkdir -p ~/.gemini/antigravity-cli/data/session-tracker
    ```
 
    Then use the Write tool to write the config file:

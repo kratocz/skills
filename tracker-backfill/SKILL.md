@@ -8,13 +8,13 @@ allowed-tools: Read, Bash
 
 # Backfill Session Gaps
 
-Compare the current Claude Code session's real activity span (from its
+Compare the current Antigravity session's real activity span (from its
 transcript timestamps) with the day's tracker entries, and create entries for
 the uncovered intervals — never overlapping anything already tracked.
 
 ## Steps
 
-1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
+1. **Read config**: Read `~/.gemini/antigravity-cli/data/session-tracker/config.json` using
    the Read tool.
    - If the file doesn't exist: "No configuration found. Please run
      /setup-tracker first." Then stop.
@@ -25,7 +25,7 @@ the uncovered intervals — never overlapping anything already tracked.
    to today in the user's local timezone.
 
 3. **Locate the current session transcript and its activity span.**
-   Transcripts live in `~/.claude/projects/<slug>/*.jsonl`, where `<slug>` is
+   Transcripts live in `~/.gemini/antigravity-cli/projects/<slug>/*.jsonl`, where `<slug>` is
    the session's working directory with `/` and `.` replaced by `-` (e.g.
    `/Users/me/proj` → `-Users-me-proj`). The current session is the most
    recently modified `.jsonl` in that directory (verify: its first-line
@@ -34,7 +34,7 @@ the uncovered intervals — never overlapping anything already tracked.
 
    Extract the first and last event timestamps (they are UTC ISO-8601):
    ```bash
-   FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl | head -1)
+   FILE=$(ls -t ~/.gemini/antigravity-cli/projects/<slug>/*.jsonl | head -1)
    python3 << EOF
    import json
    first = last = None
@@ -91,7 +91,7 @@ the uncovered intervals — never overlapping anything already tracked.
    ```bash
    # payload file: {"description":"…","workspace_id":<id>,"project_id":<id?>,
    #   "start":"<UTC start>","stop":"<UTC stop>","duration":<seconds>,
-   #   "billable":<billable>,"created_with":"session-tracker-claude-plugin"}
+   #   "billable":<billable>,"created_with":"session-tracker-antigravity"}
    KEY=<config.toggl.api_key read into a shell variable, not echoed>
    printf 'user = "%s:api_token"\n' "$KEY" | curl -s --config - \
      -H "Content-Type: application/json" \

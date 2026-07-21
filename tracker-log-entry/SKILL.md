@@ -13,7 +13,7 @@ backend — unlike `/start`, no live timer is involved.
 
 ## Steps
 
-1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
+1. **Read config**: Read `~/.gemini/antigravity-cli/data/session-tracker/config.json` using
    the Read tool.
    - If the file doesn't exist: "No configuration found. Please run
      /setup-tracker first." Then stop.
@@ -65,7 +65,7 @@ backend — unlike `/start`, no live timer is involved.
    printf 'user = "%s:api_token"\n' "$KEY" | curl -sS --config - \
      -H "Content-Type: application/json" \
      -X POST "https://api.track.toggl.com/api/v9/workspaces/<workspace_id>/time_entries" \
-     --data-binary '{"created_with":"session-tracker-claude-plugin",
+     --data-binary '{"created_with":"session-tracker-antigravity",
        "workspace_id":<workspace_id>,"description":"<description>",
        "start":"<UTC start>","stop":"<UTC end>","duration":<seconds>,
        "billable":<billable>}'

@@ -21,7 +21,7 @@
 
 ## Findings
 
-> Severity codes — see `## Code review` in the plugin's `CLAUDE.md` for the full convention.
+> Severity codes — see `## Code review` in the plugin's `AGENTS.md` for the full convention.
 > `Cx` = critical (blocking), `Mx` = major (blocking), `mx` = minor (fix if easy), `nx` = nit (optional).
 
 ### Critical (blocking → request changes)

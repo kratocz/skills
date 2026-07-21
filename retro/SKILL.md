@@ -30,8 +30,8 @@ Hard rules, valid for the whole skill:
 
 1. **Resolve the target knowledge file** (where learnings get written):
    - If `AGENTS.md` exists in the project root → that's the target.
-   - Else if `CLAUDE.md` exists and contains real content (more than a
-     redirect like "See AGENTS.md") → target `CLAUDE.md`.
+   - Else if `AGENTS.md` exists and contains real content (more than a
+     redirect like "See AGENTS.md") → target `AGENTS.md`.
    - Else ask the user whether to create `AGENTS.md` (minimal skeleton:
      project overview, structure, commands, conventions). If declined, areas
      A and B run in report-only mode (findings shown, nothing written).
@@ -136,7 +136,7 @@ either way.
   correction → propose a concrete edit to its `SKILL.md` (quote the current
   text and the replacement). For skills installed from a marketplace cache,
   edit the plugin's **source repo**, never the cache. First locate the source:
-  the cache lives at `~/.claude/plugins/cache/<owner>/<plugin>/<version>/...`;
+  the cache lives at `~/.gemini/antigravity-cli/data/cache/<owner>/<plugin>/<version>/...`;
   find the working clone (e.g. under the user's projects dir) and confirm the
   source `SKILL.md` matches the cache copy before proposing the edit. After
   editing the source, the change reaches the cache only on reinstall / version

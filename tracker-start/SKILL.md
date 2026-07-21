@@ -12,7 +12,7 @@ Start a new time tracking session in the configured backend.
 
 ## Steps
 
-1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using the Read tool.
+1. **Read config**: Read `~/.gemini/antigravity-cli/data/session-tracker/config.json` using the Read tool.
    - If the file doesn't exist: "No configuration found. Please run /setup-tracker first." Then stop.
    - Read `config.language` (default `"en"` if missing). All user-facing text generated in the steps below — prompts, confirmations, URL-derived descriptions — should be phrased in this language. Keep proper nouns, code identifiers, URLs, and numeric durations unchanged.
 
@@ -32,7 +32,7 @@ Start a new time tracking session in the configured backend.
    printf 'user = "%s:api_token"\n' "$KEY" | curl -s --config - \
      https://api.track.toggl.com/api/v9/me/time_entries/current
    ```
-   (The path must include `/me/` — the legacy `api/v9/time_entries/current` returns HTTP 405 with an empty body, which is easy to misread as "no timer running". The stdin `--config` trick keeps the key out of argv **and** sidesteps sandboxes that rewrite colon-bearing arguments — Claude Code's Bash sandbox turns `-u user:token` into a file path, so never pass the credential as a plain `-u` argument.)
+   (The path must include `/me/` — the legacy `api/v9/time_entries/current` returns HTTP 405 with an empty body, which is easy to misread as "no timer running". The stdin `--config` trick keeps the key out of argv **and** sidesteps sandboxes that rewrite colon-bearing arguments — Antigravity's Bash sandbox turns `-u user:token` into a file path, so never pass the credential as a plain `-u` argument.)
 
    ### Clockify
    ```bash
@@ -80,7 +80,7 @@ Start a new time tracking session in the configured backend.
    printf 'user = "%s:api_token"\n' "$KEY" | curl -s --config - \
      -H "Content-Type: application/json" \
      -X POST "https://api.track.toggl.com/api/v9/time_entries" \
-     --data-binary '{"description":"<description>","workspace_id":<workspace_id>,"start":"<UTC time>","duration":-1,"billable":<billable>,"created_with":"session-tracker-claude-plugin"}'
+     --data-binary '{"description":"<description>","workspace_id":<workspace_id>,"start":"<UTC time>","duration":-1,"billable":<billable>,"created_with":"session-tracker-antigravity"}'
    ```
 
    ### Clockify

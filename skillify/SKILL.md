@@ -70,9 +70,9 @@ running session's own transcript:
 - The scratchpad directory path in your system prompt has the form
   `.../<project-slug>/<session-uuid>/scratchpad`. Its second-to-last component
   is the running session's UUID; the component before that is the project slug.
-- The transcript directory is `~/.claude/projects/<project-slug>/`; transcripts
+- The transcript directory is `~/.gemini/antigravity-cli/projects/<project-slug>/`; transcripts
   are its `*.jsonl` files. Filenames are session UUIDs with no embedded date.
-- List newest-first by modification time: `ls -t ~/.claude/projects/<slug>/*.jsonl`.
+- List newest-first by modification time: `ls -t ~/.gemini/antigravity-cli/projects/<slug>/*.jsonl`.
 - Exclude `<session-uuid>.jsonl` (the running session). If you cannot resolve
   the UUID, include it — the merge step dedupes the overlap with the inline
   findings.
@@ -80,7 +80,7 @@ running session's own transcript:
 Take at most N paths (newest first, default 10) and pass them to the subagent
 with these instructions:
 
-> Read the given Claude Code transcript files (JSONL). For each, focus on the
+> Read the given Antigravity transcript files (JSONL). For each, focus on the
 > user messages and the skill/tool invocations — grep first, these files can be
 > huge. **Ignore `<system-reminder>` blocks entirely** — they are injected
 > context, not the user's or the assistant's words. Identify workflow shapes
@@ -116,7 +116,7 @@ let the user choose):
     session actually did — not a vague outline.
 - **Generally useful workflow** → recommend creating a plugin in the user's
   marketplace. If the current working directory is that marketplace repo,
-  follow its `CLAUDE.md` "Adding a new plugin" procedure. Otherwise print the
+  follow its `AGENTS.md` "Adding a new plugin" procedure. Otherwise print the
   steps (and mention `plugin-dev:create-plugin` if it is installed) — do not
   write outside the current project.
 
@@ -124,7 +124,7 @@ For each approved **improved skill**: quote the current `SKILL.md` text and the
 replacement. For a skill installed from a marketplace cache, edit the plugin's
 **source repo**, never the cache:
 
-- the cache lives at `~/.claude/plugins/cache/<owner>/<plugin>/<version>/...`;
+- the cache lives at `~/.gemini/antigravity-cli/data/cache/<owner>/<plugin>/<version>/...`;
 - find the working clone (e.g. under the user's projects directory) and confirm
   the source `SKILL.md` matches the cache copy before proposing the edit;
 - after editing the source, note that the change reaches the cache only on

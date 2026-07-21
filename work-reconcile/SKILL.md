@@ -1,9 +1,9 @@
 ---
 name: work-reconcile
-description: Backfill missing timesheet entries at the end of a period. Reconstructs what you actually worked on — primarily from Claude Code session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc".
+description: Backfill missing timesheet entries at the end of a period. Reconstructs what you actually worked on — primarily from Antigravity session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc".
 argument-hint: [--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]
 version: 0.3.0
-allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp__claude_ai_Google_Calendar__list_events
+allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 ---
 
 # Work Reconcile
@@ -32,7 +32,7 @@ automatically: the flow is always **propose → confirm → write**.
 
 ## Steps
 
-1. **Load effective config.** Read `~/.claude/plugins/work/config.json` with the
+1. **Load effective config.** Read `~/.gemini/antigravity-cli/data/work/config.json` with the
    Read tool.
    - If missing: stop with (in the configured language) "Žádná konfigurace work
      pluginu. Spusť `/work-setup`." / "No work plugin config. Run `/work-setup`."
@@ -79,7 +79,7 @@ automatically: the flow is always **propose → confirm → write**.
    message, multiple tool_use blocks). Probe each MCP source with `ToolSearch`
    first; if absent, append a warning and skip. Build the list `blocks`.
 
-   **A. Claude Code session logs** (primary, if
+   **A. Antigravity session logs** (primary, if
    `effective_config.reconcile.ai_sessions.enabled`):
 
    Session logs live under `<projects_dir>/<encoded-path>/*.jsonl`, one file per
@@ -132,9 +132,9 @@ automatically: the flow is always **propose → confirm → write**.
 
    **B. Google Calendar** (primary, if
    `effective_config.reconcile.calendar.as_work` is true and MCP present —
-   probe `select:mcp__claude_ai_Google_Calendar__list_events`):
+   probe `select:mcp_Google_Calendar__list_events`):
 
-   Call `mcp__claude_ai_Google_Calendar__list_events` for `[since, until]`. For
+   Call `mcp_Google_Calendar__list_events` for `[since, until]`. For
    each returned event, apply the work filter from
    `effective_config.reconcile.calendar`:
    - drop all-day events if `exclude_all_day`,

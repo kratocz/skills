@@ -1,6 +1,6 @@
 ---
 name: semver-release
-description: Cut a SemVer release driven by Conventional Commits since the last tag. Bumps the version in detected manifest files (package.json, pyproject.toml, Cargo.toml, .claude-plugin/plugin.json, …), updates CHANGELOG.md in Keep a Changelog format, commits, tags, pushes, and optionally creates a GitHub release. Use when the user says "/semver-release", "cut a release", "tag a new version", "vydej release", "udělej release", or asks to ship a new version.
+description: Cut a SemVer release driven by Conventional Commits since the last tag. Bumps the version in detected manifest files (package.json, pyproject.toml, Cargo.toml, package.json (or other manifest), …), updates CHANGELOG.md in Keep a Changelog format, commits, tags, pushes, and optionally creates a GitHub release. Use when the user says "/semver-release", "cut a release", "tag a new version", "vydej release", "udělej release", or asks to ship a new version.
 ---
 
 # semver-release — procedure
@@ -43,7 +43,7 @@ Search the repo root for a manifest with a version field, in this priority order
 | `pyproject.toml` | `[project].version` or `[tool.poetry].version` (TOML) |
 | `Cargo.toml` | `[package].version` (TOML) |
 | `composer.json` | `.version` (JSON, optional — often missing) |
-| `.claude-plugin/plugin.json` | `.version` (JSON) — for Claude Code plugins |
+| `package.json (or other manifest)` | `.version` (JSON) — for Antigravity plugins |
 | `pubspec.yaml` | `version:` (YAML) |
 | `mix.exs` | `@version` attribute |
 | `*.csproj` | `<Version>` element |
@@ -145,7 +145,7 @@ Examples of exact patterns to match:
 - `package.json`: `"version": "<old>"` → `"version": "<new>"`
 - `pyproject.toml`: `version = "<old>"` (inside `[project]` or `[tool.poetry]`) → `version = "<new>"`
 - `Cargo.toml`: `version = "<old>"` (inside `[package]`) → `version = "<new>"`
-- `.claude-plugin/plugin.json`: `"version": "<old>"` → `"version": "<new>"`
+- `package.json (or other manifest)`: `"version": "<old>"` → `"version": "<new>"`
 
 Show the user the list of files about to be updated and ask via `AskUserQuestion`:
 - `Update all detected files` (recommended)

@@ -1,6 +1,6 @@
 ---
 name: work-setup
-description: Configure the work plugin — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.claude/plugins/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
+description: Configure the work plugin — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.gemini/antigravity-cli/data/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
 version: 0.3.0
 allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp__plugin_ntit-common_clickup__clickup_get_workspace_members
 ---
@@ -13,7 +13,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
 1. **Load existing config** (distinguishes edit vs. create mode):
 
-   Try to read `~/.claude/plugins/work/config.json` with the Read tool.
+   Try to read `~/.gemini/antigravity-cli/data/work/config.json` with the Read tool.
 
    - If the file exists: parse it and remember it as `existing_config`. You're in **edit mode** — prefill defaults from existing values when asking questions.
    - If it doesn't exist: you're in **create mode** — use the defaults in this skill.
@@ -28,14 +28,14 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    | Source | ToolSearch query |
    |---|---|
-   | todoist | `select:mcp__claude_ai_Todoist__find-tasks` |
+   | todoist | `select:mcp_Todoist__find-tasks` |
    | github | `select:mcp__github__search_pull_requests` |
    | clickup | `select:mcp__plugin_ntit-common_clickup__clickup_filter_tasks` |
-   | google_calendar | `select:mcp__claude_ai_Google_Calendar__list_events` |
+   | google_calendar | `select:mcp_Google_Calendar__list_events` |
 
    If the query returns a function definition, the source is **available**. If the query returns no match, the source is **unavailable**.
 
-   Build a list `detected_sources` of available sources. If `detected_sources` is empty, tell the user "Žádný známý MCP server (Todoist/GitHub/ClickUp/Calendar) není v této session připojený. Nelze pokračovat se setup — přidej alespoň jeden MCP server v `~/.claude.json` a restartuj session." and stop.
+   Build a list `detected_sources` of available sources. If `detected_sources` is empty, tell the user "Žádný známý MCP server (Todoist/GitHub/ClickUp/Calendar) není v této session připojený. Nelze pokračovat se setup — přidej alespoň jeden MCP server v `~/.gemini/antigravity-cli/settings.json` a restartuj session." and stop.
 
 3. **Per-source Q&A** — for each source in `detected_sources`:
 
@@ -56,13 +56,13 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    - clickup: `{ "include": ["assigned_to_me"], "scope": "today_and_overdue" }`
    - google_calendar: `{ "window_hours": 12 }`
 
-   Store the result for each source as an object. The exact shape varies per source (matching the spec / CLAUDE.md config example):
+   Store the result for each source as an object. The exact shape varies per source (matching the spec / AGENTS.md config example):
    - `todoist`: `{ "enabled": bool, "mcp_prefix": "...", "filters": { "priorities": [...], "scope": "..." } }`
    - `github`: `{ "enabled": bool, "mcp_prefix": "...", "username": "...", "include": [...] }` — note `include` at source level, NOT inside `filters`
    - `clickup`: `{ "enabled": bool, "mcp_prefix": "...", "member_id": "...", "filters": { "include": [...], "scope": "..." } }`
    - `google_calendar`: `{ "enabled": bool, "mcp_prefix": "...", "window_hours": 12 }` — note `window_hours` at source level, NOT inside `filters`
 
-   (mcp_prefix is the prefix used during detection in step 2 — e.g. `mcp__claude_ai_Todoist__`.)
+   (mcp_prefix is the prefix used during detection in step 2 — e.g. `mcp_Todoist__`.)
 
 4. **Optional: timesheet reconciliation** (`/work-reconcile`):
 
@@ -107,7 +107,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 6. **Language**:
 
    Look for an existing language preference:
-   - Try Read on `~/.claude/plugins/session-tracker/config.json`. If it exists and has a `language` field, use that as the default.
+   - Try Read on `~/.gemini/antigravity-cli/data/session-tracker/config.json`. If it exists and has a `language` field, use that as the default.
    - Otherwise default to `cs`.
 
    Ask: "Jazyk pro výstup briefingu? (kód jako en, cs, de — výchozí: <detected_or_cs>)". Accept any 2-letter ISO 639-1 code. Store as top-level `language`.
@@ -116,7 +116,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    Ensure the config directory exists:
    ```bash
-   mkdir -p ~/.claude/plugins/work
+   mkdir -p ~/.gemini/antigravity-cli/data/work
    ```
 
    Build the config object in memory:
@@ -124,10 +124,10 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    {
      "language": "<from step 6>",
      "sources": {
-       "todoist":         { "enabled": <bool>, "mcp_prefix": "mcp__claude_ai_Todoist__", "filters": { "priorities": ["p1", "p2"], "scope": "today_and_overdue" } },
+       "todoist":         { "enabled": <bool>, "mcp_prefix": "mcp_Todoist__", "filters": { "priorities": ["p1", "p2"], "scope": "today_and_overdue" } },
        "github":          { "enabled": <bool>, "mcp_prefix": "mcp__github__", "username": "...", "include": ["assigned_issues", "review_requested_prs", "my_open_prs"] },
        "clickup":         { "enabled": <bool>, "mcp_prefix": "mcp__plugin_ntit-common_clickup__", "member_id": "...", "filters": { "include": ["assigned_to_me"], "scope": "today_and_overdue" } },
-       "google_calendar": { "enabled": <bool>, "mcp_prefix": "mcp__claude_ai_Google_Calendar__", "window_hours": 12 }
+       "google_calendar": { "enabled": <bool>, "mcp_prefix": "mcp_Google_Calendar__", "window_hours": 12 }
      },
      "scoring": {
        "weights": { "priority": 40, "due_proximity": 30, "age": 15, "type_assignment": 15 },
@@ -140,7 +140,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    If step 4 collected a `reconcile` block, merge it in as a top-level `reconcile` key alongside `sources` and `scoring`. If step 4 was skipped, omit `reconcile` entirely — do not write an empty object.
 
-   Use the Write tool to write the JSON to `~/.claude/plugins/work/config.json` with 2-space indentation.
+   Use the Write tool to write the JSON to `~/.gemini/antigravity-cli/data/work/config.json` with 2-space indentation.
 
 8. **Optional per-project override**:
 
@@ -149,7 +149,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    pwd
    ```
 
-   The project memory dir follows the Claude Code convention: `~/.claude/projects/<slug>/memory/`, where `<slug>` is the absolute path of the current working directory with `/` replaced by `-` and a leading `-` (so `/Users/krato/IdeaProjects/foo` becomes `-Users-krato-IdeaProjects-foo`).
+   The project memory dir follows the Antigravity convention: `~/.gemini/antigravity-cli/projects/<slug>/memory/`, where `<slug>` is the absolute path of the current working directory with `/` replaced by `-` and a leading `-` (so `/Users/krato/IdeaProjects/foo` becomes `-Users-krato-IdeaProjects-foo`).
 
    Ask via AskUserQuestion: "Chceš uložit per-project override pro projekt `<basename>`?" Options:
    - "Ne, jen globální config (Recommended)" — skip
@@ -159,12 +159,12 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    Compute the slug from `pwd`. Verify the memory dir exists:
    ```bash
-   ls ~/.claude/projects/<slug>/memory/ 2>/dev/null || echo "MEMORY_DIR_MISSING"
+   ls ~/.gemini/antigravity-cli/projects/<slug>/memory/ 2>/dev/null || echo "MEMORY_DIR_MISSING"
    ```
 
    If `MEMORY_DIR_MISSING`, create it:
    ```bash
-   mkdir -p ~/.claude/projects/<slug>/memory
+   mkdir -p ~/.gemini/antigravity-cli/projects/<slug>/memory
    ```
 
    Ask the user (free text): "Co chceš v tomto projektu změnit oproti globálnímu configu? Napiš jednou větou (např. 'vypnout clickup, jen github repo X')." Use the answer as a hint for which fields to override.
@@ -176,7 +176,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    Loop until user picks "Hotovo".
 
-   Build the override JSON (only the fields to override) and write to `~/.claude/projects/<slug>/memory/work_config.md`:
+   Build the override JSON (only the fields to override) and write to `~/.gemini/antigravity-cli/projects/<slug>/memory/work_config.md`:
 
    ````markdown
    ---
@@ -195,7 +195,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    <user's one-sentence reason from above>
    ````
 
-   Append a line to `~/.claude/projects/<slug>/memory/MEMORY.md` (create the file if missing):
+   Append a line to `~/.gemini/antigravity-cli/projects/<slug>/memory/MEMORY.md` (create the file if missing):
    ```
    - [Work plugin override](work_config.md) — per-project source/scoring overrides
    ```
@@ -208,7 +208,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    ```
    ✅ Setup hotov.
 
-   Global config: ~/.claude/plugins/work/config.json
+   Global config: ~/.gemini/antigravity-cli/data/work/config.json
    Povolené zdroje: <comma-separated list of enabled source names>
    Per-project override: <path or "není">
 

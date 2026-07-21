@@ -3,7 +3,7 @@ name: work-start
 description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today".
 argument-hint: [--fresh]
 version: 0.3.0
-allowed-tools: Read, Write, Bash, ToolSearch, mcp__claude_ai_Todoist__find-tasks, mcp__claude_ai_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__claude_ai_Google_Calendar__list_events
+allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp_Google_Calendar__list_events
 ---
 
 # Work Start
@@ -18,7 +18,7 @@ Morning briefing across all configured task and code review sources.
 
 1. **Load effective config**:
 
-   a. Read global config: `~/.claude/plugins/work/config.json` with the Read tool.
+   a. Read global config: `~/.gemini/antigravity-cli/data/work/config.json` with the Read tool.
 
    If the file doesn't exist, stop with this message in Czech (or English if user prefers): "Žádná konfigurace work pluginu. Spusť `/work-setup` nejdřív." Then return — do not proceed.
 
@@ -26,7 +26,7 @@ Morning briefing across all configured task and code review sources.
    ```bash
    pwd
    ```
-   Build slug as in `/work-setup` (absolute path with `/` → `-`, leading `-`). Try to read `~/.claude/projects/<slug>/memory/work_config.md` with the Read tool.
+   Build slug as in `/work-setup` (absolute path with `/` → `-`, leading `-`). Try to read `~/.gemini/antigravity-cli/projects/<slug>/memory/work_config.md` with the Read tool.
 
    If the file exists:
    - Find the first fenced ` ```json ... ``` ` block in the file.
@@ -48,14 +48,14 @@ Morning briefing across all configured task and code review sources.
 
    | Source | ToolSearch query |
    |---|---|
-   | todoist | `select:mcp__claude_ai_Todoist__find-tasks` |
+   | todoist | `select:mcp_Todoist__find-tasks` |
    | github | `select:mcp__github__search_pull_requests` |
    | clickup | `select:mcp__plugin_ntit-common_clickup__clickup_filter_tasks` |
-   | google_calendar | `select:mcp__claude_ai_Google_Calendar__list_events` |
+   | google_calendar | `select:mcp_Google_Calendar__list_events` |
 
    If unavailable, mark the source as skipped, append to warnings:
    ```
-   ⚠️ Source `<name>` je povolený v configu, ale MCP server není v této session. Přeskakuji. Spusť /work-setup pro aktualizaci, nebo zkontroluj ~/.claude.json.
+   ⚠️ Source `<name>` je povolený v configu, ale MCP server není v této session. Přeskakuji. Spusť /work-setup pro aktualizaci, nebo zkontroluj ~/.gemini/antigravity-cli/settings.json.
    ```
 
    Continue with the remaining available sources.
@@ -66,8 +66,8 @@ Morning briefing across all configured task and code review sources.
 
    **Todoist** (if enabled):
    - Get today's date: `date +%Y-%m-%d`
-   - Call `mcp__claude_ai_Todoist__find-tasks-by-date` with arguments `{ "dateFrom": "1900-01-01", "dateTo": "<today>" }` to get overdue + today's tasks. (Past date catches overdue; future date is exclusive.)
-   - Call `mcp__claude_ai_Todoist__find-tasks` with arguments `{ "filter": "p1 | p2" }` to get all p1/p2 tasks regardless of due date.
+   - Call `mcp_Todoist__find-tasks-by-date` with arguments `{ "dateFrom": "1900-01-01", "dateTo": "<today>" }` to get overdue + today's tasks. (Past date catches overdue; future date is exclusive.)
+   - Call `mcp_Todoist__find-tasks` with arguments `{ "filter": "p1 | p2" }` to get all p1/p2 tasks regardless of due date.
 
    **GitHub** (if enabled):
    - Substitute `effective_config.sources.github.username` for `@me` in queries (GitHub MCP may not resolve `@me`).
@@ -85,7 +85,7 @@ Morning briefing across all configured task and code review sources.
      date -u +%Y-%m-%dT%H:%M:%SZ
      date -u -v+12H +%Y-%m-%dT%H:%M:%SZ  # macOS; on Linux: date -u -d '+12 hours' +%Y-%m-%dT%H:%M:%SZ
      ```
-   - Call `mcp__claude_ai_Google_Calendar__list_events` with `{ "timeMin": "<now>", "timeMax": "<now+window_hours>", "calendarId": "primary" }`.
+   - Call `mcp_Google_Calendar__list_events` with `{ "timeMin": "<now>", "timeMax": "<now+window_hours>", "calendarId": "primary" }`.
 
    Collect all results into raw per-source response variables: `todoist_raw`, `github_raw`, `clickup_raw`, `calendar_raw`.
 
@@ -290,10 +290,10 @@ Morning briefing across all configured task and code review sources.
 
    Ensure dir exists:
    ```bash
-   mkdir -p ~/.claude/plugins/work
+   mkdir -p ~/.gemini/antigravity-cli/data/work
    ```
 
-   Write the snapshot with the Write tool to `~/.claude/plugins/work/last-briefing.json`.
+   Write the snapshot with the Write tool to `~/.gemini/antigravity-cli/data/work/last-briefing.json`.
 
 9. **Print warnings**:
 

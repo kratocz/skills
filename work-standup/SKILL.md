@@ -37,13 +37,13 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 
 1. **Load effective config** — identical to `/work-start` step 1:
 
-   a. Read global config `~/.claude/plugins/work/config.json` with the Read
+   a. Read global config `~/.gemini/antigravity-cli/data/work/config.json` with the Read
       tool. If missing, stop with: "Žádná konfigurace work pluginu. Spusť
       `/work-setup` nejdřív." and return.
 
    b. Locate the per-project override: build the slug from `pwd` (absolute
       path, `/` → `-`, leading `-`) and try to read
-      `~/.claude/projects/<slug>/memory/work_config.md`. If it has a fenced
+      `~/.gemini/antigravity-cli/projects/<slug>/memory/work_config.md`. If it has a fenced
       ```json``` block, parse it and deep-merge onto the global config (arrays
       replace, scalars override). Invalid JSON → warn and skip the override.
 

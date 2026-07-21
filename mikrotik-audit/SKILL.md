@@ -22,7 +22,7 @@ Targets may be supplied directly by the user, or discovered from project documen
    - `infrastructure/mikrotik-routers.md`
    - `infrastructure/routers.md`
    - `docs/mikrotik.md`
-   - Hints in `AGENTS.md` / `CLAUDE.md` / top-level `README.md`
+   - Hints in `AGENTS.md` / `AGENTS.md` / top-level `README.md`
 3. **Fallback:** ask the user which routers to audit and how to reach them over SSH.
 
 When a project file documents routers, extract for each: IP or SSH alias, role (main / backup / bridge), SSH username, non-default port. Confirm with the user before connecting if anything is ambiguous or incomplete. Skip devices that the docs mark as non-routers (e.g. L2 bridges / signal extenders).
@@ -55,7 +55,7 @@ When a project file documents routers, extract for each: IP or SSH alias, role (
    - Why it's suspicious (reference to known IoC / CVE / best practice).
    - Recommended fix — **but do not execute it**. The skill is read-only.
 
-Respond in the user's preferred language (infer from project CLAUDE.md / AGENTS.md; default English).
+Respond in the user's preferred language (infer from project AGENTS.md / AGENTS.md; default English).
 
 ## Per-file checklist
 

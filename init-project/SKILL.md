@@ -1,11 +1,11 @@
 ---
 name: init-project
-description: Bootstrap a new project repository — creates .gitignore (with macOS junk + project-type-specific entries), AGENTS.md, CLAUDE.md, README.md, runs git init if needed, commits the baseline, and optionally creates a GitHub repo via gh CLI. Use when the user wants to initialize a new project, says "založ projekt", "inicializuj projekt", "bootstrap repo", "/init-project", or has just created/inherited a new directory and wants the standard baseline files in place.
+description: Bootstrap a new project repository — creates .gitignore (with macOS junk + project-type-specific entries), AGENTS.md, AGENTS.md, README.md, runs git init if needed, commits the baseline, and optionally creates a GitHub repo via gh CLI. Use when the user wants to initialize a new project, says "založ projekt", "inicializuj projekt", "bootstrap repo", "/init-project", or has just created/inherited a new directory and wants the standard baseline files in place.
 ---
 
 # init-project — procedure
 
-Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `CLAUDE.md` / `README.md` (tell the user it already exists).
+Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `AGENTS.md` / `README.md` (tell the user it already exists).
 
 Follow these steps in order. Where a step calls for a decision the user should make, ask via `AskUserQuestion`.
 
@@ -14,7 +14,7 @@ Follow these steps in order. Where a step calls for a decision the user should m
 - Run `pwd` to capture the target directory.
 - List the root with `ls -la` (or equivalent) so you can see what's already there.
 - Check if it is a git repo: `git rev-parse --is-inside-work-tree 2>/dev/null`.
-- Note which of these already exist: `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `README.md`.
+- Note which of these already exist: `.gitignore`, `AGENTS.md`, `AGENTS.md`, `README.md`.
 
 ## 2. Detect the project type
 
@@ -73,7 +73,7 @@ Use this minimal template — leave placeholders where you don't know the answer
 ```markdown
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository (Claude Code, Cursor, Aider, Copilot, …).
+Guidance for AI coding agents working in this repository (Antigravity, Cursor, Aider, Copilot, …).
 
 ## Project overview
 
@@ -97,7 +97,7 @@ Guidance for AI coding agents working in this repository (Claude Code, Cursor, A
 
 If `AGENTS.md` already exists, skip and tell the user.
 
-## 5. Create `CLAUDE.md` (if it doesn't exist)
+## 5. Create `AGENTS.md` (if it doesn't exist)
 
 Contents — keep it to a single redirect so AGENTS.md is the single source of truth:
 
@@ -105,7 +105,7 @@ Contents — keep it to a single redirect so AGENTS.md is the single source of t
 See [AGENTS.md](AGENTS.md).
 ```
 
-If `CLAUDE.md` already exists, skip and tell the user.
+If `AGENTS.md` already exists, skip and tell the user.
 
 ## 6. Create `README.md` (if it doesn't exist)
 
@@ -136,7 +136,7 @@ If the directory is not a git repo, run `git init`. Use the user's default branc
 - `git add` only the files this skill created or modified (do not blanket `git add .` — there may be other untracked files the user doesn't want committed yet).
 - Single commit is the default. Suggested messages:
   - First commit in a fresh repo: `chore: initial project setup`
-  - Adding baseline files to an existing repo: `chore: add project baseline (.gitignore, AGENTS.md, CLAUDE.md, README.md)`
+  - Adding baseline files to an existing repo: `chore: add project baseline (.gitignore, AGENTS.md, AGENTS.md, README.md)`
   - .gitignore-only change to an existing repo: `chore: extend .gitignore with macOS + <type> entries`
 - Multiple commits are fine if the changes naturally split (e.g. one commit per file kind) — but don't manufacture artificial splits.
 

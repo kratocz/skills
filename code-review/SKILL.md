@@ -5,7 +5,7 @@ description: Run a structured code review on a PR (or another target). Picks a C
 
 # Code review workflow
 
-This skill executes a code review following the conventions in this plugin's `CLAUDE.md`. The **conventions themselves** (severity codes, focus areas, comment language, review process) live in the `## Code review` section — read that first; this skill is the **procedure** to follow.
+This skill executes a code review following the conventions in this plugin's `AGENTS.md`. The **conventions themselves** (severity codes, focus areas, comment language, review process) live in the `## Code review` section — read that first; this skill is the **procedure** to follow.
 
 When invoked, follow this procedure in order:
 
@@ -26,14 +26,14 @@ When invoked, follow this procedure in order:
 
 3. **Pick a CR title and start timesheet logging.**
    - Decide a short, descriptive title for this CR.
-   - If the user tracks time, start a new timer/entry for this CR using that title. **Prefer the `session-tracker` skill if available**; otherwise use the timesheet tool the user has configured (Toggl MCP, Clockify, ClickUp time tracking — they may have specific instructions in their global or project `CLAUDE.md`).
+   - If the user tracks time, start a new timer/entry for this CR using that title. **Prefer the `session-tracker` skill if available**; otherwise use the timesheet tool the user has configured (Toggl MCP, Clockify, ClickUp time tracking — they may have specific instructions in their global or project `AGENTS.md`).
    - If a timesheet session is already running, ask the user whether to stop it and start a new one for this CR, or leave the current one running.
 
 4. **Produce findings.** Label each one with a severity code (`C1`, `C2`, `M1`, `m1`, `n1`, …). If a finding needs a new category (e.g. off-topic), propose it to the user with a suggested letter prefix.
    - Write the findings to a file in `docs.local/code-reviews/` at the project root; content in English.
    - **Filename:** `cr-pr-<number>-round-<N>.md` for PR targets, or `cr-<slug>-round-<N>.md` for branches/other targets (slug = branch name lowercased and hyphenated, or another short identifier). **Each review round is a new file** — don't append to a prior round's file.
    - The file starts with a header: metadata (author, reviewer, date, PR/branch reference, round number) **plus a short summary of the changes — in your own words, based on what you actually found in the diff** (not a copy of the PR description).
-   - A template is bundled with this skill at `${CLAUDE_SKILL_DIR}/findings-template.md` — use it as a starting point.
+   - A template is bundled with this skill at `${AGY_SKILL_DIR}/findings-template.md` — use it as a starting point.
    - **Round 2+:** include a `## Status of prior findings` section in the new file listing every finding from prior rounds with its current status — **resolved** (author fixed it), **still open** (not addressed), or **waived** (author justified leaving it; include the justification). The latest round's file is then the canonical source of which blockers remain.
    - If `docs.local/` doesn't exist, ask the user whether to create it (with the `code-reviews/` subdirectory) and add `docs.local/` to the project `.gitignore`. If `docs.local/` already exists but `code-reviews/` doesn't, just create the subdirectory.
 

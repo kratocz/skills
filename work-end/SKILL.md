@@ -2,7 +2,7 @@
 name: work-end
 description: End-of-day summary — what got done, what carries over, what's new since /work-start. Use when the user says "/work-end", "konec dne", "shrnutí dne", "wrap up".
 version: 0.3.0
-allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp__claude_ai_Todoist__find-completed-tasks, mcp__claude_ai_Todoist__find-tasks, mcp__claude_ai_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks
+allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks
 ---
 
 # Work End
@@ -13,7 +13,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
 1. **Read snapshot**:
 
-   Read `~/.claude/plugins/work/last-briefing.json` with the Read tool.
+   Read `~/.gemini/antigravity-cli/data/work/last-briefing.json` with the Read tool.
 
    - If missing: stop with "Žádný snapshot. Bez ranního /work-start nelze udělat end-of-day souhrn." Return.
    - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.
@@ -30,7 +30,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
    Same as `/work-start` step 3 (parallel fetch of all enabled and available sources), BUT also include completed items for the "completed today" computation:
 
-   - **Todoist** (in addition to open tasks): call `mcp__claude_ai_Todoist__find-completed-tasks` with `{ "since": "<midnight today UTC>" }`. Get midnight via:
+   - **Todoist** (in addition to open tasks): call `mcp_Todoist__find-completed-tasks` with `{ "since": "<midnight today UTC>" }`. Get midnight via:
      ```bash
      date -u -j -v0H -v0M -v0S +%Y-%m-%dT%H:%M:%SZ  # macOS, today UTC midnight
      # Linux: date -u -d 'today 00:00' +%Y-%m-%dT%H:%M:%SZ
@@ -86,7 +86,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
 6. **Optionally save to session log**:
 
-   Check if the `session-log` plugin is installed by reading `~/.claude/plugins/session-log/config.json`. If it doesn't exist, skip this step silently.
+   Check if the `session-log` plugin is installed by reading `~/.gemini/antigravity-cli/data/session-log/config.json`. If it doesn't exist, skip this step silently.
 
    If it exists:
    - Read the config to find the session log directory (`session_log_dir` field, or default `~/Documents/claude-sessions/`).

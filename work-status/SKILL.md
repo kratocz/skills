@@ -2,7 +2,7 @@
 name: work-status
 description: Mid-day check — diff current state of volatile sources (GitHub PRs, Todoist completions) against the last /work-start snapshot. Use when the user says "/work-status", "what's new", "co se změnilo".
 version: 0.3.0
-allowed-tools: Read, Bash, ToolSearch, mcp__claude_ai_Todoist__find-completed-tasks, mcp__claude_ai_Todoist__find-tasks, mcp__claude_ai_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
+allowed-tools: Read, Bash, ToolSearch, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
 ---
 
 # Work Status
@@ -13,7 +13,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
 1. **Read snapshot**:
 
-   Try to read `~/.claude/plugins/work/last-briefing.json` with the Read tool.
+   Try to read `~/.gemini/antigravity-cli/data/work/last-briefing.json` with the Read tool.
 
    - If missing: stop with message "Žádný snapshot. Spusť /work-start nejdřív." Return.
    - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.
@@ -39,10 +39,10 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
    **Todoist** (if enabled and available):
    - Get currently open tasks (for "new" and "still open" buckets):
-     - Call `mcp__claude_ai_Todoist__find-tasks-by-date` with `{ "dateFrom": "1900-01-01", "dateTo": "<today>" }`.
-     - Call `mcp__claude_ai_Todoist__find-tasks` with `{ "filter": "p1 | p2" }`.
+     - Call `mcp_Todoist__find-tasks-by-date` with `{ "dateFrom": "1900-01-01", "dateTo": "<today>" }`.
+     - Call `mcp_Todoist__find-tasks` with `{ "filter": "p1 | p2" }`.
    - Get tasks completed since snapshot timestamp:
-     - Call `mcp__claude_ai_Todoist__find-completed-tasks` with `{ "since": "<snapshot.timestamp>" }` (or the equivalent argument shape per the MCP server's schema).
+     - Call `mcp_Todoist__find-completed-tasks` with `{ "since": "<snapshot.timestamp>" }` (or the equivalent argument shape per the MCP server's schema).
 
    Normalize all fetched items using the same normalization rules as `/work-start` step 4. Build `current_items` (open items now) and `completed_items` (Todoist completions since snapshot).
 

@@ -67,6 +67,10 @@ o která se opřou další rozhodnutí; kosmetika dostane first-pass.
     Selhal samotný proces? (→ zapiš do retrospektivy). Tým, který si nezapisuje
     poznatky, platí za stejnou lekci opakovaně.
 
+## Nástroje a prostředí
+
+15. **Explicitní Git.** Při používání Gitu nikdy nepoužívej `git add .`. Soubory přidávej vždy explicitně jeden po druhém (např. `git add README.md`). Vždy si nejdřív zkontroluj `git status`. Pomocné a jednorázové skripty ukládej buď mimo repozitář (např. do `scratch` složky) nebo je z repozitáře důsledně mazej.
+
 ## Self-test před odevzdáním (netriviální výstupy)
 
 1. Řeším skutečnou potřebu, nebo literu zadání? Každá odchylka od zadání je řečená nahlas?

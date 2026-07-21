@@ -50,5 +50,3 @@ ln -sfn "$PWD/rules/kodex.md" "$HOME/.gemini/antigravity-cli/rules/kodex.md"
 | [log-*](./log-where) | Skills | Save a structured summary of each session to a markdown file (`log-where`, etc.) | 2026-04-19 |
 | [tracker-*](./tracker-start) | Skills | Time tracking integration for Toggl or Clockify (`tracker-start`, `tracker-stop`, `tracker-backfill`, etc.) | 2026-04-09 |
 | [second-opinion](./second-opinion) | Skill | Get a second opinion from Gemini or GPT on any important topic or decision | 2026-04-04 |
-
-*(Note: Claude Code specific plugins like `tmux-hooks`, `claude-statusline-state`, and `desktop-notify` were deprecated during migration as Antigravity handles these natively via `settings.json`.)*

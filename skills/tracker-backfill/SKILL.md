@@ -1,6 +1,6 @@
 ---
 name: tracker-backfill
-description: Fill gaps in today's time tracking from the current session's transcript. Use when the user says "/tracker-backfill", "doplň díry v Togglu", "backfill Toggl gaps", "doplň do Toggl práci na tomto", "fill in missing time for this session", or asks whether today's tracked time matches the session.
+description: Fill gaps in time tracking from the current session's transcript, splitting it into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu", "backfill Toggl gaps", "doplň do Toggl práci na tomto", "fill in missing time for this session", or asks whether tracked time matches the session.
 argument-hint: [date]
 version: 1.6.0
 allowed-tools: Read, Bash
@@ -34,23 +34,48 @@ the uncovered intervals — never overlapping anything already tracked.
    timestamp must fall on the target day; if unsure which file is the right
    one, list candidates and ask).
 
-   Extract the first and last event timestamps (they are UTC ISO-8601):
+   **Split the transcript into activity blocks — never treat `first → last` as
+   one span.** A session can stay open across days (sleep, other projects,
+   meetings), so its raw span is not time worked; on a multi-day session that
+   difference is tens of hours. Group consecutive events and start a new block
+   wherever the gap exceeds a threshold.
+
+   **Choosing the threshold.** A pause between prompts is usually *not* a break
+   — the user is reading, thinking, or writing the next one. Default to **60
+   minutes**, and say which threshold you used when presenting the proposal.
+   Compute the total for several (20 / 45 / 60 / 90) and mention it only if they
+   differ; when they agree, the choice is not worth the user's attention. If the
+   user has said how they work, follow that over the default.
+
    ```bash
-   FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl \
+   export FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl \
      ~/.gemini/antigravity-cli/projects/<slug>/*.jsonl 2>/dev/null | head -1)
-   python3 << EOF
-   import json
-   first = last = None
-   with open("$FILE") as f:
+   python3 << 'EOF'
+   import json, os
+   from datetime import datetime, timedelta
+   GAP = timedelta(minutes=60)
+   ts = []
+   with open(os.environ["FILE"]) as f:
        for line in f:
-           try: ts = json.loads(line).get("timestamp")
+           try: t = json.loads(line).get("timestamp")
            except Exception: continue
-           if not ts: continue
-           first = first or ts
-           last = ts
-   print("session span UTC:", first, "->", last)
+           if t: ts.append(datetime.fromisoformat(t.replace("Z", "+00:00")))
+   ts.sort()
+   blocks = []; s = e = ts[0]
+   for t in ts[1:]:
+       if t - e > GAP: blocks.append((s, e)); s = t
+       e = t
+   blocks.append((s, e))
+   for a, b in blocks:
+       print(f"{a:%Y-%m-%d %H:%M} -> {b:%H:%M} UTC  {b-a}")
+   print("blocks:", len(blocks), "total:", sum((b-a for a,b in blocks), timedelta()))
    EOF
    ```
+
+   Each block is then treated like the span was before: subtract existing
+   entries from it, and propose what remains. A session spanning several days
+   produces blocks on each of them — do not restrict the work to one target day
+   unless the user asked for that.
 
 4. **Fetch the day's entries** (all of them — any project; overlaps must be
    computed against everything, not just this project's entries):

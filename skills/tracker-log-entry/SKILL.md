@@ -1,6 +1,6 @@
 ---
-name: log-entry
-description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded.
+name: tracker-log-entry
+description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/tracker-log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded.
 argument-hint: [time-window] [description]
 version: 1.6.0
 allowed-tools: Read, Bash
@@ -13,7 +13,7 @@ backend — unlike `/start`, no live timer is involved.
 
 ## Steps
 
-1. **Read config**: Read `~/.gemini/antigravity-cli/data/session-tracker/config.json` using
+1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
    the Read tool.
    - If the file doesn't exist: "No configuration found. Please run
      /setup-tracker first." Then stop.
@@ -65,7 +65,7 @@ backend — unlike `/start`, no live timer is involved.
    printf 'user = "%s:api_token"\n' "$KEY" | curl -sS --config - \
      -H "Content-Type: application/json" \
      -X POST "https://api.track.toggl.com/api/v9/workspaces/<workspace_id>/time_entries" \
-     --data-binary '{"created_with":"session-tracker-antigravity",
+     --data-binary '{"created_with":"session-tracker",
        "workspace_id":<workspace_id>,"description":"<description>",
        "start":"<UTC start>","stop":"<UTC end>","duration":<seconds>,
        "billable":<billable>}'

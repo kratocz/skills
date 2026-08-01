@@ -13,7 +13,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
 1. **Read snapshot**:
 
-   Try to read `~/.gemini/antigravity-cli/data/work/last-briefing.json` with the Read tool.
+   Try to read `~/.claude/plugins/work/last-briefing.json`.
 
    - If missing: stop with message "Žádný snapshot. Spusť /work-start nejdřív." Return.
    - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.

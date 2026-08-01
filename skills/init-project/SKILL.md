@@ -5,7 +5,7 @@ description: Bootstrap a new project repository — creates .gitignore (with mac
 
 # init-project — procedure
 
-Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `AGENTS.md` / `README.md` (tell the user it already exists).
+Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `CLAUDE.md` / `README.md` (tell the user it already exists).
 
 Follow these steps in order. Where a step calls for a decision the user should make, ask via `AskUserQuestion`.
 
@@ -14,7 +14,7 @@ Follow these steps in order. Where a step calls for a decision the user should m
 - Run `pwd` to capture the target directory.
 - List the root with `ls -la` (or equivalent) so you can see what's already there.
 - Check if it is a git repo: `git rev-parse --is-inside-work-tree 2>/dev/null`.
-- Note which of these already exist: `.gitignore`, `AGENTS.md`, `AGENTS.md`, `README.md`.
+- Note which of these already exist: `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `README.md`.
 
 ## 2. Detect the project type
 
@@ -97,7 +97,7 @@ Guidance for AI coding agents working in this repository (Claude Code, Codex, An
 
 If `AGENTS.md` already exists, skip and tell the user.
 
-## 5. Create `AGENTS.md` (if it doesn't exist)
+## 5. Create `CLAUDE.md` (if it doesn't exist)
 
 Contents — keep it to a single redirect so AGENTS.md is the single source of truth:
 
@@ -105,7 +105,7 @@ Contents — keep it to a single redirect so AGENTS.md is the single source of t
 See [AGENTS.md](AGENTS.md).
 ```
 
-If `AGENTS.md` already exists, skip and tell the user.
+If `CLAUDE.md` already exists, skip and tell the user.
 
 ## 6. Create `README.md` (if it doesn't exist)
 

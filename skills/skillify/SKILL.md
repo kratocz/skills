@@ -116,20 +116,22 @@ let the user choose):
     with the trigger phrases (the words a user would say to invoke it),
   - a body of concrete, step-by-step instructions distilled from what the
     session actually did — not a vague outline.
-- **Generally useful workflow** → recommend creating a plugin in the user's
-  marketplace. If the current working directory is that marketplace repo,
-  follow its `AGENTS.md` "Adding a new plugin" procedure. Otherwise print the
-  steps (and mention `plugin-dev:create-plugin` if it is installed) — do not
-  write outside the current project.
+- **Generally useful workflow** → recommend adding it to the user's portable
+  skills collection (e.g. `kratocz/skills`): create `skills/<name>/SKILL.md`
+  there plus a README table row; it is then installable everywhere via
+  `npx skills add kratocz/skills`. If the current working directory is that
+  collection repo, create the skill directly. Otherwise print the steps — do
+  not write outside the current project.
 
 For each approved **improved skill**: quote the current `SKILL.md` text and the
-replacement. For a skill installed from a marketplace cache, edit the plugin's
-**source repo**, never the cache:
+replacement. Skills are usually installed as symlinks or copies of a source
+clone — always edit the **source**, never an installed copy:
 
-- the cache lives in the harness's plugin cache (e.g. Claude Code: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/...`);
-- find the working clone (e.g. under the user's projects directory) and confirm
-  the source `SKILL.md` matches the cache copy before proposing the edit;
-- after editing the source, note that the change reaches the cache only on
+- symlinked installs pick the edit up immediately; copy-installs via the
+  skills CLI refresh by re-running `npx skills add <source> -g` after the edit;
+- for skills from a Claude plugin marketplace cache
+  (`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/...`), edit the
+  plugin's source repo and note the change reaches the cache only on
   reinstall / version bump.
 
 Apply each approved item immediately, in list order. If an apply step fails,

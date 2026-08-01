@@ -26,7 +26,7 @@ When invoked, follow this procedure in order:
 
 3. **Pick a CR title and start timesheet logging.**
    - Decide a short, descriptive title for this CR.
-   - If the user tracks time, start a new timer/entry for this CR using that title. **Prefer the `session-tracker` skill if available**; otherwise use the timesheet tool the user has configured (Toggl MCP, Clockify, ClickUp time tracking — they may have specific instructions in their global or project instructions file).
+   - If the user tracks time, start a new timer/entry for this CR using that title. **Prefer the `tracker-start` / `tracker-stop` skills if available**; otherwise use the timesheet tool the user has configured (Toggl MCP, Clockify, ClickUp time tracking — they may have specific instructions in their global or project instructions file).
    - If a timesheet session is already running, ask the user whether to stop it and start a new one for this CR, or leave the current one running.
 
 4. **Produce findings.** Label each one with a severity code (`C1`, `C2`, `M1`, `m1`, `n1`, …). If a finding needs a new category (e.g. off-topic), propose it to the user with a suggested letter prefix.

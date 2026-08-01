@@ -34,9 +34,9 @@ When a project file documents routers, extract for each: IP or SSH alias, role (
    ssh -o BatchMode=yes <target> "/system identity print"
    ```
    Authentication must be via SSH key — no password prompts. If auth fails, help the user check `~/.ssh/config` and installed keys. Ideally the router has a dedicated read-only user (group `read`) with the public key installed via `/user ssh-keys import`.
-2. Run collection (script is on PATH via plugin `bin/`):
+2. Run the bundled collection script (in this skill's `scripts/` directory):
    ```bash
-   mikrotik-audit <target> [<target> …]
+   <path-to-this-skill>/scripts/mikrotik-audit <target> [<target> …]
    ```
    Output lands in `./audit-results/<timestamp>/<target>/<section>.txt` plus a `summary.md` with heuristic flags.
 3. Proceed to Mode B for the generated directory.

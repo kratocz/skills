@@ -13,7 +13,7 @@ Start a new time tracking session in the configured backend.
 ## Steps
 
 1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json`.
-   - If the file doesn't exist: "No configuration found. Please run /setup-tracker first." Then stop.
+   - If the file doesn't exist: "No configuration found. Please run /tracker-setup-tracker first." Then stop.
    - Read `config.language` (default `"en"` if missing). All user-facing text generated in the steps below — prompts, confirmations, URL-derived descriptions — should be phrased in this language. Keep proper nouns, code identifiers, URLs, and numeric durations unchanged.
 
 2. **Gather project context** (best-effort — ignore errors if not in a git repo):
@@ -40,7 +40,7 @@ Start a new time tracking session in the configured backend.
      "https://api.clockify.me/api/v1/workspaces/<workspace_id>/time-entries?in-progress=true&page-size=1"
    ```
 
-   If a timer is already running, show its description and ask the user (in the configured language) whether to stop it first (via `/stop`) or keep it running. Do not auto-stop.
+   If a timer is already running, show its description and ask the user (in the configured language) whether to stop it first (via `/tracker-stop`) or keep it running. Do not auto-stop.
 
 4. **Determine description**:
    - If arguments were provided, trim them. If the trimmed argument starts with `http://` or `https://`, treat as a URL:
@@ -93,4 +93,4 @@ Start a new time tracking session in the configured backend.
 
 8. **Report result** (keep it concise, phrased in the configured language):
    - Success: an equivalent of `Session started: '<description>'` — append project name if resolved.
-   - On HTTP error: show the API error message (verbatim, not translated) and suggest re-running `/setup-tracker`.
+   - On HTTP error: show the API error message (verbatim, not translated) and suggest re-running `/tracker-setup-tracker`.

@@ -9,14 +9,14 @@ allowed-tools: Read, Bash
 # Log Retroactive Entry
 
 Create a completed time entry (start + end in the past) in the configured
-backend — unlike `/start`, no live timer is involved.
+backend — unlike `/tracker-start`, no live timer is involved.
 
 ## Steps
 
 1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
    the Read tool.
    - If the file doesn't exist: "No configuration found. Please run
-     /setup-tracker first." Then stop.
+     /tracker-setup-tracker first." Then stop.
    - Read `config.language` (default `"en"`). Phrase all user-facing text in
      this language; keep proper nouns, IDs, URLs and durations unchanged.
 
@@ -43,9 +43,9 @@ backend — unlike `/start`, no live timer is involved.
 
 3. **Determine description**: remaining argument text, or ask (in the
    configured language). Optionally derive context from the current git repo
-   as `/start` does.
+   as `/tracker-start` does.
 
-4. **Resolve tracker project** (same as `/start`): fetch active projects, match
+4. **Resolve tracker project** (same as `/tracker-start`): fetch active projects, match
    the repo/dir name case-insensitively, fall back to `default_project_id`
    (may be null → omit the field).
 
@@ -86,6 +86,6 @@ backend — unlike `/start`, no live timer is involved.
    response; on success show the entry id, the window in **local time**, the
    rounded duration in hours, billable flag, and project/tags if attached.
    On HTTP error show the API message verbatim and suggest checking
-   `/setup-tracker`. If the response indicates a billable/project constraint
+   `/tracker-setup-tracker`. If the response indicates a billable/project constraint
    (e.g. Toggl "workspace does not allow non-billable entries in billable
    projects"), retry once with `billable: true` and say so.

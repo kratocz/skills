@@ -30,7 +30,7 @@ The user wants a second opinion from another AI model on an important topic, dec
    - Gemini: `echo "$PROMPT" | gemini`
    - GPT/Codex: `echo "$PROMPT" | codex`
 
-   Prerequisites: `gemini` and `codex` must be installed and configured by the user (auth, API keys, subscription — the plugin does not handle this).
+   Prerequisites: `gemini` and `codex` must be installed and configured by the user (auth, API keys, subscription — the skill does not handle this).
 
 4. Display responses clearly labeled:
    - `## Gemini` section

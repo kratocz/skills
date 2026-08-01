@@ -30,8 +30,8 @@ Hard rules, valid for the whole skill:
 
 1. **Resolve the target knowledge file** (where learnings get written):
    - If `AGENTS.md` exists in the project root → that's the target.
-   - Else if `AGENTS.md` exists and contains real content (more than a
-     redirect like "See AGENTS.md") → target `AGENTS.md`.
+   - Else if `CLAUDE.md` exists and contains real content (more than a
+     redirect like "See AGENTS.md") → target `CLAUDE.md`.
    - Else ask the user whether to create `AGENTS.md` (minimal skeleton:
      project overview, structure, commands, conventions). If declined, areas
      A and B run in report-only mode (findings shown, nothing written).
@@ -117,7 +117,7 @@ target knowledge file is also stale → propose deletion.
 
 ### E. Skills — new and improved
 
-**On apply, delegate to skillify when installed.** If the `skillify` plugin is
+**On apply, delegate to skillify when installed.** If the `skillify` skill is
 available (its skill appears in your available-skills list), hand each approved
 skill candidate to it — invoke `skillify:skillify` with a one-line description
 of the candidate (its targeted mode); skillify then handles placement,
@@ -130,17 +130,19 @@ either way.
   more than once, or said they do this often) → propose a skill that does it
   in one invocation. Placement rule: project-specific workflow →
   `.claude/skills/<name>/SKILL.md` in this project; generally useful
-  workflow → suggest creating a plugin in the user's marketplace instead.
+  workflow → suggest adding it to the user's portable skills collection
+  (e.g. `kratocz/skills`) instead.
   State your recommendation, let the user choose.
 - **Improved skill:** a skill invoked this session misfired or needed manual
   correction → propose a concrete edit to its `SKILL.md` (quote the current
-  text and the replacement). For skills installed from a marketplace cache,
-  edit the plugin's **source repo**, never the cache. First locate the source:
-  the cache lives in the harness's plugin cache (e.g. Claude Code: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/...`);
-  find the working clone (e.g. under the user's projects dir) and confirm the
-  source `SKILL.md` matches the cache copy before proposing the edit. After
-  editing the source, the change reaches the cache only on reinstall / version
-  bump — mention that.
+  text and the replacement). Skills are usually installed as symlinks or
+  copies of a source clone — always edit the **source**, never an installed
+  copy. Symlinked installs pick the edit up immediately; copy-installs via the
+  skills CLI refresh by re-running `npx skills add <source> -g` after the
+  edit. For skills from a Claude plugin marketplace cache
+  (`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/...`), edit the
+  plugin's source repo — the change reaches the cache only on reinstall /
+  version bump — mention that.
 
 ### F. Hooks
 
@@ -213,7 +215,7 @@ Present candidate items grouped by area, then approve and apply:
      Bash `rm` on the exact path read in Phase 0 — never glob-delete.
    - Doc fixes (area C) are applied with Edit, one finding at a time.
    - Skill items (area E) follow area E's apply path: when the `skillify`
-     plugin is installed, area E delegates creation to it; otherwise scaffold
+     skill is installed, area E delegates creation to it; otherwise scaffold
      the new project skill as `.claude/skills/<name>/SKILL.md` with proper
      frontmatter (`name`, `description` with trigger phrases) and a
      step-by-step body distilled from what the session actually did.

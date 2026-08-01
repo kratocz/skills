@@ -35,7 +35,7 @@ automatically: the flow is always **propose → confirm → write**.
 1. **Load effective config.** Read `~/.claude/plugins/work/config.json` with the
    Read tool.
    - If missing: stop with (in the configured language) "Žádná konfigurace work
-     pluginu. Spusť `/work-setup`." / "No work plugin config. Run `/work-setup`."
+     skillů. Spusť `/work-setup`." / "No work skills config. Run `/work-setup`."
    - Parse it. Read `config.language` (default `cs`, fallback `en`); phrase all
      user-facing text in it, keeping proper nouns/IDs/URLs/durations unchanged.
    - Build `effective_config` by overlaying the `reconcile` block on these
@@ -44,7 +44,8 @@ automatically: the flow is always **propose → confirm → write**.
      `default_window=last_month`, `gap_threshold_min=15`, `edge_pad_min=2`,
      `round_to_min=5`, `min_block_min=5`, `coverage_covered=0.9`,
      `coverage_missing=0.1`, `ai_sessions.enabled=true`,
-     `ai_sessions.projects_dir=~/.claude/projects`, `calendar.as_work=true`,
+     `ai_sessions.projects_dir=<harness-home>/projects` (`~/.claude` or
+     `~/.gemini/antigravity-cli`, first that exists), `calendar.as_work=true`,
      `calendar.exclude_all_day=true`, `calendar.exclude_declined=true`,
      `calendar.exclude_keywords=["oběd","lunch","dovolená"]`,
      `sink.target=toggl`, `sink.billable=true`, `sink.reconciled_tag=reconciled`.
@@ -215,15 +216,15 @@ automatically: the flow is always **propose → confirm → write**.
    | `commit-only` | `? (jen commit — DOPLŇ ČAS)` |
    | `manual` | `<m>m (ručně)` |
 
-5. **Pair every block to a project** (same mechanism as `/start` and
-   `/log-entry`):
+5. **Pair every block to a project** (same mechanism as `/tracker-start` and
+   `/tracker-log-entry`):
    - Fetch active Toggl projects (`mcp__toggl__toggl_list_projects`, or the
-     `session-tracker` key fallback).
+     API key from `~/.claude/plugins/session-tracker/config.json` as fallback).
    - For AI blocks: match `project_hint` (repo/dir name) case-insensitively
      against project names; on a hit set `project`. For Calendar blocks with no
      hint, leave `project=null` for now.
    - Fallback to `sources.toggl.project_id` /
-     `session-tracker` `default_project_id` if no match (may be null).
+     `default_project_id` from `~/.claude/plugins/session-tracker/config.json` if no match (may be null).
    - If still unresolved, set `project=null` and add `'project?'` to
      `origin_marks` — the review (step 8) will force the user to pick before this
      block can be approved.
@@ -331,13 +332,13 @@ automatically: the flow is always **propose → confirm → write**.
 9. **Write the approved entries.** For each item in `approved`, write to every
    tracker in `sink.target` (`toggl`, `clickup`, or `both`).
 
-   **Safety (identical to `session-tracker`'s `/log-entry`):** never put the API
+   **Safety (identical to the `tracker-log-entry` skill):** never put the API
    key in argv. Read it into a shell variable and pass it via a stdin-fed config
    / header, so it stays out of `ps` and transcripts. Do all time conversion
    with `date`, never by hand.
 
    **Toggl** — `POST /api/v9/workspaces/<wid>/time_entries`. Use the **exact
-   auth pattern proven in `session-tracker`'s `/log-entry`**: Basic auth via
+   auth pattern proven in the `tracker-log-entry` skill**: Basic auth via
    `curl --config -` fed on stdin (so the key stays out of argv), with the
    credential line `user = "<token>:api_token"`. `duration` is
    `round(minutes) * 60` (seconds; `minutes` is the approved per-item value).
@@ -346,7 +347,7 @@ automatically: the flow is always **propose → confirm → write**.
    the payload. Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
    original end), `duration` (seconds), `description`, `project_id` (only when
    resolved), `billable` (from `sink.billable`), and `tags` including
-   `sink.reconciled_tag` — mirroring `/log-entry`'s Toggl body:
+   `sink.reconciled_tag` — mirroring `/tracker-log-entry`'s Toggl body:
    ```bash
    KEY=<toggl api_key read into a shell var, not echoed>
    printf 'user = "%s:api_token"\n' "$KEY" | curl -sS --config - \

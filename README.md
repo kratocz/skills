@@ -11,17 +11,13 @@ npx skills add kratocz/skills            # interactive: pick skills and agents
 npx skills add kratocz/skills -g --all   # everything, globally, all detected agents
 ```
 
-### Development install (live symlinks)
+### Working on the skills
 
-If you work on the skills themselves, symlink them from a working clone instead — edits are then picked up without reinstalling:
+Install from a working clone the same way — local installs are plain copies, so re-run after editing:
 
 ```bash
-git clone https://github.com/kratocz/skills.git
-cd skills
-./install.sh
+npx skills add . -g -y --all
 ```
-
-This links every skill into `~/.agents/skills/` (read by Antigravity CLI, Codex, Copilot CLI, Gemini CLI, opencode — and Claude Code with a delay) and into `~/.claude/skills/` (picked up by Claude Code instantly), and links the `kodex` rule pointer for Antigravity.
 
 > **Note for Claude Code:** if you previously installed the skill plugins from `kratocz/claude-plugins`, uninstall them first — otherwise the same skills load twice.
 
@@ -31,7 +27,15 @@ This links every skill into `~/.agents/skills/` (read by Antigravity CLI, Codex,
 
 > Před netriviální analýzou, rozhodnutím či odevzdáním výstupu si načti skill `kodex` a řiď se jím.
 
-For Antigravity CLI, `install.sh` links [rules/kodex.md](./rules/kodex.md) (the same one-liner) into `~/.gemini/antigravity-cli/rules/`.
+For Antigravity CLI the same line goes into its rules directory — write it directly:
+
+```bash
+mkdir -p ~/.gemini/antigravity-cli/rules
+printf 'Před netriviální analýzou, rozhodnutím či odevzdáním výstupu si načti skill `kodex` a řiď se jím.\n' \
+  > ~/.gemini/antigravity-cli/rules/kodex.md
+```
+
+(or symlink [rules/kodex.md](./rules/kodex.md) from a clone).
 
 ## State
 

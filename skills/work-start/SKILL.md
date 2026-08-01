@@ -18,7 +18,7 @@ Morning briefing across all configured task and code review sources.
 
 1. **Load effective config**:
 
-   a. Read global config: `~/.gemini/antigravity-cli/data/work/config.json` with the Read tool.
+   a. Read global config: `~/.claude/plugins/work/config.json`.
 
    If the file doesn't exist, stop with this message in Czech (or English if user prefers): "Žádná konfigurace work pluginu. Spusť `/work-setup` nejdřív." Then return — do not proceed.
 
@@ -26,7 +26,7 @@ Morning briefing across all configured task and code review sources.
    ```bash
    pwd
    ```
-   Build slug as in `/work-setup` (absolute path with `/` → `-`, leading `-`). Try to read `~/.gemini/antigravity-cli/projects/<slug>/memory/work_config.md` with the Read tool.
+   Build slug as in `/work-setup` (absolute path with `/` → `-`, leading `-`). Try to read `<harness-home>/projects/<slug>/memory/work_config.md` — `<harness-home>` is `~/.claude` (Claude Code) or `~/.gemini/antigravity-cli` (Antigravity CLI), first that exists.
 
    If the file exists:
    - Find the first fenced ` ```json ... ``` ` block in the file.
@@ -55,7 +55,7 @@ Morning briefing across all configured task and code review sources.
 
    If unavailable, mark the source as skipped, append to warnings:
    ```
-   ⚠️ Source `<name>` je povolený v configu, ale MCP server není v této session. Přeskakuji. Spusť /work-setup pro aktualizaci, nebo zkontroluj ~/.gemini/antigravity-cli/settings.json.
+   ⚠️ Source `<name>` je povolený v configu, ale MCP server není v této session. Přeskakuji. Spusť /work-setup pro aktualizaci, nebo zkontroluj MCP konfiguraci svého harnessu (např. ~/.claude/settings.json).
    ```
 
    Continue with the remaining available sources.
@@ -290,10 +290,10 @@ Morning briefing across all configured task and code review sources.
 
    Ensure dir exists:
    ```bash
-   mkdir -p ~/.gemini/antigravity-cli/data/work
+   mkdir -p ~/.claude/plugins/work
    ```
 
-   Write the snapshot with the Write tool to `~/.gemini/antigravity-cli/data/work/last-briefing.json`.
+   Write the snapshot to `~/.claude/plugins/work/last-briefing.json`.
 
 9. **Print warnings**:
 

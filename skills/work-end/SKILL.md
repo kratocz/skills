@@ -13,7 +13,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
 1. **Read snapshot**:
 
-   Read `~/.gemini/antigravity-cli/data/work/last-briefing.json` with the Read tool.
+   Read `~/.claude/plugins/work/last-briefing.json`.
 
    - If missing: stop with "Žádný snapshot. Bez ranního /work-start nelze udělat end-of-day souhrn." Return.
    - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.
@@ -86,7 +86,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
 6. **Optionally save to session log**:
 
-   Check if the `session-log` plugin is installed by reading `~/.gemini/antigravity-cli/data/session-log/config.json`. If it doesn't exist, skip this step silently.
+   Check if the `session-log` plugin is installed by reading `~/.claude/plugins/session-log/config.json`. If it doesn't exist, skip this step silently.
 
    If it exists:
    - Read the config to find the session log directory (`session_log_dir` field, or default `~/Documents/claude-sessions/`).

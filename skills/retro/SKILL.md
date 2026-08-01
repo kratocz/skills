@@ -136,7 +136,7 @@ either way.
   correction → propose a concrete edit to its `SKILL.md` (quote the current
   text and the replacement). For skills installed from a marketplace cache,
   edit the plugin's **source repo**, never the cache. First locate the source:
-  the cache lives at `~/.gemini/antigravity-cli/data/cache/<owner>/<plugin>/<version>/...`;
+  the cache lives in the harness's plugin cache (e.g. Claude Code: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/...`);
   find the working clone (e.g. under the user's projects dir) and confirm the
   source `SKILL.md` matches the cache copy before proposing the edit. After
   editing the source, the change reaches the cache only on reinstall / version

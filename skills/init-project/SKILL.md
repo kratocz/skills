@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstrap a new project repository — creates .gitignore (with macOS junk + project-type-specific entries), AGENTS.md, AGENTS.md, README.md, runs git init if needed, commits the baseline, and optionally creates a GitHub repo via gh CLI. Use when the user wants to initialize a new project, says "založ projekt", "inicializuj projekt", "bootstrap repo", "/init-project", or has just created/inherited a new directory and wants the standard baseline files in place.
+description: Bootstrap a new project repository — creates .gitignore (with macOS junk + project-type-specific entries), AGENTS.md, CLAUDE.md, README.md, runs git init if needed, commits the baseline, and optionally creates a GitHub repo via gh CLI. Use when the user wants to initialize a new project, says "založ projekt", "inicializuj projekt", "bootstrap repo", "/init-project", or has just created/inherited a new directory and wants the standard baseline files in place.
 ---
 
 # init-project — procedure
@@ -73,7 +73,7 @@ Use this minimal template — leave placeholders where you don't know the answer
 ```markdown
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository (Antigravity, Cursor, Aider, Copilot, …).
+Guidance for AI coding agents working in this repository (Claude Code, Codex, Antigravity, Cursor, Copilot, …).
 
 ## Project overview
 
@@ -136,7 +136,7 @@ If the directory is not a git repo, run `git init`. Use the user's default branc
 - `git add` only the files this skill created or modified (do not blanket `git add .` — there may be other untracked files the user doesn't want committed yet).
 - Single commit is the default. Suggested messages:
   - First commit in a fresh repo: `chore: initial project setup`
-  - Adding baseline files to an existing repo: `chore: add project baseline (.gitignore, AGENTS.md, AGENTS.md, README.md)`
+  - Adding baseline files to an existing repo: `chore: add project baseline (.gitignore, AGENTS.md, CLAUDE.md, README.md)`
   - .gitignore-only change to an existing repo: `chore: extend .gitignore with macOS + <type> entries`
 - Multiple commits are fine if the changes naturally split (e.g. one commit per file kind) — but don't manufacture artificial splits.
 

@@ -1,13 +1,13 @@
 ---
 name: work-setup
-description: Configure the work plugin — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.claude/plugins/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
+description: Configure the work-* skills — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.claude/plugins/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
 version: 0.3.0
 allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp__plugin_ntit-common_clickup__clickup_get_workspace_members
 ---
 
 # Work Setup
 
-Configure the work plugin: detect which MCP sources are available in this session, ask the user which to enable, and write the config file.
+Configure the work-* skills: detect which MCP sources are available in this session, ask the user which to enable, and write the config file.
 
 ## Steps
 
@@ -47,7 +47,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    **GitHub-specific follow-up:** if user enables `github`, ask for their GitHub username (free-text). Pre-fill with `existing_config.sources.github.username` in edit mode, or with the output of `gh api user --jq .login 2>/dev/null` if `gh` CLI is available (best-effort, don't fail if it errors). Store as `sources.github.username`.
 
-   **ClickUp-specific follow-up:** if user enables `clickup`, the plugin needs the user's member ID to filter `assignee=me`. Call `mcp__plugin_ntit-common_clickup__clickup_get_workspace_members` (no args) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, list the members with AskUserQuestion (max 4 options — if more, list inline with numbers and ask via plain question) and ask the user to pick. Store as `sources.clickup.member_id`.
+   **ClickUp-specific follow-up:** if user enables `clickup`, the skills need the user's member ID to filter `assignee=me`. Call `mcp__plugin_ntit-common_clickup__clickup_get_workspace_members` (no args) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, list the members with AskUserQuestion (max 4 options — if more, list inline with numbers and ask via plain question) and ask the user to pick. Store as `sources.clickup.member_id`.
 
    **Default filter sets** for each source (used unless user later edits the JSON manually — no per-source filter UI in v1):
 
@@ -56,7 +56,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    - clickup: `{ "include": ["assigned_to_me"], "scope": "today_and_overdue" }`
    - google_calendar: `{ "window_hours": 12 }`
 
-   Store the result for each source as an object. The exact shape varies per source (matching the spec / AGENTS.md config example):
+   Store the result for each source as an object. The exact shape varies per source :
    - `todoist`: `{ "enabled": bool, "mcp_prefix": "...", "filters": { "priorities": [...], "scope": "..." } }`
    - `github`: `{ "enabled": bool, "mcp_prefix": "...", "username": "...", "include": [...] }` — note `include` at source level, NOT inside `filters`
    - `clickup`: `{ "enabled": bool, "mcp_prefix": "...", "member_id": "...", "filters": { "include": [...], "scope": "..." } }`
@@ -181,12 +181,12 @@ Configure the work plugin: detect which MCP sources are available in this sessio
    ````markdown
    ---
    name: work-config-override
-   description: Per-project work plugin overrides for <basename>
+   description: Per-project work skills overrides for <basename>
    metadata:
      type: project
    ---
 
-   Per-project overrides for the work plugin in this project. The skill reads only the JSON block below.
+   Per-project overrides for the work skills in this project. The skill reads only the JSON block below.
 
    ```json
    { "sources": { "clickup": { "enabled": false } } }
@@ -197,7 +197,7 @@ Configure the work plugin: detect which MCP sources are available in this sessio
 
    Append a line to `<harness-home>/projects/<slug>/memory/MEMORY.md` (create the file if missing):
    ```
-   - [Work plugin override](work_config.md) — per-project source/scoring overrides
+   - [Work skills override](work_config.md) — per-project source/scoring overrides
    ```
 
    If MEMORY.md already contains a line referencing `work_config.md`, don't add a duplicate.

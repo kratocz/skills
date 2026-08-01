@@ -12,7 +12,7 @@ Stop the currently running time tracking session and report its duration.
 ## Steps
 
 1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json`.
-   - If the file doesn't exist: "No configuration found. Please run /setup-tracker first." Then stop.
+   - If the file doesn't exist: "No configuration found. Please run /tracker-setup-tracker first." Then stop.
    - Read `config.language` (default `"en"` if missing). Phrase user-facing messages below in this language; keep numeric durations, quoted descriptions, and URLs unchanged.
 
 2. **Get the current running timer**:

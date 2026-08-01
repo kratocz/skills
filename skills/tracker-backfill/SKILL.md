@@ -8,21 +8,22 @@ allowed-tools: Read, Bash
 
 # Backfill Session Gaps
 
-Compare the current agent session's real activity span (from its
-transcript timestamps) with the day's tracker entries, and create entries for
-the uncovered intervals — never overlapping anything already tracked.
+Compare the current agent session's real activity blocks (from its
+transcript timestamps) with the tracker entries of the days those blocks
+touch, and create entries for the uncovered intervals — never overlapping anything already tracked.
 
 ## Steps
 
 1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
    the Read tool.
    - If the file doesn't exist: "No configuration found. Please run
-     /setup-tracker first." Then stop.
+     /tracker-setup-tracker first." Then stop.
    - Read `config.language` (default `"en"`). Phrase all user-facing text in
      this language; keep IDs, URLs, and durations unchanged.
 
-2. **Determine the target day**: from the argument (`YYYY-MM-DD`) or default
-   to today in the user's local timezone.
+2. **Determine the day filter (optional)**: a `YYYY-MM-DD` argument limits the
+   work to blocks overlapping that day; with no argument, process every day
+   the session's blocks touch.
 
 3. **Locate the current session transcript and its activity span.**
    Transcripts live in `<harness-home>/projects/<slug>/*.jsonl`, where
@@ -30,8 +31,8 @@ the uncovered intervals — never overlapping anything already tracked.
    (Antigravity CLI) — use the first that exists — and `<slug>` is
    the session's working directory with `/` and `.` replaced by `-` (e.g.
    `/Users/me/proj` → `-Users-me-proj`). The current session is the most
-   recently modified `.jsonl` in that directory (verify: its first-line
-   timestamp must fall on the target day; if unsure which file is the right
+   recently modified `.jsonl` in that directory (verify: its most recent
+   events are from right now; if unsure which file is the right
    one, list candidates and ask).
 
    **Split the transcript into activity blocks — never treat `first → last` as
@@ -77,14 +78,16 @@ the uncovered intervals — never overlapping anything already tracked.
    produces blocks on each of them — do not restrict the work to one target day
    unless the user asked for that.
 
-4. **Fetch the day's entries** (all of them — any project; overlaps must be
-   computed against everything, not just this project's entries):
+4. **Fetch existing entries for every day the blocks touch** (all of them —
+   any project; overlaps must be computed against everything, not just this
+   project's entries). One range query covers it — `<first day>` to
+   `<last day + 1>`:
 
    ### Toggl Track
    ```bash
    KEY=<config.toggl.api_key read into a shell variable, not echoed>
    printf 'user = "%s:api_token"\n' "$KEY" | curl -s --config - \
-     "https://api.track.toggl.com/api/v9/me/time_entries?start_date=<day>&end_date=<day+1>"
+     "https://api.track.toggl.com/api/v9/me/time_entries?start_date=<first day>&end_date=<last day+1>"
    ```
    (The stdin `--config` trick keeps the key out of argv and sidesteps
    sandboxes that rewrite colon-bearing arguments like `-u user:token`.)
@@ -92,21 +95,23 @@ the uncovered intervals — never overlapping anything already tracked.
    ### Clockify
    ```bash
    KEY=<config.clockify.api_key read into a shell variable, not echoed>
-   curl -sS -H @- "https://api.clockify.me/api/v1/workspaces/<workspace_id>/user/<user_id>/time-entries?start=<day>T00:00:00Z&end=<day+1>T00:00:00Z&page-size=200" <<< "X-Api-Key: $KEY"
+   curl -sS -H @- "https://api.clockify.me/api/v1/workspaces/<workspace_id>/user/<user_id>/time-entries?start=<first day>T00:00:00Z&end=<last day+1>T00:00:00Z&page-size=200" <<< "X-Api-Key: $KEY"
    ```
 
-5. **Compute uncovered intervals**: within `[session_first, min(session_last,
-   now)]`, subtract every existing entry's `[start, stop]` (a running entry
+5. **Compute uncovered intervals per block**: if a day filter is set, first
+   drop blocks that do not overlap it. Then, for each remaining block, within
+   `[block_start, min(block_end, now)]`, subtract every existing entry's
+   `[start, stop]` (a running entry
    covers from its `start` onward). Work in UTC; use `date` or Python for the
    arithmetic — never do timezone math in your head. Drop leftover fragments
-   shorter than ~2 minutes (noise). If nothing remains, report "tracking
-   already covers the whole session" and stop.
+   shorter than ~2 minutes (noise). If nothing remains in any block, report
+   "tracking already covers the whole session" and stop.
 
 6. **Confirm before writing** (this is billing data — never create entries
    silently): show the proposed entries in **local time** (start–stop,
    duration, description, project) and ask the user to approve. Default
    description: the description of the session's existing/most recent entry
-   for this work, else ask. Resolve project + `billable` the same way `/start`
+   for this work, else ask. Resolve project + `billable` the same way `/tracker-start`
    does. Overlapping time that belongs to another entry (e.g. parallel work
    already tracked) is intentionally NOT proposed — double-booking is
    overbilling; say so if the user asks about a "missing" covered interval.

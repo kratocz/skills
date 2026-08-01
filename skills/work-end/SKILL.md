@@ -16,7 +16,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
    Read `~/.claude/plugins/work/last-briefing.json`.
 
    - If missing: stop with "Žádný snapshot. Bez ranního /work-start nelze udělat end-of-day souhrn." Return.
-   - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.
+   - If `schema_version` is not `1`: warn "Snapshot je z jiné verze skillu. Pokračuju best-effort." Continue.
    - Compute age:
      ```bash
      date -u +%s

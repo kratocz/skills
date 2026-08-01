@@ -38,7 +38,7 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 1. **Load effective config** — identical to `/work-start` step 1:
 
    a. Read global config `~/.claude/plugins/work/config.json` with the Read
-      tool. If missing, stop with: "Žádná konfigurace work pluginu. Spusť
+      tool. If missing, stop with: "Žádná konfigurace work skillů. Spusť
       `/work-setup` nejdřív." and return.
 
    b. Locate the per-project override: build the slug from `pwd` (absolute
@@ -124,10 +124,10 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
    - Optionally, if `sources.toggl.billable_only` is true, keep only
      `billable == true` entries.
    - **Fallback if the Toggl MCP server is absent** but
-     `effective_config.sources.toggl.api_key` (or `session-tracker`'s config)
+     `effective_config.sources.toggl.api_key` (or the config at `~/.claude/plugins/session-tracker/config.json`)
      is available: read the key into a shell var (never echo it) and pass it
      via stdin `--config -`, never on the command line (keeps the token out of
-     `ps` / shell history — same pattern as `session-tracker`'s `/log-entry`):
+     `ps` / shell history — same pattern as the `tracker-log-entry` skill):
      ```bash
      KEY=<config.toggl.api_key read into a shell variable, not echoed>
      printf 'user = "%s:api_token"\n' "$KEY" | curl -sS --config - \

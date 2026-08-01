@@ -1,0 +1,223 @@
+#!/usr/bin/env bash
+# mikrotik-audit — read-only security audit of Mikrotik RouterOS via SSH.
+# Part of the Claude Code plugin `mikrotik-audit`. All commands executed
+# against the router are read-only (print).
+
+set -eu
+
+show_help() {
+  cat <<'EOF'
+mikrotik-audit — read-only security audit of Mikrotik RouterOS
+
+Usage:
+  mikrotik-audit [--out <dir>] <target> [<target> ...]
+
+Target:
+  SSH alias from ~/.ssh/config   (recommended)
+  OR user@host[:port]
+  Authentication must be via SSH key (no password prompts).
+
+Options:
+  --out <dir>   Output directory (default: ./audit-results/<YYYY-MM-DD-HHMMSS>)
+  -h, --help    Show this help
+
+Examples:
+  mikrotik-audit router1 router2
+  mikrotik-audit --out /tmp/audit admin@192.168.0.1
+  mikrotik-audit admin@192.168.0.1:2222
+
+What the script does:
+  1. Verifies SSH connectivity (BatchMode, no prompts).
+  2. Runs a set of read-only RouterOS commands (system, users, scripts,
+     services, firewall, network, tunnels, wifi, files, logs, snmp, tool,
+     certs).
+  3. Saves outputs to <out>/<target>/<section>.txt.
+  4. Generates <out>/summary.md with preliminary findings (heuristic).
+
+For deeper analysis, invoke the Claude Code skill `mikrotik-audit`.
+EOF
+}
+
+OUT_DIR=""
+TARGETS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) show_help; exit 0 ;;
+    --out) OUT_DIR="${2:-}"; shift 2 ;;
+    --out=*) OUT_DIR="${1#--out=}"; shift ;;
+    --) shift; while [[ $# -gt 0 ]]; do TARGETS+=("$1"); shift; done ;;
+    -*) echo "Unknown option: $1" >&2; exit 2 ;;
+    *) TARGETS+=("$1"); shift ;;
+  esac
+done
+
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
+  echo "Error: at least one SSH target is required." >&2
+  echo "Try 'mikrotik-audit --help'." >&2
+  exit 2
+fi
+
+if [[ -z "$OUT_DIR" ]]; then
+  OUT_DIR="./audit-results/$(date +%Y-%m-%d-%H%M%S)"
+fi
+mkdir -p "$OUT_DIR"
+
+# Audit sections: name|RouterOS commands (semicolon-separated, piped to ssh)
+SECTIONS=(
+  "system|/system resource print; /system package print; /system identity print; /system routerboard print; /system clock print; /system license print"
+  "users|/user print detail; /user ssh-keys print; /user group print; /user active print"
+  "scripts|/system script print detail; /system scheduler print detail"
+  "services|/ip service print; /ip socks print; /ip proxy print; /ip upnp print; /ip cloud print"
+  "firewall|/ip firewall filter print detail; /ip firewall nat print detail; /ip firewall mangle print detail; /ip firewall raw print detail; /ip firewall address-list print"
+  "network|/interface print detail; /ip address print; /ip route print detail; /ip dns print; /ip dns static print; /ip dhcp-client print detail; /ip dhcp-server print"
+  "tunnels|/interface l2tp-client print; /interface pptp-client print; /interface ovpn-client print; /interface sstp-client print; /interface wireguard print; /interface wireguard peers print; /interface eoip print; /interface gre print; /interface ipip print"
+  "wifi|/interface wireless print detail; /interface wireless security-profiles print detail"
+  "files|/file print detail"
+  "logs|/log print"
+  "snmp|/snmp print; /snmp community print"
+  "tool|/tool bandwidth-server print; /tool romon print; /tool mac-server print; /tool mac-server mac-winbox print"
+  "certs|/certificate print detail"
+)
+
+# Parse "user@host:port" into SSH args. Outputs whitespace-separated string.
+parse_target_args() {
+  local t="$1"
+  if [[ "$t" =~ ^(.+):([0-9]+)$ ]]; then
+    printf -- '-p %s %s' "${BASH_REMATCH[2]}" "${BASH_REMATCH[1]}"
+  else
+    printf -- '%s' "$t"
+  fi
+}
+
+# Sanitize target string for use as a directory name
+sanitize() { printf '%s' "$1" | tr '@:/ ' '____'; }
+
+echo "mikrotik-audit → $OUT_DIR"
+echo
+
+for TARGET in "${TARGETS[@]}"; do
+  TDIR="$OUT_DIR/$(sanitize "$TARGET")"
+  mkdir -p "$TDIR"
+  # shellcheck disable=SC2046
+  SSH_ARGS=($(parse_target_args "$TARGET"))
+
+  echo "=== $TARGET ==="
+  if ! ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new \
+       "${SSH_ARGS[@]}" "/system identity print" > "$TDIR/_connect-test.txt" 2>&1; then
+    echo "  ✗ Cannot connect (SSH failed). Details: $TDIR/_connect-test.txt"
+    continue
+  fi
+  echo "  ✓ Connected"
+
+  for entry in "${SECTIONS[@]}"; do
+    section="${entry%%|*}"
+    cmd="${entry#*|}"
+    printf "  %-10s " "$section"
+    if ssh -o BatchMode=yes -o ConnectTimeout=30 "${SSH_ARGS[@]}" \
+         ":put \"--- $section ---\"; $cmd" > "$TDIR/$section.txt" 2>&1; then
+      echo "✓"
+    else
+      echo "⚠ (see $TDIR/$section.txt)"
+    fi
+  done
+done
+
+# Heuristic analysis — continue on errors
+set +e
+SUMMARY="$OUT_DIR/summary.md"
+{
+  echo "# Mikrotik audit summary"
+  echo
+  echo "- Generated: $(date)"
+  echo "- Targets: ${TARGETS[*]}"
+  echo "- Outputs in: \`$OUT_DIR\`"
+  echo
+  echo "> This heuristic summary has both false positives and false negatives. Always verify manually and run the Claude Code \`mikrotik-audit\` skill against the full outputs for real analysis."
+  echo
+
+  for TARGET in "${TARGETS[@]}"; do
+    TDIR="$OUT_DIR/$(sanitize "$TARGET")"
+    echo "## $TARGET"
+    echo
+    FLAGS=0
+
+    # RouterOS < 6.42 → CVE-2018-14847 Winbox RCE
+    if [[ -f "$TDIR/system.txt" ]]; then
+      VER=$(grep -oE 'version:\s*"?6\.[0-9]+' "$TDIR/system.txt" 2>/dev/null | head -1 | grep -oE '6\.[0-9]+')
+      if [[ -n "${VER:-}" ]]; then
+        MINOR=$(echo "$VER" | awk -F. '{print $2}')
+        if [[ -n "${MINOR:-}" ]] && [[ "$MINOR" -lt 42 ]]; then
+          echo "- 🚨 **CRITICAL:** RouterOS $VER < 6.42 (vulnerable to CVE-2018-14847 Winbox RCE). Update immediately."
+          FLAGS=$((FLAGS+1))
+        fi
+        echo "- ⚠️  **WARN:** RouterOS 6.x is a long-term branch but users should migrate to 7.x."
+        FLAGS=$((FLAGS+1))
+      fi
+    fi
+
+    # SOCKS proxy enabled → VPNFilter IoC
+    if [[ -f "$TDIR/services.txt" ]]; then
+      if awk '/^\/ip socks/,/^\/ip (proxy|upnp|cloud)/ {print}' "$TDIR/services.txt" 2>/dev/null \
+         | grep -qE 'enabled[:=]\s*yes'; then
+        echo "- 🚨 **CRITICAL:** SOCKS proxy is enabled (classic VPNFilter IoC)."
+        FLAGS=$((FLAGS+1))
+      fi
+      if awk '/^\/ip upnp/,/^\/ip (proxy|cloud|socks)/ {print}' "$TDIR/services.txt" 2>/dev/null \
+         | grep -qE 'enabled[:=]\s*yes'; then
+        echo "- ⚠️  **WARN:** UPnP is enabled — usually unwanted in home networks."
+        FLAGS=$((FLAGS+1))
+      fi
+    fi
+
+    # Scheduler / scripts with fetch or remote import
+    if [[ -f "$TDIR/scripts.txt" ]]; then
+      if grep -qiE 'fetch|:import|\.rsc' "$TDIR/scripts.txt" 2>/dev/null; then
+        echo "- ⚠️  **WARN:** Scheduler/Script contains \`fetch\`/\`:import\`/\`.rsc\` — typical persistence pattern. Review \`scripts.txt\`."
+        FLAGS=$((FLAGS+1))
+      fi
+    fi
+
+    # Multiple user accounts
+    if [[ -f "$TDIR/users.txt" ]]; then
+      UCOUNT=$(grep -cE '^\s*[0-9]+\s+(;;;|name=)' "$TDIR/users.txt" 2>/dev/null || true)
+      : "${UCOUNT:=0}"
+      if [[ "$UCOUNT" -gt 1 ]]; then
+        echo "- ℹ️  INFO: $UCOUNT user accounts detected (typical is 1 = admin). Review \`users.txt\`."
+      fi
+    fi
+
+    # Default SNMP community
+    if [[ -f "$TDIR/snmp.txt" ]] && grep -qiE 'name="?public"?' "$TDIR/snmp.txt" 2>/dev/null; then
+      echo "- ⚠️  **WARN:** SNMP community \"public\" is configured."
+      FLAGS=$((FLAGS+1))
+    fi
+
+    # Suspicious files
+    if [[ -f "$TDIR/files.txt" ]] && grep -qiE '\.auto\.rsc|autorun\.rsc' "$TDIR/files.txt" 2>/dev/null; then
+      echo "- ⚠️  **WARN:** Suspicious files (\`autorun.rsc\` / \`.auto.rsc\`) in \`files.txt\`."
+      FLAGS=$((FLAGS+1))
+    fi
+
+    # Configured tunnels — info only
+    if [[ -f "$TDIR/tunnels.txt" ]] && grep -qE 'name=' "$TDIR/tunnels.txt" 2>/dev/null; then
+      echo "- ℹ️  INFO: Tunnels are configured — verify in \`tunnels.txt\` that all are expected."
+    fi
+
+    if [[ "$FLAGS" -eq 0 ]]; then
+      echo "- ✅ No obvious red flags in the heuristic (full review via the skill still recommended)."
+    fi
+    echo
+  done
+
+  echo "## Next step"
+  echo
+  echo "For deep LLM-driven analysis, invoke the Claude Code skill:"
+  echo
+  echo '```'
+  echo "/mikrotik-audit:mikrotik-audit $OUT_DIR"
+  echo '```'
+} > "$SUMMARY"
+
+echo
+echo "Summary: $SUMMARY"

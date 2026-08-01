@@ -16,7 +16,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
    Try to read `~/.claude/plugins/work/last-briefing.json`.
 
    - If missing: stop with message "Žádný snapshot. Spusť /work-start nejdřív." Return.
-   - If `schema_version` is not `1`: warn "Snapshot je z jiné verze pluginu. Pokračuju best-effort." Continue.
+   - If `schema_version` is not `1`: warn "Snapshot je z jiné verze skillu. Pokračuju best-effort." Continue.
    - Compute snapshot age:
      ```bash
      date -u +%s  # current epoch
@@ -26,7 +26,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
      `age_hours = (now - snapshot_epoch) / 3600`
    - If `age_hours > 12`: warn "Snapshot je starý <X> hodin. Doporučuji /work-start." Continue anyway.
 
-2. **Read effective config** — use the same logic as `/work-start` step 1 (global config + per-project override merge). If global config is missing, stop with "Žádná konfigurace work pluginu. Spusť /work-setup." Return.
+2. **Read effective config** — use the same logic as `/work-start` step 1 (global config + per-project override merge). If global config is missing, stop with "Žádná konfigurace work skillů. Spusť /work-setup." Return.
 
    Compare current `effective_config_hash` (compute same way as in /work-start step 8) against snapshot's `effective_config_hash`. If different, append a warning: "⚠️ Konfigurace se od snapshotu změnila — diff může být zavádějící. Pro čistý stav spusť /work-start."
 

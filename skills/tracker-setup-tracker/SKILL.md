@@ -1,13 +1,13 @@
 ---
 name: tracker-setup-tracker
-description: Configure the session-tracker plugin. Use when the user wants to set up time tracking, configure Toggl or Clockify, run initial setup, says "/tracker-setup-tracker", or when start-session fails because config is missing.
+description: Configure time tracking for the tracker-* skills. Use when the user wants to set up time tracking, configure Toggl or Clockify, run initial setup, says "/tracker-setup-tracker", or when /tracker-start fails because config is missing.
 version: 1.6.0
 allowed-tools: Read, Write, Bash
 ---
 
 # Setup Tracker
 
-Configure session-tracker to connect to a time tracking service.
+Configure the tracker skills to connect to a time tracking service.
 
 ## Steps
 
@@ -90,4 +90,4 @@ Configure session-tracker to connect to a time tracking service.
    }
    ```
 
-9. Confirm completion in the configured language (default English): "Setup complete. Use /start to begin tracking."
+9. Confirm completion in the configured language (default English): "Setup complete. Use /tracker-start to begin tracking."

@@ -11,6 +11,14 @@ npx skills add kratocz/skills            # interactive: pick skills and agents
 npx skills add kratocz/skills -g --all   # everything, globally, all detected agents
 ```
 
+### Updating
+
+```bash
+npx skills update -g
+```
+
+Skills installed from GitHub are tracked by the CLI and update to the latest pushed version. Local-path installs (below) are not tracked — re-run the `add` after pulling or editing instead.
+
 ### Working on the skills
 
 Install from a working clone the same way — local installs are plain copies, so re-run after editing:

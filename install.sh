@@ -30,12 +30,23 @@ link_all "$HOME/.claude/skills"
 mkdir -p "$HOME/.gemini/antigravity-cli/rules"
 ln -sfn "$REPO/rules/kodex.md" "$HOME/.gemini/antigravity-cli/rules/kodex.md"
 
-# Prune broken symlinks left over from previous layouts
+# Prune broken symlinks left over from previous layouts of THIS repo only —
+# links pointing anywhere else are never deleted, merely reported, because
+# a broken target elsewhere may be temporary (renamed repo, unmounted disk)
+# and the link itself records where it pointed.
+OLD_REPO_HINT="antigravity-skills"   # former name of this repository
 for d in "$HOME/.agents/skills" "$HOME/.claude/skills" \
          "$HOME/.gemini/antigravity-cli/skills"; do
   [ -d "$d" ] || continue
   for l in "$d"/*; do
-    if [ -L "$l" ] && [ ! -e "$l" ]; then rm "$l"; echo "pruned: $l"; fi
+    { [ -L "$l" ] && [ ! -e "$l" ]; } || continue
+    target=$(readlink "$l")
+    case "$target" in
+      "$REPO"/*|*"/$OLD_REPO_HINT/"*)
+        rm "$l" && echo "pruned: $l -> $target" ;;
+      *)
+        echo "note: broken symlink left untouched: $l -> $target" ;;
+    esac
   done
 done
 

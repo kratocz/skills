@@ -2,7 +2,7 @@
 name: work-standup
 description: Standup recap — what you actually worked on since the last standup, pulled from Toggl time entries + git commits + GitHub reviews/merges and grouped into a report you can paste into the standup channel. Use when the user says "/work-standup", "standup", "stand-up status", "co jsem dělal od minula", "co jsem udělal od posledního stand-upu", "recap since last standup".
 argument-hint: [--since YYYY-MM-DD[THH:MM]] [--project <name>]
-version: 0.3.0
+version: 0.4.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__github__list_commits
 ---
 
@@ -69,6 +69,16 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
          weekend.
        - `"24h"` / `"48h"` / `"72h"`: now minus that many hours.
        - a bare `YYYY-MM-DD`: that calendar day at 00:00 local.
+       - `"prev_standup"`: the most recent scheduled stand-up **strictly
+         before now**, computed from `effective_config.standup.schedule`
+         (`days`: lowercase weekday abbreviations like `["tue", "thu"]`,
+         `time`: `"HH:MM"`, `timezone`: IANA name — interpret the time in
+         that zone). Walk back from today, at most 14 days: the first day
+         whose weekday is in `days` and whose stand-up time lies in the
+         past is the window start. Examples with Tue/Thu 11:30: run Tue
+         12:00 → this Tue 11:30; run Tue 09:00 → last Thu 11:30; run Mon
+         → last Thu 11:30. If `schedule` is missing or malformed, warn
+         and fall back to `"last_workday_noon"`.
      - If nothing is configured, default to `"last_workday_noon"`.
 
      Compute `last_workday_noon` on macOS:

@@ -26,3 +26,5 @@ A collection of portable [Agent Skills](https://agentskills.io/) — one directo
 ## Dev loop
 
 Edit in a working clone. Symlinked installs see changes immediately; copy installs refresh with `npx skills add . -g -y --all`. Verify discovery with `npx skills add . --list` (every skill must appear). When adding a skill, also add a row to the README table.
+
+**Changelog.** `CHANGELOG.md` is date-grouped and scope-prefixed (skill name, or `repo` for collection-wide changes). Every `feat`/`fix` commit — and any other change that alters an installed skill's behavior or config contract — adds a line under today's date in the same push; typo/refactor/chore noise stays out. There are no repo-level versions or tags; the complete per-skill history remains `git log -- skills/<name>/`.

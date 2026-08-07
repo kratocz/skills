@@ -1,6 +1,7 @@
 ---
 name: dockerize
 description: Add Docker to an existing project — generate a multi-stage production-ready Dockerfile, a .dockerignore tuned to the project type, and an optional docker-compose.yml with auto-detected services (Postgres for Django/Rails, Redis for cache-using Node, etc.). Use when the user says "/dockerize", "přidej Docker", "udělej mi Dockerfile", "containerize this project", "add docker-compose", or otherwise wants to add Docker artifacts to a project.
+license: MIT
 ---
 
 # dockerize — procedure

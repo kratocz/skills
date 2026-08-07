@@ -4,6 +4,7 @@ description: Start a time tracking session or timer. Use when the user says "/tr
 argument-hint: [task-description-or-url]
 version: 1.6.0
 allowed-tools: Read, Bash, WebFetch
+license: MIT
 ---
 
 # Start Session

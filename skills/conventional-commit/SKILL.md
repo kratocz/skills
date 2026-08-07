@@ -1,6 +1,7 @@
 ---
 name: conventional-commit
 description: Generate a Conventional Commits message (type, optional scope, subject, body for non-trivial diffs) from the currently staged diff and create the commit. Use when the user says "/conventional-commit", "commit staged changes", "udělej commit", "commitni to", "make a conventional commit", or asks for a Conventional Commits–style message for the current diff.
+license: MIT
 ---
 
 # conventional-commit — procedure

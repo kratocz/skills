@@ -3,6 +3,7 @@ name: work-end
 description: End-of-day summary — what got done, what carries over, what's new since /work-start. Use when the user says "/work-end", "konec dne", "shrnutí dne", "wrap up".
 version: 0.3.0
 allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks
+license: MIT
 ---
 
 # Work End

@@ -1,6 +1,7 @@
 ---
 name: launchpad-fix
 description: Find apps installed in /Applications that don't show up in macOS Launchpad, re-register them with Launch Services via lsregister, and reset the Dock. macOS only. Use when the user says "/launchpad-fix", "fix my Launchpad", "Launchpad mi nezobrazuje aplikaci", "some apps are missing from Launchpad", or asks for help with Launchpad/Launch Services issues.
+license: MIT
 ---
 
 # launchpad-fix — procedure

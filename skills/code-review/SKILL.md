@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Run a structured code review on a PR (or another target). Picks a CR title, starts timesheet logging, produces findings labelled C1/M1/m1/n1 with line references and fix snippets in `docs.local/code-reviews/`, runs verification passes, then posts inline + summary comments on GitHub. Use whenever the user asks you to review a PR, says "udělej CR", asks for a code review on a branch or diff, or otherwise wants structured review feedback.
+license: MIT
 ---
 
 # Code review workflow

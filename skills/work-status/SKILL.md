@@ -3,6 +3,7 @@ name: work-status
 description: Mid-day check — diff current state of volatile sources (GitHub PRs, Todoist completions) against the last /work-start snapshot. Use when the user says "/work-status", "what's new", "co se změnilo".
 version: 0.3.0
 allowed-tools: Read, Bash, ToolSearch, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
+license: MIT
 ---
 
 # Work Status

@@ -9,6 +9,7 @@ description: >-
   adversarially-verified answer. Skip for trivial mechanical tasks.
 metadata:
   language: en
+license: MIT
 ---
 
 # Thinking Codex

@@ -4,6 +4,7 @@ description: Fill gaps in time tracking from the current session's transcript, s
 argument-hint: [date]
 version: 1.6.0
 allowed-tools: Read, Bash
+license: MIT
 ---
 
 # Backfill Session Gaps

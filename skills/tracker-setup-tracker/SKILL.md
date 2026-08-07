@@ -3,6 +3,7 @@ name: tracker-setup-tracker
 description: Configure time tracking for the tracker-* skills. Use when the user wants to set up time tracking, configure Toggl or Clockify, run initial setup, says "/tracker-setup-tracker", or when /tracker-start fails because config is missing.
 version: 1.6.0
 allowed-tools: Read, Write, Bash
+license: MIT
 ---
 
 # Setup Tracker

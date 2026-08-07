@@ -1,6 +1,7 @@
 ---
 name: semver-release
 description: Cut a SemVer release driven by Conventional Commits since the last tag. Bumps the version in detected manifest files (package.json, pyproject.toml, Cargo.toml, .claude-plugin/plugin.json, …), updates CHANGELOG.md in Keep a Changelog format, commits, tags, pushes, and optionally creates a GitHub release. Use when the user says "/semver-release", "cut a release", "tag a new version", "vydej release", "udělej release", or asks to ship a new version.
+license: MIT
 ---
 
 # semver-release — procedure

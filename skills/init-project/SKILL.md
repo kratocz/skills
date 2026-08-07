@@ -1,6 +1,7 @@
 ---
 name: init-project
 description: Bootstrap a new project repository — creates .gitignore (with macOS junk + project-type-specific entries), AGENTS.md, CLAUDE.md, README.md, runs git init if needed, commits the baseline, and optionally creates a GitHub repo via gh CLI. Use when the user wants to initialize a new project, says "založ projekt", "inicializuj projekt", "bootstrap repo", "/init-project", or has just created/inherited a new directory and wants the standard baseline files in place.
+license: MIT
 ---
 
 # init-project — procedure

@@ -4,6 +4,7 @@ description: Log a retroactive (already finished) time entry to the configured t
 argument-hint: [time-window] [description]
 version: 1.6.0
 allowed-tools: Read, Bash
+license: MIT
 ---
 
 # Log Retroactive Entry

@@ -1,6 +1,7 @@
 ---
 name: mikrotik-audit
 description: Read-only security audit of Mikrotik RouterOS devices via SSH. Detects signs of compromise (VPNFilter IoCs, CVE-2018-14847, scheduler/script persistence, DNS hijacking, rogue users, exfiltration tunnels). Use when the user wants to check their Mikrotik routers for security issues, or when they provide a path to an audit output directory for analysis.
+license: MIT
 ---
 
 # Mikrotik security audit

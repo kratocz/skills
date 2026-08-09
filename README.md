@@ -55,6 +55,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [decision-analysis](./skills/decision-analysis) | Context-anchored decision analysis ending in a verdict: dated decision rules before research, sourced claims, durable layer vs dated snapshot | 2026-08-10 |
 | [skillify](./skills/skillify) | Analyze this session (and, on demand, past transcripts) for repeatable workflows worth capturing as a skill | 2026-07-17 |
 | [kodex](./skills/kodex) | Thinking codex — rules 0–15 + pre-delivery self-test; pair with the one-line always-on rule pointer | 2026-07-10 |
 | [dependency-diagrams](./skills/dependency-diagrams) | Generate task-dependency diagrams from any tracker (ClickUp, GitHub, Jira, etc.) as draw.io + SVG/PNG | 2026-07-10 |

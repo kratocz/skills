@@ -1,28 +1,81 @@
 ---
 name: launchpad-fix
-description: Find apps installed in /Applications that don't show up in macOS Launchpad, re-register them with Launch Services via lsregister, and reset the Dock. macOS only. Use when the user says "/launchpad-fix", "fix my Launchpad", "Launchpad mi nezobrazuje aplikaci", "some apps are missing from Launchpad", or asks for help with Launchpad/Launch Services issues.
+description: Triage and fix macOS apps not being offered when launching. Distinguishes a broken/empty Spotlight index (incl. a wedged mds daemon) from apps genuinely missing from Launch Services, fixes the right layer (killall mds / reindex vs lsregister), and resets Launchpad only where it still exists (macOS < 26). Use when the user says "/launchpad-fix", "macOS nenabízí aplikace", "Spotlight nenachází aplikace", "apps not showing in Spotlight", "fix my Launchpad", "Launchpad mi nezobrazuje aplikaci", "some apps are missing from Launchpad", or asks for help with app-launcher/Spotlight/Launch Services issues.
 license: MIT
 ---
 
 # launchpad-fix — procedure
 
-Re-register macOS apps missing from Launchpad. macOS-only skill. Follow these steps in order.
+Fix macOS apps that aren't offered when the user tries to launch them. macOS-only skill.
+
+Two different layers can cause this symptom, and they need opposite fixes:
+
+- **Spotlight index** — on macOS 26+ there is no Launchpad; apps are offered by Spotlight from the Data-volume index. A broken/empty index (or a wedged `mds` daemon) makes *all* apps disappear. `lsregister` does NOT help here.
+- **Launch Services** — individual apps missing from an otherwise healthy launcher. This is the `lsregister` case.
+
+Follow the steps in order — the triage in step 3 decides which path applies.
 
 ## 1. Verify macOS
 
 ```
-uname -s
+uname -s && sw_vers -productVersion
 ```
 
-If the result is not `Darwin`, stop immediately and tell the user this skill only works on macOS — the underlying tooling (`lsregister`, `mdfind`, `defaults`, the Dock) is Apple-specific.
+If not `Darwin`, stop — the tooling (`mdfind`, `lsregister`, `mdutil`) is Apple-specific. Remember the version: the Launchpad/Dock-reset step at the end only applies below macOS 26.
 
-## 2. Find missing apps
+## 2. System health FIRST
 
-The diagnostic compares two sources:
-- **What's installed:** `.app` bundles directly under `/Applications`.
-- **What Spotlight knows about:** apps Launch Services has indexed as Applications.
+An overloaded machine cannot finish (re)indexing — diagnosing Spotlight on a starved system wastes hours chasing the wrong cause. Check:
 
-Run this pipeline (covers both English and Czech localization of `kMDItemKind`):
+```
+uptime
+ps -Ao stat | grep -c '^Z'
+sysctl -n vm.swapusage
+```
+
+Red flags: load per core >> 1, hundreds of zombies, swap nearly full. If present, fix capacity first and only then continue:
+
+- zombies → find the parent: `ps -Ao ppid,stat | awk '$2 ~ /^Z/ {print $1}' | sort | uniq -c | sort -rn`, then `kill <PPID>` (launchd reaps the orphans in seconds; a known repeat offender is Pioneer `FwUpdateManagerd`, which runs under the user — no sudo needed)
+- full swap / no free RAM → close browsers and other heavy apps
+- nearly full disk → free space; note that deleted space stays held by APFS local snapshots until `sudo tmutil deletelocalsnapshots /`
+
+## 3. Triage: which layer is broken?
+
+```
+mdfind -count -onlyin /Applications "kMDItemFSSize > 0"
+mdfind -count -onlyin /System "kMDItemFSSize > 0"
+```
+
+The `/System` query is the control: that volume is read-only and its index survives most breakage.
+
+- **/Applications ≈ 0, /System returns hundreds** → the Data-volume index is empty/broken → **Spotlight path (step 4)**.
+- **Both ≈ 0** → `mds` isn't answering at all → **Spotlight path (step 4)**.
+- **/Applications returns tens of thousands** → index is healthy; the complaint is about specific apps → **Launch Services path (step 5)**.
+
+The query counts *files*, not apps, so calibrate it against the disk rather than against the number of installed apps: `find /Applications -maxdepth 4 | wc -l` finishes in seconds and gives the order of magnitude a healthy index should be reporting. An index answering a few hundred while the disk holds tens of thousands is broken, not healthy.
+
+## 4. Spotlight path
+
+Try the cheapest fix first and verify after each attempt (`mdfind -count -onlyin /Applications ...` should start growing within ~1 minute — app-priority workers `mdworker-application` run first):
+
+1. **Restart the daemon:** `sudo killall mds` (launchd respawns it; `launchctl kickstart` is blocked by SIP). A daemon wedged by days of overload is the most common cause: `mdutil -E` "succeeds", workers spawn and die, the log stays silent, the index stays empty — all commands go to a brain-dead server. A fresh `mds` typically indexes all apps within a minute.
+2. **If still dead — rebuild the index:** `sudo mdutil -E /System/Volumes/Data`.
+3. **If still dead — recreate the store:** `sudo mdutil -a -i off && sudo rm -rf /System/Volumes/Data/.Spotlight-V100 && sudo mdutil -a -i on`, then `sudo killall mds` once more.
+4. **If still dead** → reboot; if even that fails, check the filesystem (Disk Utility First Aid).
+
+False signals to ignore:
+
+- `mdimport -i` fails silently when `mds` is wedged (exits 0, writes nothing).
+- The mtime of `/System/Volumes/Data/.Spotlight-V100` itself does not change even while contents are being rewritten — it is not a progress indicator.
+- Free-space consumption is not a reliable progress indicator either.
+
+Full-disk-volume file indexing takes hours afterwards, but apps appear in the first minute — the user's original problem is solved long before the index completes.
+
+Verification: re-run the step-3 query (it should climb back into the tens of thousands) and spot-check `mdfind "kMDItemFSName == '<App>.app'"`.
+
+## 5. Launch Services path (healthy index only)
+
+Find apps present on disk but unknown to Launch Services (covers English and Czech localization of `kMDItemKind`):
 
 ```
 comm -23 \
@@ -32,55 +85,30 @@ comm -23 \
       | sort -u)
 ```
 
-The output is the list of app bundle names that exist on disk but Launch Services doesn't recognize — these are the ones Launchpad can't show.
+Symlinks in `/Applications` are this pipeline's blind spot: it matches `ls` names against `basename` of the paths `mdfind` returns, and for a symlink the two need not agree. Observed on macOS 26.6: `Safari.app` (a symlink into the Cryptexes) does come back as `/Applications/Safari.app` and matches fine, but one whose name differs from its target bundle (`GPT4All.app → gpt4all/bin/gpt4all.app`) has no such guarantee. Check anything suspicious with `ls -l /Applications/<App>.app` before acting on it — registering a symlink is a no-op at best.
 
-Show the user the list. If it's empty, tell them Launchpad already knows about every app in `/Applications` and stop — there's nothing to fix.
+Interpreting the result:
 
-Tip: if the system is in a third language (German, French, …), the `kMDItemKind` value will be that language's word for "Application". If the diff returns *everything* in `/Applications`, that's the symptom — ask the user what `kMDItemKind` value to use (they can find it with `mdls -name kMDItemKind /Applications/Safari.app`), and re-run the comparison with that value added to the `mdfind` query.
+- **Empty** → Launch Services knows every app; nothing to fix.
+- **A few apps** → genuine registration gaps; continue below.
+- **Everything (or nearly everything)** → NOT hundreds of unregistered apps. Either the Spotlight index is dead after all (go back to step 3/4) or, if the index is provably healthy, the system runs in a third language — find the right `kMDItemKind` value via `mdls -name kMDItemKind /Applications/Safari.app` and re-run with it added.
 
-## 3. Ask which apps to register
-
-Show the missing apps list. Then ask via `AskUserQuestion`:
-
-- `Register all <N> apps` (recommended)
-- `Pick a subset` — if there are many apps and the user wants to be selective, drop out and let them list which ones to register, or ask one app at a time if the list is short
-- `Cancel`
-
-For the "Pick a subset" path with more than ~5 apps, ask the user to list which apps to register (by index or name) rather than building a dozen `AskUserQuestion` calls.
-
-## 4. Re-register each selected app
-
-For each selected app, run:
+Show the list and ask via `AskUserQuestion`: register all / pick a subset / cancel. Then for each selected app:
 
 ```
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/<AppName>.app"
 ```
 
-Quote the path — app names commonly contain spaces. `lsregister` is silent on success and exits non-zero on failure. Collect any failures and surface them at the end (don't abort the whole batch on a single failure — keep going through the rest).
+Quote the path (spaces are common). `lsregister` is silent on success. Collect failures and report them at the end (a permission failure → suggest retrying that one with `sudo`); don't abort the batch.
 
-No `sudo` needed for user-readable apps in `/Applications`. If a registration fails with a permission error, mention that the user could retry with `sudo` for that specific app.
+## 6. Launchpad reset — macOS < 26 only
 
-## 5. Ask before resetting the Dock
-
-The reset closes and reopens the Dock briefly (≤ 1 second visual blip; no data loss, but any open Stack/Mission Control state is dismissed). Ask via `AskUserQuestion`:
-
-- `Reset Launchpad now (closes and reopens Dock briefly)` (recommended)
-- `Skip reset — I'll do it later` — useful if the user is in the middle of a presentation/screen recording
-
-## 6. Reset Launchpad
-
-If approved:
+macOS 26 removed Launchpad (apps are offered by Spotlight), so this step is a no-op there — skip it and say so. On older macOS, ask first via `AskUserQuestion` (the Dock briefly restarts; ≤1 s visual blip):
 
 ```
 defaults write com.apple.dock ResetLaunchPad -bool true && killall Dock
 ```
 
-`killall Dock` causes launchd to immediately restart the Dock with the `ResetLaunchPad` flag, which rebuilds the Launchpad layout from Launch Services. The flag is consumed on the next Dock launch — no cleanup needed.
-
 ## 7. Summary
 
-Tell the user:
-- How many apps were re-registered (and which, if a small number)
-- Any registration failures (with the error and a suggested fix — usually `sudo` or checking the app bundle isn't damaged)
-- Whether the Dock was reset
-- That Launchpad will be empty for a moment after the reset, then repopulate (no action needed)
+Tell the user: which layer was broken and what fixed it; how many apps were re-registered (Launch Services path) or how the index was revived (Spotlight path); any failures with suggested fixes; whether a Dock reset ran; and — on the Spotlight path — that full file indexing continues in the background for hours while apps already work.

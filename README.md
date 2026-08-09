@@ -62,7 +62,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 | [retro](./skills/retro) | Session retrospective — migrate memory facts to AGENTS.md, capture session learnings, audit docs | 2026-06-10 |
 | [work-*](./skills/work-start) | Work management suite: morning briefing (`work-start`), mid-day checks (`work-status`), end-of-day wrap up (`work-end`), standup recap, timesheet reconcile, setup | 2026-06-03 |
 | [dockerize](./skills/dockerize) | Add Docker to a project: multi-stage Dockerfile, .dockerignore, optional docker-compose.yml | 2026-06-01 |
-| [launchpad-fix](./skills/launchpad-fix) | *(macOS only)* Re-register apps missing from Launchpad with Launch Services and reset the Dock | 2026-06-01 |
+| [launchpad-fix](./skills/launchpad-fix) | *(macOS only)* Triage apps that won't launch — broken Spotlight index vs. missing Launch Services registration — and fix the right layer | 2026-06-01 |
 | [semver-release](./skills/semver-release) | Cut a semver release from Conventional Commits: bump version, update CHANGELOG.md, tag, push | 2026-06-01 |
 | [conventional-commit](./skills/conventional-commit) | Create a Conventional Commits message from the staged diff | 2026-06-01 |
 | [init-project](./skills/init-project) | Bootstrap a new project: .gitignore, AGENTS.md, CLAUDE.md, README.md, initial commit | 2026-05-30 |

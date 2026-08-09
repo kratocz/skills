@@ -61,7 +61,7 @@ Configure the tracker skills to connect to a time tracking service.
    mkdir -p ~/.claude/plugins/session-tracker
    ```
 
-   Then use the Write tool to write the config file:
+   Then write the config file:
 
    **Toggl:**
    ```json

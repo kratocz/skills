@@ -93,7 +93,7 @@ Interpreting the result:
 - **A few apps** → genuine registration gaps; continue below.
 - **Everything (or nearly everything)** → NOT hundreds of unregistered apps. Either the Spotlight index is dead after all (go back to step 3/4) or, if the index is provably healthy, the system runs in a third language — find the right `kMDItemKind` value via `mdls -name kMDItemKind /Applications/Safari.app` and re-run with it added.
 
-Show the list and ask via `AskUserQuestion`: register all / pick a subset / cancel. Then for each selected app:
+Show the list and ask the user to choose: register all / pick a subset / cancel. Then for each selected app:
 
 ```
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/<AppName>.app"
@@ -103,7 +103,7 @@ Quote the path (spaces are common). `lsregister` is silent on success. Collect f
 
 ## 6. Launchpad reset — macOS < 26 only
 
-macOS 26 removed Launchpad (apps are offered by Spotlight), so this step is a no-op there — skip it and say so. On older macOS, ask first via `AskUserQuestion` (the Dock briefly restarts; ≤1 s visual blip):
+macOS 26 removed Launchpad (apps are offered by Spotlight), so this step is a no-op there — skip it and say so. On older macOS, ask first (the Dock briefly restarts; ≤1 s visual blip):
 
 ```
 defaults write com.apple.dock ResetLaunchPad -bool true && killall Dock

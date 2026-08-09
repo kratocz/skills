@@ -14,8 +14,7 @@ backend — unlike `/tracker-start`, no live timer is involved.
 
 ## Steps
 
-1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json` using
-   the Read tool.
+1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json`.
    - If the file doesn't exist: "No configuration found. Please run
      /tracker-setup-tracker first." Then stop.
    - Read `config.language` (default `"en"`). Phrase all user-facing text in

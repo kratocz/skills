@@ -245,9 +245,9 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
      anything the user's per-project notes flag as pending. This is the
      forward hook the standup usually ends on.
 
-7. **Offer to copy / save** (optional): after printing, ask via
-   AskUserQuestion whether to also (a) copy the raw markdown to the clipboard
-   (`pbcopy` on macOS), or (b) do nothing. Do not post anywhere automatically —
+7. **Offer to copy / save** (optional): after printing, ask whether to also
+   (a) copy the raw markdown to the clipboard (`pbcopy` on macOS), or (b) do
+   nothing. Do not post anywhere automatically —
    posting to a channel is the user's call.
 
 ## Edge cases

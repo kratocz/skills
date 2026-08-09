@@ -33,8 +33,7 @@ automatically: the flow is always **propose → confirm → write**.
 
 ## Steps
 
-1. **Load effective config.** Read `~/.claude/plugins/work/config.json` with the
-   Read tool.
+1. **Load effective config.** Read `~/.claude/plugins/work/config.json`.
    - If missing: stop with (in the configured language) "Žádná konfigurace work
      skillů. Spusť `/work-setup`." / "No work skills config. Run `/work-setup`."
    - Parse it. Read `config.language` (default `cs`, fallback `en`); phrase all
@@ -300,8 +299,8 @@ automatically: the flow is always **propose → confirm → write**.
    Souhrn: 12 návrhů (8.5 h) · 5 pokrytých skryto · 1 bez času
    ```
 
-   Then approve **in batches** via `AskUserQuestion`, one group (project/day) at
-   a time, options: **Vše / Vybrat / Přeskočit / Upravit časy**.
+   Then approve **in batches**, one group (project/day) at a time, with the
+   options: **Vše / Vybrat / Přeskočit / Upravit časy**.
    - **Vybrat** → list the group's items so the user picks a subset.
    - **Upravit** → let the user overwrite `minutes` (and optionally
      `project`/`title`) on a chosen item.
@@ -314,11 +313,10 @@ automatically: the flow is always **propose → confirm → write**.
      task). So for each block the user approves for a ClickUp write, prompt them
      to pick the target ClickUp task — offer a shortlist from
      `clickup_filter_tasks` (filtered by `assignee=<sources.clickup.member_id>`,
-     active) via `AskUserQuestion`,
-     or let them paste a task ID / custom ID (e.g. `DEV-1234`). Store it as the
-     block's `clickup_task_id`. A block **CANNOT** be approved for a ClickUp
-     write without a `clickup_task_id`. (Toggl writes need no task — this gate
-     applies only to the ClickUp sink.)
+     active), or let them paste a task ID / custom ID (e.g. `DEV-1234`). Store
+     it as the block's `clickup_task_id`. A block **CANNOT** be approved for a
+     ClickUp write without a `clickup_task_id`. (Toggl writes need no task —
+     this gate applies only to the ClickUp sink.)
    - Choosing **Vše** approves every item in the group but does **not**
      bypass the gates above: any gated item (a `?` duration, a `project?`
      mark, or a required `clickup_task_id`) still forces its per-item prompt

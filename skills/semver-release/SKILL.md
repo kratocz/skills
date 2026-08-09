@@ -6,7 +6,7 @@ license: MIT
 
 # semver-release — procedure
 
-Cut a SemVer release from Conventional Commits. Every interactive choice goes through `AskUserQuestion` so the user can override. Never bypass hooks (`--no-verify`); never force-push.
+Cut a SemVer release from Conventional Commits. Every interactive choice is put to the user as an explicit set of options so they can override. Never bypass hooks (`--no-verify`); never force-push.
 
 Follow these steps in order.
 
@@ -65,7 +65,7 @@ Decision tree:
   - Else (only `chore`/`docs`/`test`/`build`/`ci`/`style`) → **patch** (and warn the user — usually you don't release pure infra commits)
 
 - **If current version < 1.0.0 (pre-1.0):**
-  - Pre-1.0 SemVer is ambiguous; ask the user via `AskUserQuestion`:
+  - Pre-1.0 SemVer is ambiguous; ask the user to choose:
     - Option 1: `Treat feat as minor, BREAKING as major (post-1.0 rules)` — recommended for projects close to 1.0
     - Option 2: `Treat feat as patch, BREAKING as minor (stay in 0.x experimental)` — recommended for early-stage
     - Option 3: `Custom — let me pick the bump kind directly`
@@ -85,7 +85,7 @@ Reason: 3 feat commits since v0.5.3
 (also: 2 fix, 1 chore — see CHANGELOG entry below)
 ```
 
-Then ask via `AskUserQuestion`:
+Then ask the user to choose:
 - `Accept proposed version (X.Y.Z)` (recommended)
 - `Bump differently — major` (offer the major version)
 - `Bump differently — minor` (offer the minor version)
@@ -148,7 +148,7 @@ Examples of exact patterns to match:
 - `Cargo.toml`: `version = "<old>"` (inside `[package]`) → `version = "<new>"`
 - `.claude-plugin/plugin.json`: `"version": "<old>"` → `"version": "<new>"`
 
-Show the user the list of files about to be updated and ask via `AskUserQuestion`:
+Show the user the list of files about to be updated and ask them to choose:
 - `Update all detected files` (recommended)
 - `Pick a subset` — list each file as a yes/no
 - `Cancel`
@@ -165,7 +165,7 @@ gh run list --branch <branch> --limit 5 --json headSha,status,conclusion,workflo
 
 Filter to runs whose `headSha` matches `git rev-parse HEAD`. Classify:
 - All `conclusion: success` → green, continue.
-- Any `status: in_progress` or `queued` → pending, **warn the user** via `AskUserQuestion`:
+- Any `status: in_progress` or `queued` → pending, **warn the user** and ask them to choose:
   - `Wait for CI to finish, then re-run /semver-release` (recommended)
   - `Release anyway — I know what I'm doing`
   - `Cancel`
@@ -189,7 +189,7 @@ About to:
   • Push commit + tag to origin/<branch>
 ```
 
-Ask via `AskUserQuestion`:
+Ask the user to choose:
 - `Do it` (recommended)
 - `Stop after commit — I'll tag/push manually`
 - `Cancel`
@@ -214,7 +214,7 @@ Never use `--no-verify`. If a hook fails, stop, show the user the hook output, s
 
 ## 10. Push
 
-Ask via `AskUserQuestion` (default yes):
+Ask the user to choose (default yes):
 - `Push commit and tag to origin/<branch>` (recommended)
 - `Don't push — I'll do it myself`
 
@@ -226,7 +226,7 @@ git push origin <branch> && git push origin vX.Y.Z
 
 ## 11. GitHub release
 
-Ask via `AskUserQuestion`:
+Ask the user to choose:
 - `Create a GitHub release with the changelog entry as notes` (recommended)
 - `Skip — just leave the tag`
 

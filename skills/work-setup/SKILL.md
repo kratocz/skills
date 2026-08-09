@@ -40,7 +40,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
 3. **Per-source Q&A** — for each source in `detected_sources`:
 
-   Use AskUserQuestion to ask "Zapnout zdroj `<source_name>` ve work briefingu?" (or English equivalent based on language setting). Options:
+   Ask "Zapnout zdroj `<source_name>` ve work briefingu?" (or English equivalent based on language setting) and offer the options:
    - "Ano (Recommended)" / "Yes (Recommended)" — `enabled: true`
    - "Ne" / "No" — `enabled: false`
 
@@ -48,7 +48,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    **GitHub-specific follow-up:** if user enables `github`, ask for their GitHub username (free-text). Pre-fill with `existing_config.sources.github.username` in edit mode, or with the output of `gh api user --jq .login 2>/dev/null` if `gh` CLI is available (best-effort, don't fail if it errors). Store as `sources.github.username`.
 
-   **ClickUp-specific follow-up:** if user enables `clickup`, the skills need the user's member ID to filter `assignee=me`. Call `mcp__plugin_ntit-common_clickup__clickup_get_workspace_members` (no args) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, list the members with AskUserQuestion (max 4 options — if more, list inline with numbers and ask via plain question) and ask the user to pick. Store as `sources.clickup.member_id`.
+   **ClickUp-specific follow-up:** if user enables `clickup`, the skills need the user's member ID to filter `assignee=me`. Call `mcp__plugin_ntit-common_clickup__clickup_get_workspace_members` (no args) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, offer the members as options for the user to pick from (at most four — if there are more, list them inline with numbers and let them pick by number). Store as `sources.clickup.member_id`.
 
    **Default filter sets** for each source (used unless user later edits the JSON manually — no per-source filter UI in v1):
 
@@ -67,7 +67,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
 4. **Optional: timesheet reconciliation** (`/work-reconcile`):
 
-   Ask via AskUserQuestion: "Nastavit dorovnávání výkazů (`/work-reconcile`)?" / "Configure timesheet reconciliation (`/work-reconcile`)?". Options:
+   Ask "Nastavit dorovnávání výkazů (`/work-reconcile`)?" / "Configure timesheet reconciliation (`/work-reconcile`)?" and offer the options:
    - "Ne, použít výchozí (Recommended)" / "No, use defaults (Recommended)" — skip; write nothing under `reconcile` (the skill falls back to its built-in defaults at runtime).
    - "Ano, nastavit" / "Yes, configure"
 
@@ -75,14 +75,14 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    If the user picks "Ano"/"Yes":
 
-   Ask via AskUserQuestion: "Kam zapisovat dorovnaný čas?" / "Where should reconciled time be written?". Options:
+   Ask "Kam zapisovat dorovnaný čas?" / "Where should reconciled time be written?" and offer the options:
    - "Toggl (Recommended)" — `sink.target: "toggl"`
    - "ClickUp" — `sink.target: "clickup"`
    - "Obojí" / "Both" — `sink.target: "both"`
 
    In edit mode, prefill the option matching `existing_config.reconcile.sink.target` (default `toggl`).
 
-   Ask via AskUserQuestion: "Jaké výchozí období dorovnávat?" / "What's the default reconcile window?". Options:
+   Ask "Jaké výchozí období dorovnávat?" / "What's the default reconcile window?" and offer the options:
    - "Minulý měsíc (Recommended)" / "Last month (Recommended)" — `default_window: "last_month"`
    - "Minulý týden" / "Last week" — `default_window: "last_week"`
 
@@ -96,7 +96,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
 5. **Scoring config**:
 
-   Ask via AskUserQuestion: "Použít výchozí scoring váhy (priority=40, due=30, age=15, type=15)?" / "Use default scoring weights (priority=40, due=30, age=15, type=15)?"
+   Ask "Použít výchozí scoring váhy (priority=40, due=30, age=15, type=15)?" / "Use default scoring weights (priority=40, due=30, age=15, type=15)?"
 
    - "Ano (Recommended)" — store defaults
    - "Vlastní hodnoty" — prompt for each weight separately (priority, due_proximity, age, type_assignment). Each must be a non-negative integer. Validate that they sum to 100 (if not, tell the user the actual sum and re-ask). Store as `scoring.weights`.
@@ -141,7 +141,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    If step 4 collected a `reconcile` block, merge it in as a top-level `reconcile` key alongside `sources` and `scoring`. If step 4 was skipped, omit `reconcile` entirely — do not write an empty object.
 
-   Use the Write tool to write the JSON to `~/.claude/plugins/work/config.json` with 2-space indentation.
+   Write the JSON to `~/.claude/plugins/work/config.json` with 2-space indentation.
 
 8. **Optional per-project override**:
 
@@ -152,7 +152,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    The project memory dir follows the harness convention: `<harness-home>/projects/<slug>/memory/`, where `<harness-home>` is `~/.claude` (Claude Code) or `~/.gemini/antigravity-cli` (Antigravity CLI) — use the first that exists — and `<slug>` is the absolute path of the current working directory with `/` replaced by `-` and a leading `-` (so `/Users/krato/IdeaProjects/foo` becomes `-Users-krato-IdeaProjects-foo`).
 
-   Ask via AskUserQuestion: "Chceš uložit per-project override pro projekt `<basename>`?" Options:
+   Ask "Chceš uložit per-project override pro projekt `<basename>`?" and offer the options:
    - "Ne, jen globální config (Recommended)" — skip
    - "Ano, uložit override soubor"
 
@@ -170,7 +170,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    Ask the user (free text): "Co chceš v tomto projektu změnit oproti globálnímu configu? Napiš jednou větou (např. 'vypnout clickup, jen github repo X')." Use the answer as a hint for which fields to override.
 
-   Then ask via AskUserQuestion for the specific override (this v1 supports only a small set):
+   Then ask for the specific override, offering these options (this v1 supports only a small set):
    - "Vypnout některé zdroje v tomto projektu" — multi-select from `[todoist, github, clickup, google_calendar]`, the selected ones get `enabled: false` in the override.
    - "Pouze ze konkrétních GitHub repos" — free text, comma-separated owner/repo list. Adds `sources.github.repos` array.
    - "Hotovo — nic dalšího" — proceed to write.

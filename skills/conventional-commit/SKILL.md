@@ -15,7 +15,7 @@ Follow these steps in order.
 Run `git status --short` and `git diff --cached --stat`.
 
 - If **something is staged** → continue with step 2.
-- If **nothing is staged** → ask the user via `AskUserQuestion`:
+- If **nothing is staged** → ask the user to choose:
   - `Stage all changes (git add -A) and continue` (note: will include untracked files — call it out if there are any)
   - `Stage by patch (git add -p)` — drop out of the skill and tell the user to run it interactively
   - `Cancel` — stop here
@@ -61,7 +61,7 @@ Format: `<type>(<scope>)?: <subject>`
   - All changes under one package in a monorepo (e.g. `packages/foo/…`) → propose the package name.
   - Cross-cutting changes → propose `none`.
 
-Then ask the user via `AskUserQuestion` to confirm the scope:
+Then ask the user to confirm the scope:
 - Option 1: Use the proposed scope (e.g. `auth`)
 - Option 2: No scope
 - Option 3: Other (user types their own)
@@ -94,7 +94,7 @@ BREAKING CHANGE: <description of what breaks and how to migrate>
 
 ## 6. Show the final message and confirm
 
-Show the user the full proposed message in a fenced code block. Then ask via `AskUserQuestion`:
+Show the user the full proposed message in a fenced code block. Then ask the user to choose:
 
 - `Commit as proposed` (recommended)
 - `Edit message` — drop out and let the user run `git commit` themselves with their own message

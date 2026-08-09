@@ -41,24 +41,42 @@ Red flags: load per core >> 1, hundreds of zombies, swap nearly full. If present
 
 ## 3. Triage: which layer is broken?
 
+Apps and files are indexed independently and fail independently, so measure both.
+
+**Apps** — this is what the launcher actually offers:
+
 ```
-mdfind -count -onlyin /Applications "kMDItemFSSize > 0"
-mdfind -count -onlyin /System "kMDItemFSSize > 0"
+mdfind -count "kMDItemContentType == 'com.apple.application-bundle'"
+mdfind -count -onlyin /Applications "kMDItemContentType == 'com.apple.application-bundle'"
 ```
 
-The `/System` query is the control: that volume is read-only and its index survives most breakage.
+Compare the second number against `ls /Applications | grep -c '\.app$'`. They will not match exactly — the index also counts `.app` bundles nested inside other folders, so it usually lands slightly higher. Same ballpark means the app index is fine.
 
-- **/Applications ≈ 0, /System returns hundreds** → the Data-volume index is empty/broken → **Spotlight path (step 4)**.
-- **Both ≈ 0** → `mds` isn't answering at all → **Spotlight path (step 4)**.
-- **/Applications returns tens of thousands** → index is healthy; the complaint is about specific apps → **Launch Services path (step 5)**.
+**Files** — compare a folder you know against the index:
 
-The query counts *files*, not apps, so calibrate it against the disk rather than against the number of installed apps: `find /Applications -maxdepth 4 | wc -l` finishes in seconds and gives the order of magnitude a healthy index should be reporting. An index answering a few hundred while the disk holds tens of thousands is broken, not healthy.
+```
+find ~/Downloads -type f | wc -l
+mdfind -count -onlyin ~/Downloads "kMDItemFSSize > 0"
+```
+
+**Do not run the file comparison against `/Applications`.** `kMDItemFSSize > 0` skips directories — and an `.app` bundle *is* a directory — while Spotlight never indexes bundle interiors as separate items. The count there measures stray log files and icons sitting loose in `/Applications`, not index health. Measured on a healthy macOS 26.6 machine: 164 hits against 35 348 entries from `find -maxdepth 4`. That ratio looks catastrophic and means nothing.
+
+Routing:
+
+- **App count ≈ 0** → the app index is gone → **Spotlight path (step 4)**.
+- **App count healthy, specific apps missing** → **Launch Services path (step 5)**.
+- **App count healthy, file count far below the disk** → the file index is incomplete → step 4 applies, but rule out the two false alarms below first.
+
+Two things look like a broken file index and are not:
+
+- **iCloud placeholders.** A file synced to iCloud Drive and evicted locally is `dataless` — its body is not on disk, so there is nothing to index. `stat -f '%Sf' <file>` prints `compressed,dataless`, and `mdls` returns `(null)` for every attribute including `kMDItemFSName`. Under Desktop & Documents sync a folder can be mostly placeholders; near a full disk macOS evicts aggressively and large files go first. Measured on one such machine: 156 of 335 PDFs in `~/Documents` were placeholders.
+- **Spotlight Privacy exclusions.** System Settings → Spotlight → Search Privacy. An excluded folder is not a broken index.
 
 ## 4. Spotlight path
 
-Try the cheapest fix first and verify after each attempt (`mdfind -count -onlyin /Applications ...` should start growing within ~1 minute — app-priority workers `mdworker-application` run first):
+Try the cheapest fix first and verify after each attempt (the step-3 app count should start growing within ~1 minute — app-priority workers `mdworker-application` run first):
 
-1. **Restart the daemon:** `sudo killall mds` (launchd respawns it; `launchctl kickstart` is blocked by SIP). A daemon wedged by days of overload is the most common cause: `mdutil -E` "succeeds", workers spawn and die, the log stays silent, the index stays empty — all commands go to a brain-dead server. A fresh `mds` typically indexes all apps within a minute.
+1. **Restart the daemon:** `sudo killall mds` (launchd respawns it; `launchctl kickstart` is blocked by SIP). First confirm it is actually wedged rather than merely slow: `ps -Ao pid,etime,%cpu,comm | grep -E 'mds|mdworker'` — live `mdworker_shared` processes a few minutes old and a `mdfind` that returns *some* hits mean the daemon is answering and indexing, just not keeping up, in which case restarting it only throws away in-flight work. A genuinely wedged daemon: `mdutil -E` "succeeds", workers spawn and die, the log stays silent, the index stays empty — all commands go to a brain-dead server. A fresh `mds` typically indexes all apps within a minute.
 2. **If still dead — rebuild the index:** `sudo mdutil -E /System/Volumes/Data`.
 3. **If still dead — recreate the store:** `sudo mdutil -a -i off && sudo rm -rf /System/Volumes/Data/.Spotlight-V100 && sudo mdutil -a -i on`, then `sudo killall mds` once more.
 4. **If still dead** → reboot; if even that fails, check the filesystem (Disk Utility First Aid).
@@ -71,7 +89,7 @@ False signals to ignore:
 
 Full-disk-volume file indexing takes hours afterwards, but apps appear in the first minute — the user's original problem is solved long before the index completes.
 
-Verification: re-run the step-3 query (it should climb back into the tens of thousands) and spot-check `mdfind "kMDItemFSName == '<App>.app'"`.
+Verification: re-run the step-3 queries — the app count should come back to roughly the number of installed apps — and spot-check `mdfind "kMDItemFSName == '<App>.app'"`.
 
 ## 5. Launch Services path (healthy index only)
 

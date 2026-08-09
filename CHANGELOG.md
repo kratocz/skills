@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-10
+
+### Added
+
+- **decision-analysis:** methodology for a context-anchored decision analysis that ends in a verdict — decision rules written and dated before any evidence arrives, every load-bearing claim sourced and dated, and the durable layer kept separate from a perishable dated snapshot.
+
 ## 2026-08-07
 
 ### Added

@@ -102,8 +102,9 @@ phrases, rough steps, a placement recommendation, and the evidence.
 ## Phase 2 — Interactive approval and creation
 
 **Approval (skip in targeted mode — the single candidate is already chosen):**
-show the numbered candidates, then use AskUserQuestion (`multiSelect: true`,
-max 4 options per question — batch into several questions if there are more).
+show the numbered candidates, then let the user approve any number of them
+(offer at most four options per question — batch into several questions if
+there are more).
 Each option label is the candidate name; the description states what the skill
 would do and where it would live.
 

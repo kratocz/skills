@@ -91,16 +91,16 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
    If it exists:
    - Read the config to find the session log directory (`session_log_dir` field, or default `~/Documents/claude-sessions/`).
-   - Ask via AskUserQuestion: "Uložit dnešní souhrn do session logu?" Options:
+   - Ask "Uložit dnešní souhrn do session logu?" and offer the options:
      - "Ano (append k dnešnímu logu)"
      - "Ne, jen vypsat"
    - If "Ano":
      - Determine today's log file name (convention: `<dir>/YYYY-MM-DD.md`).
-     - Use the Read tool to check if it exists. If yes, use the Write tool only if you can append (which Write doesn't support directly — use Bash `cat >> file`):
+     - Check whether it exists. If it does, **append** — a plain file write would overwrite the day's earlier entries, so shell out:
        ```bash
        printf '\n\n## work-end summary\n\n%s\n' '<rendered summary above>' >> '<path>'
        ```
-     - If the file doesn't exist, use Write to create it with just the summary.
+     - If the file doesn't exist, create it with just the summary.
 
    Confirm: "Uloženo do <path>."
 

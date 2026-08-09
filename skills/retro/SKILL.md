@@ -106,7 +106,7 @@ When presenting area-C findings in Phase 2, **separate those caused by this
 session's work from incidental staleness the audit happened to surface**. The
 session-related fixes are the retro's actual output; the incidental ones are
 general housekeeping the user may want to defer or skip. Group them under
-distinct headings (or distinct AskUserQuestion questions) and label the
+distinct headings (or distinct approval questions) and label the
 incidental set as "unrelated to this session" so the user can tell learning
 from cleanup.
 
@@ -205,8 +205,9 @@ not a goal here. The aim is to *remember* the boundary, not remove it.
 Present candidate items grouped by area, then approve and apply:
 
 1. Show the full numbered list (titles + one-line rationale each).
-2. Per area with items, use AskUserQuestion (`multiSelect: true`, max 4
-   options per question — batch into several questions if an area has more).
+2. Per area with items, let the user approve any number of them (offer at
+   most four options per question — batch into several questions if an area
+   has more).
    Each option label is the item title; the description states exactly what
    will change.
 3. Apply each approved item immediately, in list order:

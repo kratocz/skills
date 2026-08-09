@@ -8,7 +8,7 @@ license: MIT
 
 Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `CLAUDE.md` / `README.md` (tell the user it already exists).
 
-Follow these steps in order. Where a step calls for a decision the user should make, ask via `AskUserQuestion`.
+Follow these steps in order. Where a step calls for a decision the user should make, ask them — as an explicit set of options wherever the answer is a choice.
 
 ## 1. Survey the directory
 
@@ -149,7 +149,7 @@ Check the remote: `git remote -v`.
 
 **If `origin` already exists:** confirm with the user whether to push (`git push -u origin <branch>`), then push.
 
-**If no remote exists:** ask the user, in one `AskUserQuestion` call with three questions:
+**If no remote exists:** ask the user three questions in one go:
 
 1. **Create a GitHub repo for this project?** — `Yes (recommended) / No, leave it local for now`.
 2. **Repo name** — offer the basename of `pwd` as the default; let the user override.

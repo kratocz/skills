@@ -177,7 +177,7 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
 For other types (PHP, Ruby, Elixir, .NET) write an analogous two-stage Dockerfile. Always: pinned base image, dependency layer separate from source layer (so rebuilds are fast), non-root `USER`, only the runtime artifacts in the final stage, an `EXPOSE` matching the detected port.
 
-After writing the Dockerfile, show the user a `head -20` preview and ask via `AskUserQuestion` whether to keep it or adjust the base image / port / start command.
+After writing the Dockerfile, show the user a `head -20` preview and ask whether to keep it or adjust the base image / port / start command.
 
 ## 6. Generate `.dockerignore`
 
@@ -209,7 +209,7 @@ If `.dockerignore` already exists, append only the lines that aren't already the
 
 ## 7. Optionally generate `docker-compose.yml`
 
-Ask via `AskUserQuestion`:
+Ask the user to choose:
 
 - `Generate docker-compose.yml with detected services (<list>)` (recommended if framework hints found services)
 - `Generate docker-compose.yml with just the app (no extra services)`

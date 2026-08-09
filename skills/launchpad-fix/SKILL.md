@@ -74,6 +74,12 @@ Two things look like a broken file index and are not:
 
 ## 4. Spotlight path
 
+Two preconditions before touching anything.
+
+**Every repair below needs `sudo`.** An agent in a non-interactive shell cannot supply the password — hand the commands to the user to run, and resume measuring once they report back.
+
+**Check free space.** Spotlight needs room to write, and on a volume near capacity every repair below runs without the index ever growing. Measured on macOS 26.6 with the Data volume at 98 % (48 GB of 1 995 GB): a freshly restarted `mds` kept 9–28 `mdworker` processes busy for six minutes while the item count did not move by one. Run `df -H /System/Volumes/Data` — above roughly 95 %, free space first, or you are diagnosing a store with nowhere to grow. Note this cuts the other way too: reclaiming space can take a while to show up, because deleted files stay held by APFS local snapshots until `sudo tmutil deletelocalsnapshots /`.
+
 Try the cheapest fix first and verify after each attempt (the step-3 app count should start growing within ~1 minute — app-priority workers `mdworker-application` run first):
 
 1. **Restart the daemon:** `sudo killall mds` (launchd respawns it; `launchctl kickstart` is blocked by SIP). First confirm it is actually wedged rather than merely slow: `ps -Ao pid,etime,%cpu,comm | grep -E 'mds|mdworker'` — live `mdworker_shared` processes a few minutes old and a `mdfind` that returns *some* hits mean the daemon is answering and indexing, just not keeping up, in which case restarting it only throws away in-flight work. A genuinely wedged daemon: `mdutil -E` "succeeds", workers spawn and die, the log stays silent, the index stays empty — all commands go to a brain-dead server. A fresh `mds` typically indexes all apps within a minute.

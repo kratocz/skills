@@ -8,6 +8,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **decision-analysis:** methodology for a context-anchored decision analysis that ends in a verdict — decision rules written and dated before any evidence arrives, every load-bearing claim sourced and dated, and the durable layer kept separate from a perishable dated snapshot.
 
+### Fixed
+
+- **tracker-log-entry:** the macOS local-time → UTC conversion prescribed `date -j -f "<fmt>" "<in>" -u +<outfmt>`, where the trailing `-u` is not parsed as a flag: the output format was ignored and the skill fed the API a localized date string it rejected as `Invalid time format`. Replaced with an epoch round-trip, plus the two variants that fail *silently* (`-u` in front parses the input as UTC; omitting `-u` prints local time with a `Z` suffix) and why `%S` has to stay in the input format (v1.6.1).
+
 ## 2026-08-07
 
 ### Added

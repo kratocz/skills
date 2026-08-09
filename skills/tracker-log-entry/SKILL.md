@@ -2,7 +2,7 @@
 name: tracker-log-entry
 description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/tracker-log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded.
 argument-hint: [time-window] [description]
-version: 1.6.0
+version: 1.6.1
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -35,9 +35,33 @@ backend — unlike `/tracker-start`, no live timer is involved.
    arithmetic in your head):
    ```bash
    date -u +%Y-%m-%dT%H:%M:%SZ                      # now, UTC
-   date -j -f "%Y-%m-%d %H:%M" "<local datetime>" -u +%Y-%m-%dT%H:%M:%SZ   # macOS
-   date -u -d "<local datetime>" +%Y-%m-%dT%H:%M:%SZ                        # GNU/Linux
+
+   # local wall-clock -> UTC, macOS: go through an epoch. The input must carry
+   # seconds — a window given as 14:00-16:00 is written out as "...14:00:00".
+   EPOCH=$(date -j -f "%Y-%m-%d %H:%M:%S" "2026-07-31 18:00:00" +%s)
+   date -u -r "$EPOCH" +%Y-%m-%dT%H:%M:%SZ
+
+   # local wall-clock -> UTC, GNU/Linux
+   date -u -d "<local datetime>" +%Y-%m-%dT%H:%M:%SZ
    ```
+
+   On macOS the epoch round-trip is the only form that parses in local time and
+   prints in UTC; every shorter-looking variant is wrong:
+   - `-u` **after** the positional argument is not parsed as a flag at all, so
+     `+<outfmt>` is ignored and you get a localized default string back
+     (`pá 31. července 2026 18:00:11 CEST`) instead of an ISO timestamp, which
+     the API rejects as `Invalid time format`. The only variant that fails loudly.
+   - `-u` **before** `-f` switches the whole run to UTC, so the *input* is parsed
+     as UTC too and the window silently shifts by the offset (18:00 CEST comes
+     back as `18:00:00Z` instead of `16:00:00Z`).
+   - **no `-u`** with a `Z` in the output format prints local time wearing a UTC
+     suffix — silently off by the offset again.
+
+   Keep `%S` in the input format. Dropping it to `%H:%M` makes `date` fill the
+   seconds in from the *current* time (18:00 parses as 18:00:11) and start/stop
+   drift apart; keeping it rejects a seconds-less input outright (`Failed
+   conversion ... illegal time format`) — which is why the `:00` is written out.
+
    Compute `duration` in seconds as `end - start`. Echo the resolved window
    back to the user in local time in the final report so an off-by-timezone
    mistake is visible.

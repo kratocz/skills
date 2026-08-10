@@ -29,6 +29,7 @@ When invoked, follow this procedure in order:
    - Decide a short, descriptive title for this CR.
    - If the user tracks time, start a new timer/entry for this CR using that title. **Prefer the `tracker-start` / `tracker-stop` skills if available**; otherwise use the timesheet tool the user has configured (Toggl MCP, Clockify, ClickUp time tracking — they may have specific instructions in their global or project instructions file).
    - If a timesheet session is already running, ask the user whether to stop it and start a new one for this CR, or leave the current one running.
+   - **Between rounds, verification is CR work too.** Answering "what's new on the PR?" between rounds usually means fetching and reading the delta — that reading *is* the next round's verification. Start the round-`N` timer before diving into the new commits, even when the formal round-`N` write-up comes later; otherwise the substantive work lands outside any entry and the formal round logs a misleading minute or two.
 
 4. **Produce findings.** Label each one with a severity code (`C1`, `C2`, `M1`, `m1`, `n1`, …). If a finding needs a new category (e.g. off-topic), propose it to the user with a suggested letter prefix.
    - Write the findings to a file in `docs.local/code-reviews/` at the project root; content in English.
@@ -37,6 +38,7 @@ When invoked, follow this procedure in order:
    - A template is bundled with this skill — `findings-template.md` in this skill's directory — use it as a starting point.
    - **Round 2+:** include a `## Status of prior findings` section in the new file listing every finding from prior rounds with its current status — **resolved** (author fixed it), **still open** (not addressed), or **waived** (author justified leaving it; include the justification). The latest round's file is then the canonical source of which blockers remain.
    - If `docs.local/` doesn't exist, ask the user whether to create it (with the `code-reviews/` subdirectory) and add `docs.local/` to the project `.gitignore`. If `docs.local/` already exists but `code-reviews/` doesn't, just create the subdirectory.
+   - **Worktree-isolated session:** when the session is confined to a git worktree, a write into the main checkout's `docs.local/` gets blocked by the isolation guard — write the findings file into the **worktree's** `docs.local/code-reviews/` instead (create it; the `.gitignore` entry already covers it). Prior rounds may still live in the main checkout's `docs.local/code-reviews/` — read them from there (reading is allowed). At the end of the CR (step 15), remind the user that the worktree's findings files vanish with the worktree and offer the `cp` command into the main checkout's `docs.local/code-reviews/` for them to run.
 
 5. **Re-check severity.** Is each finding labelled at the right level (`Cx`/`Mx`/`mx`/`nx`)?
 

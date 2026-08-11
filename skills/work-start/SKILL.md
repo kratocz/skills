@@ -1,7 +1,7 @@
 ---
 name: work-start
-description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today".
-version: 0.3.0
+description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today". Does not start the time tracking timer — that is tracker-start.
+version: 0.3.1
 allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp_Google_Calendar__list_events
 license: MIT
 ---

@@ -1,7 +1,7 @@
 ---
 name: tracker-stop
-description: Stop the current time tracking session or timer. Takes no arguments — always stops the currently running entry. Use when the user says "/tracker-stop", "stop session", "stop timer", "end session", "I'm done", "finished working", or any similar phrase indicating they want to stop tracking time.
-version: 1.6.0
+description: Stop the running time tracking timer (Toggl/Clockify) and report its duration. Takes no arguments — always stops the currently running entry. Use when the user says "/tracker-stop", "stop timer", "stop tracking", "zastav stopky", or otherwise wants the running time entry closed. Not the end-of-day summary — that is work-end.
+version: 1.6.1
 allowed-tools: Read, Bash
 license: MIT
 ---

@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-11
+
+### Fixed
+
+- **`tracker-*` / `work-*`:** the two suites advertised overlapping trigger phrases, so an ordinary sentence could land in the wrong skill. `tracker-stop` claimed "end session", "I'm done" and "finished working" — all of which read as the end of the working day (`work-end`) — while `tracker-start` claimed "start session", competing with the morning briefing. `tracker-backfill` and `work-reconcile` both offered to fill missing Toggl time, with nothing in either description saying which one covers the current session and which a past period. Every description now names its own scope ("the running timer", "THIS agent session", "a past period across all sessions") and points at its counterpart, and the ambiguous phrases are gone (`tracker-*` v1.6.1, `work-*` v0.3.1).
+
 ## 2026-08-10
 
 ### Added

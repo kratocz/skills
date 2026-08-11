@@ -1,8 +1,8 @@
 ---
 name: tracker-backfill
-description: Fill gaps in time tracking from the current session's transcript, splitting it into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu", "backfill Toggl gaps", "doplň do Toggl práci na tomto", "fill in missing time for this session", or asks whether tracked time matches the session.
+description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: [date]
-version: 1.6.0
+version: 1.6.1
 allowed-tools: Read, Bash
 license: MIT
 ---

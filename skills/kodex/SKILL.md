@@ -1,7 +1,7 @@
 ---
 name: kodex
 description: >-
-  Thinking codex — working rules 0–15 plus a pre-delivery self-test (epistemics,
+  Thinking codex — working rules 0–16 plus a pre-delivery self-test (epistemics,
   decisions, output, learning loop, tools). Load at the START of any
   non-trivial analysis, decision, estimate, design, review, or deliverable —
   before forming an opinion — and follow it for the rest of the task. Also use
@@ -89,10 +89,17 @@ get a first pass.
     (→ write it into project state) Did the process itself fail somewhere?
     (→ write it into a retrospective). A team that doesn't write down its lessons
     pays for the same lesson repeatedly.
+15. **A rule broken a third time needs a mechanism, not a third mention.** When
+    a rule is already written down and you break it anyway, another paragraph
+    will not help — documentation acts on attention, and attention is exactly
+    what runs out. Convert it into something that holds without you: a hook, a
+    test, a lint, or a change that makes the mistake impossible (one source of
+    truth instead of two copies). The reverse holds too — a rule nobody has
+    broken does not need a guard, because guards cost maintenance.
 
 ## Tools and environment
 
-15. **Explicit Git.** When using Git, never use `git add .`. Always add files
+16. **Explicit Git.** When using Git, never use `git add .`. Always add files
     explicitly, one by one (e.g. `git add README.md`). Always check `git status`
     first. Keep helper and one-off scripts either outside the repository
     (e.g. in a `scratch` folder) or delete them from the repository rigorously.

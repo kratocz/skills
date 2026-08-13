@@ -2,11 +2,17 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-13
+
+### Fixed
+
+- **skillify:** the procedure for contributing a generally useful skill to the portable collection now names all three required steps — `skills/<name>/SKILL.md`, a row in the README table, and a dated line in `CHANGELOG.md`. The changelog step has been mandatory since 2026-08-04, but the skill never mentioned it, so anything contributed by following it landed unrecorded (v0.1.1).
+
 ## 2026-08-11
 
 ### Fixed
 
-- **`tracker-*` / `work-*`:** the two suites advertised overlapping trigger phrases, so an ordinary sentence could land in the wrong skill. `tracker-stop` claimed "end session", "I'm done" and "finished working" — all of which read as the end of the working day (`work-end`) — while `tracker-start` claimed "start session", competing with the morning briefing. `tracker-backfill` and `work-reconcile` both offered to fill missing Toggl time, with nothing in either description saying which one covers the current session and which a past period. Every description now names its own scope ("the running timer", "THIS agent session", "a past period across all sessions") and points at its counterpart, and the ambiguous phrases are gone (`tracker-*` v1.6.1, `work-*` v0.3.1).
+- **`tracker-*` / `work-*`:** the two suites advertised overlapping trigger phrases, so an ordinary sentence could land in the wrong skill. `tracker-stop` claimed "end session", "I'm done" and "finished working" — all of which read as the end of the working day (`work-end`) — while `tracker-start` claimed "start session", competing with the morning briefing. `tracker-backfill` and `work-reconcile` both offered to fill missing Toggl time, with nothing in either description saying which one covers the current session and which a past period. Every description now names its own scope ("the running timer", "THIS agent session", "a past period across all sessions") and points at its counterpart, and the ambiguous phrases are gone (`tracker-start`, `tracker-stop`, `tracker-backfill` v1.6.1; `work-start`, `work-end`, `work-reconcile` v0.3.1).
 
 ## 2026-08-10
 
@@ -23,6 +29,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 - **launchpad-fix:** step 4 now states its two preconditions up front — the repairs all need `sudo` an agent cannot supply, and a volume near capacity makes every one of them a no-op. Measured on a Data volume at 98 %: a freshly restarted `mds` kept 9–28 `mdworker` processes busy for six minutes without the index growing by a single item.
 - **launchpad-fix:** the step-3 triage measured `kMDItemFSSize > 0` against `/Applications`, which counts neither the app bundles (directories are skipped) nor their contents (Spotlight never indexes bundle interiors) — so it reported a healthy index as broken. Measured on macOS 26.6: 164 hits against 35 348 entries on disk, on a machine whose app index was in fact complete. Step 3 now counts apps via `com.apple.application-bundle`, compares files against a folder the user knows, and names the two false alarms that mimic a dead file index (iCloud `dataless` placeholders, Spotlight Privacy exclusions). Step 4 gained a check separating a wedged `mds` from one that is merely behind, so its repairs no longer throw away in-flight indexing work.
 - **tracker-log-entry:** the macOS local-time → UTC conversion prescribed `date -j -f "<fmt>" "<in>" -u +<outfmt>`, where the trailing `-u` is not parsed as a flag: the output format was ignored and the skill fed the API a localized date string it rejected as `Invalid time format`. Replaced with an epoch round-trip, plus the two variants that fail *silently* (`-u` in front parses the input as UTC; omitting `-u` prints local time with a `Z` suffix) and why `%S` has to stay in the input format (v1.6.1).
+- **code-review:** in a worktree-isolated session the findings file now goes into the worktree's own `docs.local/code-reviews/`, and copying it back into the main checkout is offered at the end of the CR — the isolation guard blocks writes into the main checkout's `docs.local/`, so the findings had nowhere to land, and a worktree copy disappears with the worktree. Reading a PR's new commits between rounds now counts as the next round's verification too: the round-N timer starts before that delta is read, so the substantive work no longer falls outside every entry while the formal round logs a misleading minute.
 
 ## 2026-08-07
 

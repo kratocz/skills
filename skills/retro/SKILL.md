@@ -43,10 +43,10 @@ Hard rules, valid for the whole skill:
    areas A and D are skipped.
 
 3. **Map the existing agent environment** (used to avoid duplicate proposals):
-   - project skills: Glob `.claude/skills/*/SKILL.md`
+   - project skills: list `.claude/skills/*/SKILL.md`
    - hooks: the `hooks` key in `.claude/settings.json` and
      `.claude/settings.local.json`, plus any hookify rule files
-     (Glob `.claude/hookify*` and `.claude/**/hookify*`)
+     (search for `.claude/hookify*` and `.claude/**/hookify*`)
    - permissions: `permissions.allow` in both settings files
 
 ## Phase 1 — Analysis (read-only)
@@ -64,7 +64,7 @@ of these hold:
   missing, judge from content and ask when unsure whether it is personal,
 - the fact is about this project and useful to anyone (human or agent)
   working in the repo — not just to you in this session,
-- equivalent content is not already in the target file (check with Grep).
+- equivalent content is not already in the target file (search it to confirm).
 
 The proposed change is: add the fact to the appropriate section of the target
 file (create the section if needed), then delete the memory file and its
@@ -151,8 +151,8 @@ The user had to correct or block the same unwanted action more than once this
 session → propose a hook that prevents it. On apply: if the hookify plugin is
 installed (its skills appear in your available-skills list), invoke
 `hookify:hookify` with a description of the rule; otherwise propose the
-`hooks` entry for `.claude/settings.json` yourself and apply it with Edit
-(create the file with Write if it does not exist).
+`hooks` entry for `.claude/settings.json` yourself and write it there,
+creating the file if it does not exist.
 
 ### G. Permission allowlist
 
@@ -214,8 +214,8 @@ Present candidate items grouped by area, then approve and apply:
    - Writes to the target knowledge file go first; a memory file is deleted
      **only after** the corresponding write succeeded, and its index line is
      removed from `MEMORY.md` in the same step. Delete memory files with
-     Bash `rm` on the exact path read in Phase 0 — never glob-delete.
-   - Doc fixes (area C) are applied with Edit, one finding at a time.
+     `rm` on the exact path read in Phase 0 — never glob-delete.
+   - Doc fixes (area C) are applied one finding at a time.
    - Skill items (area E) follow area E's apply path: when the `skillify`
      skill is installed, area E delegates creation to it; otherwise scaffold
      the new project skill as `.claude/skills/<name>/SKILL.md` with proper

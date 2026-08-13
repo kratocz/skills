@@ -38,9 +38,9 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 
 1. **Load effective config** — identical to `/work-start` step 1:
 
-   a. Read global config `~/.claude/plugins/work/config.json` with the Read
-      tool. If missing, stop with: "Žádná konfigurace work skillů. Spusť
-      `/work-setup` nejdřív." and return.
+   a. Read the global config `~/.claude/plugins/work/config.json`. If missing,
+      stop with: "Žádná konfigurace work skillů. Spusť `/work-setup` nejdřív."
+      and return.
 
    b. Locate the per-project override: build the slug from `pwd` (absolute
       path, `/` → `-`, leading `-`) and try to read

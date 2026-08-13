@@ -67,10 +67,16 @@ o která se opřou další rozhodnutí; kosmetika dostane first-pass.
 14. **Druhá derivace.** Po úkolu: změnil se obraz světa? (→ zapiš do stavu projektu)
     Selhal samotný proces? (→ zapiš do retrospektivy). Tým, který si nezapisuje
     poznatky, platí za stejnou lekci opakovaně.
+15. **Pravidlo porušené potřetí potřebuje mechanismus, ne třetí zmínku.** Když je
+    pravidlo zapsané a stejně ho porušíš, další odstavec nepomůže — dokumentace
+    působí na pozornost a pozornost je přesně to, co dochází. Překlop ho do něčeho,
+    co drží bez tebe: hook, test, lint, nebo změna, která ten omyl znemožní (jeden
+    zdroj pravdy místo dvou kopií). Platí to i obráceně — pravidlo, které nikdo
+    neporušil, zábranu nepotřebuje, protože zábrany stojí údržbu.
 
 ## Nástroje a prostředí
 
-15. **Explicitní Git.** Při používání Gitu nikdy nepoužívej `git add .`. Soubory přidávej vždy explicitně jeden po druhém (např. `git add README.md`). Vždy si nejdřív zkontroluj `git status`. Pomocné a jednorázové skripty ukládej buď mimo repozitář (např. do `scratch` složky) nebo je z repozitáře důsledně mazej.
+16. **Explicitní Git.** Při používání Gitu nikdy nepoužívej `git add .`. Soubory přidávej vždy explicitně jeden po druhém (např. `git add README.md`). Vždy si nejdřív zkontroluj `git status`. Pomocné a jednorázové skripty ukládej buď mimo repozitář (např. do `scratch` složky) nebo je z repozitáře důsledně mazej.
 
 ## Self-test před odevzdáním (netriviální výstupy)
 

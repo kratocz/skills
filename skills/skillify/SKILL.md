@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: Analyze this session (and, on demand, past session transcripts) for repeatable workflows worth capturing as a skill, propose candidates, and create the approved ones. Use when the user says "/skillify", "skillify", "make a skill from this", "turn this into a skill", "co by z tohohle šlo udělat skill", "udělej z toho skill", or wants to capture a workflow as a reusable skill.
-version: 0.1.0
+version: 0.1.1
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -44,7 +44,7 @@ Parse the invocation argument:
 
 1. Parse the argument into mode (default / deep N / targeted description).
 2. Map the existing skill environment to avoid duplicate proposals:
-   - project skills: Glob `.claude/skills/*/SKILL.md`
+   - project skills: list `.claude/skills/*/SKILL.md`
    - installed-plugin skills: the skills listed in your available-skills
      system context.
 
@@ -120,8 +120,8 @@ let the user choose):
     session actually did — not a vague outline.
 - **Generally useful workflow** → recommend adding it to the user's portable
   skills collection (e.g. `kratocz/skills`): create `skills/<name>/SKILL.md`
-  there plus a README table row; it is then installable everywhere via
-  `npx skills add kratocz/skills`. If the current working directory is that
+  there, plus a README table row and a dated line in `CHANGELOG.md`; it is
+  then installable everywhere via `npx skills add kratocz/skills`. If the current working directory is that
   collection repo, create the skill directly. Otherwise print the steps — do
   not write outside the current project.
 

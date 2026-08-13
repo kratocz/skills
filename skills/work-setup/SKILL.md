@@ -108,7 +108,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 6. **Language**:
 
    Look for an existing language preference:
-   - Try Read on `~/.claude/plugins/session-tracker/config.json`. If it exists and has a `language` field, use that as the default.
+   - Try reading `~/.claude/plugins/session-tracker/config.json`. If it exists and has a `language` field, use that as the default.
    - Otherwise default to `cs`.
 
    Ask: "Jazyk pro výstup briefingu? (kód jako en, cs, de — výchozí: <detected_or_cs>)". Accept any 2-letter ISO 639-1 code. Store as top-level `language`.

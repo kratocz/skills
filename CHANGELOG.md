@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-18
+
+### Added
+
+- **mcp-server-adopt:** new skill for adopting a third-party MCP server end to end — candidate sweep, a single `gh api` metadata pass reporting forks next to stars, reading the source instead of trusting the README, a static security audit that must complete **before** any build or test run (`go test` executes the third-party code; a plain `go build` without cgo does not), fork-first installation, credentials kept out of the client config behind a wrapper, scope-aware registration, and verification by a real stdio `initialize` + `tools/list` handshake rather than "the process started". Delegates the MCP-specific security dimensions to `ai-security-skills:mcp-server-review` where that skill is installed, instead of duplicating it.
+
 ## 2026-08-13
 
 ### Fixed

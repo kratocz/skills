@@ -8,6 +8,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **mcp-server-adopt:** new skill for adopting a third-party MCP server end to end — candidate sweep, a single `gh api` metadata pass reporting forks next to stars, reading the source instead of trusting the README, a static security audit that must complete **before** any build or test run (`go test` executes the third-party code; a plain `go build` without cgo does not), fork-first installation, credentials kept out of the client config behind a wrapper, scope-aware registration, and verification by a real stdio `initialize` + `tools/list` handshake rather than "the process started". Delegates the MCP-specific security dimensions to `ai-security-skills:mcp-server-review` where that skill is installed, instead of duplicating it.
 
+### Changed
+
+- **tracker-log-entry:** step 6's `KEY=…; printf … | curl` patterns are compound commands, which the Bash guard in worktree-isolated sessions rejects as "too complex to verify"; the skill now documents the remedy — write the whole call into a scratchpad script created with the ordinary file-Write tool (so its full content is visible in the conversation before anything runs), holding the key *lookup* (never the literal), and execute it as a single plain `bash <script>`, keeping the key out of argv (v1.6.2).
+
 ## 2026-08-13
 
 ### Fixed

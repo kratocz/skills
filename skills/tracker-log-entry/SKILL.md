@@ -2,7 +2,7 @@
 name: tracker-log-entry
 description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/tracker-log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded.
 argument-hint: "[time-window] [description]"
-version: 1.6.2
+version: 1.7.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -22,11 +22,20 @@ backend — unlike `/tracker-start`, no live timer is involved.
 
 2. **Determine the time window.** Parse it from the arguments if given
    (formats to accept: `9:00-11:30`, `0:00 to now`, `2h`, `45m`,
-   `yesterday 14:00-16:00`, an explicit date `2026-07-01 22:00-23:15`).
+   `yesterday 14:00-16:00`, an explicit date `2026-07-01 22:00-23:15`,
+   `since last entry` / `od konce posledního záznamu`).
    Interpretation rules:
    - A bare duration (`2h`) means "ending now".
    - Times without a date mean **today** (or the stated relative day) in the
      **user's local timezone**.
+   - "Since last entry" (any phrasing that anchors the start to the end of
+     the most recent record — "navázat na poslední záznam", "start where the
+     last entry stopped") means: fetch the backend's most recent **completed**
+     entry (Toggl: `GET /api/v9/me/time_entries?meta=true` first item with a
+     `stop`; Clockify: first page of the user's time entries), use its `stop`
+     as the start, and "now" as the end. Echo which entry was used as the
+     anchor (its description + stop time) in the final report; if a timer is
+     currently running, say so and ask instead of guessing.
    - If no window can be parsed, ask the user for it (one question, in the
      configured language). Never guess a duration.
 

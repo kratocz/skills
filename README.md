@@ -55,6 +55,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [resource-busy](./skills/resource-busy) | Find which process blocks an eject/unmount or holds a file — incl. holders invisible to lsof/fuser (TM snapshot mounts, mount namespaces) — and release it safely | 2026-08-18 |
 | [mcp-server-adopt](./skills/mcp-server-adopt) | Find, compare, security-vet, install and verify a third-party MCP server — audit runs *before* any build | 2026-08-18 |
 | [decision-analysis](./skills/decision-analysis) | Context-anchored decision analysis ending in a verdict: dated decision rules before research, sourced claims, durable layer vs dated snapshot | 2026-08-10 |
 | [skillify](./skills/skillify) | Analyze this session (and, on demand, past transcripts) for repeatable workflows worth capturing as a skill | 2026-07-17 |

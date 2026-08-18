@@ -1,7 +1,7 @@
 ---
 name: second-opinion
 description: Get a second opinion from Gemini and/or GPT on the current topic
-argument-hint: [--gemini|--gpt] [question]
+argument-hint: "[--gemini|--gpt] [question]"
 allowed-tools: [Bash]
 license: MIT
 ---

@@ -170,6 +170,36 @@ automatically: the flow is always **propose → confirm → write**.
      hits (timestamp = update/comment time, subject = task name).
    Absent MCP → warn once, skip that source.
 
+   **D. Work that never ran through an agent** (ChatGPT/Gemini sessions, manual
+   work, phone calls): sources A–C see none of it, so a window that looks empty
+   may just be work done elsewhere. Before concluding "nothing to reconcile",
+   ask whether the period included such work; when it did, reconstruct it from:
+
+   - **Artifacts on disk.** Anything downloaded from a chat UI or produced by
+     hand carries a creation time. On macOS read birth time, elsewhere mtime;
+     each file is a timestamped anchor proving work happened at that moment.
+     ```bash
+     python3 -c "
+     import os, datetime, pathlib, sys
+     for f in sorted(pathlib.Path(sys.argv[1]).rglob('*')):
+         if f.is_file() and f.name not in ('.DS_Store',):
+             st = f.stat(); b = getattr(st, 'st_birthtime', st.st_ctime)
+             print(f'{datetime.datetime.fromtimestamp(b):%Y-%m-%d %a %H:%M}  {f}')
+     " <dir>
+     ```
+     Cluster anchors that fall close together into one block; a cluster's span
+     is a *lower bound* on the block, never its length — the thinking around it
+     leaves no file.
+   - **IM history** (Slack/ClickUp DMs with whoever commissioned the work).
+     Messages sent around the artifacts date the block from the other side and
+     often state the work's substance. Best of all, the user's own past
+     estimates ("cca 2 h, z toho 1 h už mám za sebou") are the strongest
+     calibration available — prefer them over your own reconstruction.
+
+   Blocks from this source get `source='offline'`, `origin='anchored'`, and a
+   `minutes` estimate the user MUST confirm — the anchors fix *when*, never
+   *how long*.
+
 4. **Estimate a duration for each block.** The estimate is always a *default to
    hand-edit*, never authoritative.
 
@@ -251,6 +281,13 @@ automatically: the flow is always **propose → confirm → write**.
      whose paired `project` does not match it (same rule as step 5's filter).
 
 7. **Diff against what is already logged** — propose only the missing time.
+   - **Toggl only serves recent history** — `toggl_get_time_entries` rejects a
+     `start_date` older than roughly three months with `"start_date must not be
+     earlier than <date>"`. When the window starts before that cutoff, say so
+     instead of reporting an empty busy-map as "nothing logged". A cheap
+     cross-check for a project that did not exist yet: `GET
+     /api/v9/workspaces/<wid>/projects/<pid>` returns `created_at`, which caps
+     how far back entries could possibly go.
    - Load existing entries for `[since, until]` **only from the trackers in
      `sink.target`** (reading a ClickUp busy-map is pointless when writing only
      to Toggl). Toggl: `mcp__toggl__toggl_get_time_entries` (`start_date`/
@@ -281,6 +318,16 @@ automatically: the flow is always **propose → confirm → write**.
        `~<m>m (chybí)`.
    - `commit-only` blocks (`minutes=null`) skip coverage math (nothing to
      measure) and always appear, flagged to fill in.
+   - **COVERED means "already logged", not "impossible".** When a block is
+     buried under an entry for a *different* project, the overlap may be real
+     parallel work — common when an agent runs unattended on one project while
+     the user works another. Do not silently drop those: surface them, show the
+     colliding entry (its `at` field reveals whether it was measured live or
+     entered retrospectively as one lump — the latter is far weaker evidence),
+     and let the user choose between shortening the other entry, logging the
+     overlap as-is, or skipping. Attention splits across parallel work, so a
+     block approved as an overlap usually deserves fewer minutes than its
+     anchors span.
    - ClickUp coverage is bucketed per (project, day), not per-task, so
      same-project same-day ClickUp time can mask a distinct task's block — the
      `reconciled_tag` idempotency check (step 9) is the finer backstop.

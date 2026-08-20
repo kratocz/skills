@@ -52,6 +52,18 @@ available, say so and stop.
   the top level.
 - Convert message timestamps to local time before deciding what falls inside
   the window; label which day each item belongs to.
+- **Compute epoch bounds with a command, never in your head.** Slack's
+  `oldest`/`latest` take Unix timestamps, and an off-by-a-year guess returns a
+  perfectly empty channel that reads exactly like a quiet conversation:
+  ```bash
+  python3 -c "
+  from datetime import datetime
+  for d in ['<since>', '<until>']:
+      print(d, int(datetime.fromisoformat(d + 'T00:00:00+00:00').timestamp()))
+  "
+  ```
+  Treat an empty window as a suspect query first: re-derive the bounds, or drop
+  them and read the channel's tail, before telling the user nothing was said.
 
 ### 4. Summarize, assess, recommend
 

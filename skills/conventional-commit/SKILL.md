@@ -74,7 +74,13 @@ A body is **required** if either:
 - More than 1 file changed (`git diff --cached --name-only | wc -l > 1`), **or**
 - More than 30 lines changed (sum of insertions + deletions from `--shortstat`).
 
-If neither holds, **skip the body** — just the subject.
+If neither holds, **skip the body** — just the subject. Two exceptions, where a body
+belongs even under the threshold; say out loud that you are deviating from the size rule:
+- the *why* is non-obvious and the diff alone would read as unmotivated or wrong-headed
+  (a deliberate deviation from upstream, a workaround for an external constraint, a
+  change whose reason lives outside the repo),
+- a future reader rebasing or reverting the commit would need the rationale to decide
+  whether it still applies.
 
 If a body is required:
 - Format: a blank line after the subject, then 1–3 short sentences.

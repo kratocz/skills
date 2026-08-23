@@ -26,6 +26,17 @@ Hard rules, valid for the whole skill:
   silently. A short or trivial session may legitimately produce an empty
   retro — say so honestly.
 - **Never commit automatically.** Offer a commit at the end; the user decides.
+- **Memory may be shared with parallel sessions, and it is not in git.**
+  Several agents can run against one project at once, all writing the same
+  memory directory: concurrent writes overwrite each other instead of merging,
+  and nothing records what was lost. Before deleting, compacting or rewriting
+  a memory file, check whether other sessions are live (list the agents) and
+  say what you are about to touch; do surgical edits to single entries rather
+  than rewriting a whole file. Corollary worth acting on: **a fact that must
+  survive belongs in the repo, not in memory** — the repo is versioned, merged
+  and reviewable. Real case (2026-08-23): one session's retro compacted away
+  two notes another session had written an hour earlier, in good faith, because
+  they read as stale filler.
 
 ## Phase 0 — Gather context
 
@@ -115,6 +126,15 @@ from cleanup.
 Memories contradicted by the current repo state or by what happened this
 session → propose deletion or correction. A memory that merely duplicates the
 target knowledge file is also stale → propose deletion.
+
+**Check the age before calling something stale.** With parallel sessions, an
+entry you do not recognise may be minutes old rather than obsolete — written by
+another agent that is still working and will look for it. Read the file's
+modification time and its own wording (a note dated today, naming today's
+commits, is not filler), and when a fact looks worth keeping but the entry
+looks redundant, migrate it into the repo instead of deleting it. Deleting is
+the only irreversible operation in this skill: memory has no history to
+recover from.
 
 ### E. Skills — new and improved
 

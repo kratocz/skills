@@ -10,6 +10,16 @@ Generate a [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v
 
 Follow these steps in order.
 
+**When the user has already told you to commit without stopping** — "just commit it",
+"rovnou to commitni", "commit and push", or any instruction that plainly authorises the
+commit up front — skip the confirmation prompts in steps 4 and 6: pick the scope yourself
+by the path rule, and commit the drafted message without showing it for approval. Say in
+your reply which scope you chose and quote the subject line, so the decision stays visible.
+Everything else in this skill still applies — the type table, the body threshold, and the
+hard rules about `git add` and `--no-verify` are not confirmations and are never skipped.
+Step 1 also still applies: if nothing is staged, ask, because "commit it" does not say what
+"it" is.
+
 ## 1. Check staged state
 
 Run `git status --short` and `git diff --cached --stat`.

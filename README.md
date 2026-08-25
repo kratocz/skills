@@ -33,17 +33,19 @@ npx skills add . -g -y --all
 
 `kodex` is distributed as a regular skill, but it is meant to be **always on**. To guarantee that, add one line to your agent's global instructions file (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.gemini/GEMINI.md`, …):
 
-> Před netriviální analýzou, rozhodnutím, odhadem či odevzdáním výstupu si načti skill `kodex` a řiď se jím po zbytek úkolu.
+> Before any non-trivial analysis, decision, estimate, or deliverable, load the `kodex` skill and follow it for the rest of the task.
 
 For Antigravity CLI the same line goes into its rules directory — write it directly:
 
 ```bash
 mkdir -p ~/.gemini/antigravity-cli/rules
-printf 'Před netriviální analýzou, rozhodnutím, odhadem či odevzdáním výstupu si načti skill `kodex` a řiď se jím po zbytek úkolu.\n' \
+printf 'Before any non-trivial analysis, decision, estimate, or deliverable, load the `kodex` skill and follow it for the rest of the task.\n' \
   > ~/.gemini/antigravity-cli/rules/kodex.md
 ```
 
 (or symlink [rules/kodex.md](./rules/kodex.md) from a clone).
+
+The same line in Czech is [rules/kodex-cs.md](./rules/kodex-cs.md) — the skill body is English either way, so use whichever reads better in your own instructions file.
 
 ## State
 

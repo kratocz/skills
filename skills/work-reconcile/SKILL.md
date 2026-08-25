@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.3.1
+version: 0.4.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -38,6 +38,11 @@ automatically: the flow is always **propose → confirm → write**.
      skillů. Spusť `/work-setup`." / "No work skills config. Run `/work-setup`."
    - Parse it. Read `config.language` (default `cs`, fallback `en`); phrase all
      user-facing text in it, keeping proper nouns/IDs/URLs/durations unchanged.
+     **Every quoted user-facing string in this skill — review labels, menu
+     options, warnings, the summary line — is an example written in `cs`.**
+     Render it in `config.language`; none of them is a literal the user must
+     see verbatim. Where a string is given as `"<czech>" / "<english>"`, those
+     are one message in two languages, not two messages.
    - Build `effective_config` by overlaying the `reconcile` block on these
      defaults (a MISSING `reconcile` block or any missing key falls back here —
      do not crash):
@@ -47,7 +52,8 @@ automatically: the flow is always **propose → confirm → write**.
      `ai_sessions.projects_dir=<harness-home>/projects` (`~/.claude` or
      `~/.gemini/antigravity-cli`, first that exists), `calendar.as_work=true`,
      `calendar.exclude_all_day=true`, `calendar.exclude_declined=true`,
-     `calendar.exclude_keywords=["oběd","lunch","dovolená"]`,
+     `calendar.exclude_keywords=["oběd","lunch","dovolená","holiday",
+     "vacation","day off","out of office"]`,
      `sink.target=toggl`, `sink.billable=true`, `sink.reconciled_tag=reconciled`.
      `calendar.as_work` also gates the Calendar source: when false, Calendar is
      not fetched at all.
@@ -141,7 +147,10 @@ automatically: the flow is always **propose → confirm → write**.
    - drop all-day events if `exclude_all_day`,
    - drop events the user declined if `exclude_declined`,
    - drop events whose title matches any `exclude_keywords` (case-insensitive
-     substring).
+     substring). The default list is deliberately whole-word-ish: matching is a
+     plain substring test, so a short token added here (`pto`, `ooo`, `off`)
+     silently eats unrelated events — `pto` hits "symptom review", `off` hits
+     "offsite". When adding keywords, prefer the longer form.
    Each surviving event → a `candidate_block` with `source='calendar'`,
    `start`/`end` = event start/end (local), `title` = event summary,
    `project_hint` = null (resolved during project pairing, step 5), `origin_marks=[]`,
@@ -238,13 +247,15 @@ automatically: the flow is always **propose → confirm → write**.
    `round_to_min` (no gap-capping — a meeting is contiguous). Set
    `origin='calendar-exact'`.
 
-   **Origin marks** drive the review display (step 8):
-   | `origin` | Review label |
-   |----------|--------------|
-   | `ai-gapcapped` | `~<m>m (AI, gap-capped)` |
-   | `calendar-exact` | `<m>m (kalendář)` |
-   | `commit-only` | `? (jen commit — DOPLŇ ČAS)` |
-   | `manual` | `<m>m (ručně)` |
+   **Origin marks** drive the review display (step 8). The label says where the
+   number came from and how much to trust it; the third column is only how that
+   reads in `cs`:
+   | `origin` | Label means | Rendered (`cs` example) |
+   |----------|-------------|-------------------------|
+   | `ai-gapcapped` | estimate, from session gaps | `~<m>m (AI, gap-capped)` |
+   | `calendar-exact` | exact, from a meeting's length | `<m>m (kalendář)` |
+   | `commit-only` | **no duration known — user must supply one** | `? (jen commit — DOPLŇ ČAS)` |
+   | `manual` | supplied by the user | `<m>m (ručně)` |
 
 5. **Pair every block to a project** (same mechanism as `/tracker-start` and
    `/tracker-log-entry`):
@@ -346,10 +357,13 @@ automatically: the flow is always **propose → confirm → write**.
    Souhrn: 12 návrhů (8.5 h) · 5 pokrytých skryto · 1 bez času
    ```
 
-   Then approve **in batches**, one group (project/day) at a time, with the
-   options: **Vše / Vybrat / Přeskočit / Upravit časy**.
-   - **Vybrat** → list the group's items so the user picks a subset.
-   - **Upravit** → let the user overwrite `minutes` (and optionally
+   Then approve **in batches**, one group (project/day) at a time, offering four
+   options — referred to below by their function, and rendered in
+   `config.language` (`cs`: **Vše / Vybrat / Přeskočit / Upravit časy**):
+   - **all** → approve every item in the group.
+   - **select** → list the group's items so the user picks a subset.
+   - **skip** → approve nothing in this group.
+   - **edit** → let the user overwrite `minutes` (and optionally
      `project`/`title`) on a chosen item.
    - **A block with `minutes=null` (the `?` items) CANNOT be approved until the
      user supplies a duration** — force the prompt; never write a `null`.
@@ -364,11 +378,12 @@ automatically: the flow is always **propose → confirm → write**.
      it as the block's `clickup_task_id`. A block **CANNOT** be approved for a
      ClickUp write without a `clickup_task_id`. (Toggl writes need no task —
      this gate applies only to the ClickUp sink.)
-   - Choosing **Vše** approves every item in the group but does **not**
+   - Choosing **all** approves every item in the group but does **not**
      bypass the gates above: any gated item (a `?` duration, a `project?`
      mark, or a required `clickup_task_id`) still forces its per-item prompt
-     — "Vše" cannot manufacture a missing value.
-   - Offer **"+ přidat ruční položku"** (phone call): ask start, duration,
+     — **all** cannot manufacture a missing value.
+   - Offer an **"add a manual item"** option (`cs`: "+ přidat ruční položku")
+     for work no source can see, such as a phone call: ask start, duration,
      project, description → append as `source='manual'`, `origin='manual'`,
      fully specified.
    Everything the user OKs goes into `approved`. Nothing else is written.

@@ -2,7 +2,7 @@
 name: work-standup
 description: Standup recap — what you actually worked on since the last standup, pulled from Toggl time entries + git commits + GitHub reviews/merges and grouped into a report you can paste into the standup channel. Use when the user says "/work-standup", "standup", "stand-up status", "co jsem dělal od minula", "co jsem udělal od posledního stand-upu", "recap since last standup".
 argument-hint: "[--since YYYY-MM-DD[THH:MM]] [--project <name>]"
-version: 0.4.0
+version: 0.5.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__github__list_commits
 license: MIT
 ---
@@ -39,8 +39,10 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 1. **Load effective config** — identical to `/work-start` step 1:
 
    a. Read the global config `~/.claude/plugins/work/config.json`. If missing,
-      stop with: "Žádná konfigurace work skillů. Spusť `/work-setup` nejdřív."
-      and return.
+      stop with this message — **in both languages, because the config that
+      would name one is exactly what is missing**: "Žádná konfigurace work
+      skillů. Spusť `/work-setup` nejdřív." / "No work skills config. Run
+      `/work-setup` first." — and return.
 
    b. Locate the per-project override: build the slug from `pwd` (absolute
       path, `/` → `-`, leading `-`) and try to read
@@ -51,7 +53,10 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 
    The merged result is `effective_config`. Read `effective_config.language`
    (default `"cs"`); render all user-facing prose in it. Keep proper nouns,
-   code identifiers, URLs, and durations unchanged.
+   code identifiers, URLs, and durations unchanged. **Every quoted user-facing
+   string below is an example written in `cs`** — none of them is a literal the
+   user must see verbatim. The message in (a) is the exception: it carries both
+   languages because it fires before the config is read.
 
 2. **Determine the recap window `[since, now]`**:
 

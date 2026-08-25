@@ -1,7 +1,7 @@
 ---
 name: work-setup
 description: Configure the work-* skills — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.claude/plugins/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
-version: 0.3.0
+version: 0.4.0
 allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp__plugin_ntit-common_clickup__clickup_get_workspace_members
 license: MIT
 ---
@@ -12,18 +12,30 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
 ## Steps
 
-1. **Load existing config** (distinguishes edit vs. create mode):
+1. **Load existing config** — silently; produce no output yet, the language is not settled until step 2.
 
    Try to read `~/.claude/plugins/work/config.json`.
 
    - If the file exists: parse it and remember it as `existing_config`. You're in **edit mode** — prefill defaults from existing values when asking questions.
    - If it doesn't exist: you're in **create mode** — use the defaults in this skill.
 
-   Inform the user briefly in the configured language (default Czech, fallback English):
+2. **Language** — ask this **first**, before any other question: every step below talks to the user, and until this is answered there is nothing to phrase them in.
+
+   Resolve the default to offer; first hit wins:
+   - `existing_config.language` (edit mode),
+   - the `language` field of `~/.claude/plugins/session-tracker/config.json`, if that file exists,
+   - the language the user has been writing in this session,
+   - `en`.
+
+   Ask **bilingually** — at this point you cannot know which language the user reads: "Jazyk pro výstup briefingu? / Language for briefing output?" (ISO 639-1 code — `en`, `cs`, `de`, … — default: `<resolved_default>`). Accept any 2-letter ISO 639-1 code. Store as top-level `language`.
+
+   **Every quoted user-facing string below is an example written in `cs`** — render it in the chosen language, keeping proper nouns, IDs, paths, code identifiers and JSON values unchanged. Where a string is given as `"<czech>" / "<english>"`, those are one message in two languages, not two messages.
+
+   Only now report the mode:
    - Edit mode: "Existující konfigurace nalezena, projdu ji s tebou znovu. Stiskni Enter na otázce pro ponechání aktuální hodnoty." / "Existing config found — I'll walk through it. Press Enter to keep current values."
    - Create mode: "Nová konfigurace. Projdu s tebou dostupné zdroje." / "Fresh setup. I'll walk you through available sources."
 
-2. **Detect available MCP sources** via ToolSearch:
+3. **Detect available MCP sources** via ToolSearch:
 
    For each known source, call ToolSearch with a representative tool name to verify the MCP server is connected in this session. Use these queries:
 
@@ -36,11 +48,11 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    If the query returns a function definition, the source is **available**. If the query returns no match, the source is **unavailable**.
 
-   Build a list `detected_sources` of available sources. If `detected_sources` is empty, tell the user "Žádný známý MCP server (Todoist/GitHub/ClickUp/Calendar) není v této session připojený. Nelze pokračovat se setup — přidej alespoň jeden MCP server v konfiguraci svého harnessu (např. `~/.claude/settings.json`) a restartuj session." and stop.
+   Build a list `detected_sources` of available sources. If `detected_sources` is empty, tell the user "Žádný známý MCP server (Todoist/GitHub/ClickUp/Calendar) není v této session připojený. Nelze pokračovat se setupem — přidej alespoň jeden MCP server v konfiguraci svého harnessu (např. `~/.claude/settings.json`) a restartuj session." / "No known MCP server (Todoist/GitHub/ClickUp/Calendar) is connected in this session. Setup cannot continue — add at least one MCP server to your harness configuration (e.g. `~/.claude/settings.json`) and restart the session." and stop.
 
-3. **Per-source Q&A** — for each source in `detected_sources`:
+4. **Per-source Q&A** — for each source in `detected_sources`:
 
-   Ask "Zapnout zdroj `<source_name>` ve work briefingu?" (or English equivalent based on language setting) and offer the options:
+   Ask "Zapnout zdroj `<source_name>` ve work briefingu?" / "Enable source `<source_name>` in the work briefing?" and offer the options:
    - "Ano (Recommended)" / "Yes (Recommended)" — `enabled: true`
    - "Ne" / "No" — `enabled: false`
 
@@ -63,9 +75,9 @@ Configure the work-* skills: detect which MCP sources are available in this sess
    - `clickup`: `{ "enabled": bool, "mcp_prefix": "...", "member_id": "...", "filters": { "include": [...], "scope": "..." } }`
    - `google_calendar`: `{ "enabled": bool, "mcp_prefix": "...", "window_hours": 12 }` — note `window_hours` at source level, NOT inside `filters`
 
-   (mcp_prefix is the prefix used during detection in step 2 — e.g. `mcp_Todoist__`.)
+   (mcp_prefix is the prefix used during detection in step 3 — e.g. `mcp_Todoist__`.)
 
-4. **Optional: timesheet reconciliation** (`/work-reconcile`):
+5. **Optional: timesheet reconciliation** (`/work-reconcile`):
 
    Ask "Nastavit dorovnávání výkazů (`/work-reconcile`)?" / "Configure timesheet reconciliation (`/work-reconcile`)?" and offer the options:
    - "Ne, použít výchozí (Recommended)" / "No, use defaults (Recommended)" — skip; write nothing under `reconcile` (the skill falls back to its built-in defaults at runtime).
@@ -94,24 +106,16 @@ Configure the work-* skills: detect which MCP sources are available in this sess
    ```
    All other `reconcile` keys (`gap_threshold_min`, `edge_pad_min`, `round_to_min`, `min_block_min`, `coverage_covered`, `coverage_missing`, `ai_sessions.*`, `calendar.*`, `sink.billable`, `sink.reconciled_tag`) are not configurable here in v1 — they keep the skill's built-in defaults unless the user edits the JSON manually.
 
-5. **Scoring config**:
+6. **Scoring config**:
 
    Ask "Použít výchozí scoring váhy (priority=40, due=30, age=15, type=15)?" / "Use default scoring weights (priority=40, due=30, age=15, type=15)?"
 
-   - "Ano (Recommended)" — store defaults
-   - "Vlastní hodnoty" — prompt for each weight separately (priority, due_proximity, age, type_assignment). Each must be a non-negative integer. Validate that they sum to 100 (if not, tell the user the actual sum and re-ask). Store as `scoring.weights`.
+   - "Ano (Recommended)" / "Yes (Recommended)" — store defaults
+   - "Vlastní hodnoty" / "Custom values" — prompt for each weight separately (priority, due_proximity, age, type_assignment). Each must be a non-negative integer. Validate that they sum to 100 (if not, tell the user the actual sum and re-ask). Store as `scoring.weights`.
 
    Then ask: "Kolik položek zobrazit v briefingu? (výchozí 8)" / "How many items to show in briefing? (default 8)" — free text, validate as integer 1–20. Store as `scoring.top_n`.
 
    In edit mode, prefill defaults with existing values.
-
-6. **Language**:
-
-   Look for an existing language preference:
-   - Try reading `~/.claude/plugins/session-tracker/config.json`. If it exists and has a `language` field, use that as the default.
-   - Otherwise default to `cs`.
-
-   Ask: "Jazyk pro výstup briefingu? (kód jako en, cs, de — výchozí: <detected_or_cs>)". Accept any 2-letter ISO 639-1 code. Store as top-level `language`.
 
 7. **Write global config**:
 
@@ -123,7 +127,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
    Build the config object in memory:
    ```json
    {
-     "language": "<from step 6>",
+     "language": "<from step 2>",
      "sources": {
        "todoist":         { "enabled": <bool>, "mcp_prefix": "mcp_Todoist__", "filters": { "priorities": ["p1", "p2"], "scope": "today_and_overdue" } },
        "github":          { "enabled": <bool>, "mcp_prefix": "mcp__github__", "username": "...", "include": ["assigned_issues", "review_requested_prs", "my_open_prs"] },
@@ -139,7 +143,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    **Important:** include ALL four sources in the JSON even if some are disabled or weren't detected in this session. Sources that weren't detected get `enabled: false` and the canonical `mcp_prefix` from the detection table (so the user can manually enable later when they add the MCP server). Sources that were detected but the user said "No" also get `enabled: false` but keep any collected metadata (username, member_id).
 
-   If step 4 collected a `reconcile` block, merge it in as a top-level `reconcile` key alongside `sources` and `scoring`. If step 4 was skipped, omit `reconcile` entirely — do not write an empty object.
+   If step 5 collected a `reconcile` block, merge it in as a top-level `reconcile` key alongside `sources` and `scoring`. If step 5 was skipped, omit `reconcile` entirely — do not write an empty object.
 
    Write the JSON to `~/.claude/plugins/work/config.json` with 2-space indentation.
 
@@ -152,11 +156,11 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    The project memory dir follows the harness convention: `<harness-home>/projects/<slug>/memory/`, where `<harness-home>` is `~/.claude` (Claude Code) or `~/.gemini/antigravity-cli` (Antigravity CLI) — use the first that exists — and `<slug>` is the absolute path of the current working directory with `/` replaced by `-` and a leading `-` (so `/Users/krato/IdeaProjects/foo` becomes `-Users-krato-IdeaProjects-foo`).
 
-   Ask "Chceš uložit per-project override pro projekt `<basename>`?" and offer the options:
-   - "Ne, jen globální config (Recommended)" — skip
-   - "Ano, uložit override soubor"
+   Ask "Chceš uložit per-project override pro projekt `<basename>`?" / "Save a per-project override for `<basename>`?" and offer the options:
+   - "Ne, jen globální config (Recommended)" / "No, global config only (Recommended)" — skip
+   - "Ano, uložit override soubor" / "Yes, write an override file"
 
-   If user picks "Ano":
+   If the user picks "Ano"/"Yes":
 
    Compute the slug from `pwd`. Verify the memory dir exists:
    ```bash
@@ -168,14 +172,14 @@ Configure the work-* skills: detect which MCP sources are available in this sess
    mkdir -p <harness-home>/projects/<slug>/memory
    ```
 
-   Ask the user (free text): "Co chceš v tomto projektu změnit oproti globálnímu configu? Napiš jednou větou (např. 'vypnout clickup, jen github repo X')." Use the answer as a hint for which fields to override.
+   Ask the user (free text): "Co chceš v tomto projektu změnit oproti globálnímu configu? Napiš jednou větou (např. 'vypnout clickup, jen github repo X')." / "What should differ from the global config in this project? One sentence (e.g. 'disable clickup, only github repo X')." Use the answer as a hint for which fields to override.
 
    Then ask for the specific override, offering these options (this v1 supports only a small set):
-   - "Vypnout některé zdroje v tomto projektu" — multi-select from `[todoist, github, clickup, google_calendar]`, the selected ones get `enabled: false` in the override.
-   - "Pouze ze konkrétních GitHub repos" — free text, comma-separated owner/repo list. Adds `sources.github.repos` array.
-   - "Hotovo — nic dalšího" — proceed to write.
+   - "Vypnout některé zdroje v tomto projektu" / "Disable some sources in this project" — multi-select from `[todoist, github, clickup, google_calendar]`, the selected ones get `enabled: false` in the override.
+   - "Pouze z konkrétních GitHub repos" / "Only specific GitHub repos" — free text, comma-separated owner/repo list. Adds `sources.github.repos` array.
+   - "Hotovo — nic dalšího" / "Done — nothing else" — proceed to write.
 
-   Loop until user picks "Hotovo".
+   Loop until the user picks "Hotovo"/"Done".
 
    Build the override JSON (only the fields to override) and write to `<harness-home>/projects/<slug>/memory/work_config.md`:
 
@@ -211,7 +215,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    Global config: ~/.claude/plugins/work/config.json
    Povolené zdroje: <comma-separated list of enabled source names>
-   Per-project override: <path or "není">
+   Per-project override: <path or "není" / "none">
 
    Spusť /work-start pro ranní briefing.
    ```

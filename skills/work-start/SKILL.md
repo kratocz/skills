@@ -1,7 +1,7 @@
 ---
 name: work-start
 description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today". Does not start the time tracking timer — that is tracker-start.
-version: 0.3.1
+version: 0.4.0
 allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -17,7 +17,7 @@ Morning briefing across all configured task and code review sources.
 
    a. Read global config: `~/.claude/plugins/work/config.json`.
 
-   If the file doesn't exist, stop with this message in Czech (or English if user prefers): "Žádná konfigurace work skillů. Spusť `/work-setup` nejdřív." Then return — do not proceed.
+   If the file doesn't exist, stop with this message — **in both languages, because the config that would name one is exactly what is missing**: "Žádná konfigurace work skillů. Spusť `/work-setup` nejdřív." / "No work skills config. Run `/work-setup` first." Then return — do not proceed.
 
    b. Locate per-project override:
    ```bash
@@ -27,7 +27,7 @@ Morning briefing across all configured task and code review sources.
 
    If the file exists:
    - Find the first fenced ` ```json ... ``` ` block in the file.
-   - Parse the JSON. If parse fails, print warning "⚠️ Per-project override `work_config.md` má nevalidní JSON. Pokračuju s globálním configem." and skip override.
+   - Parse the JSON. If parse fails, print warning "⚠️ Per-project override `work_config.md` má nevalidní JSON. Pokračuju s globálním configem." / "⚠️ Per-project override `work_config.md` has invalid JSON. Continuing with the global config." and skip override.
    - Otherwise, deep-merge the override onto the global config:
      - Objects: recursively merge keys. Override values replace global values.
      - Arrays: replace entirely (override array replaces global array).
@@ -35,13 +35,20 @@ Morning briefing across all configured task and code review sources.
 
    The merged result is `effective_config`. Use it for the rest of the steps.
 
+   Read `effective_config.language` (default `"cs"`) and phrase all user-facing
+   text in it. **Every quoted user-facing string in this skill — warnings, the
+   briefing template, the edge-case messages — is an example written in `cs`**;
+   none of them is a literal the user must see verbatim. Keep proper nouns, IDs,
+   paths, URLs and durations unchanged. The message in step 1 is the exception:
+   it carries both languages because it fires before the config is read.
+
 2. **Verify enabled MCP sources**:
 
    Initialize an empty list `warnings = []`.
 
    For each source in `effective_config.sources` where `enabled == true`:
 
-   Use ToolSearch with `select:<a representative tool from the mcp_prefix>` to check availability. Use the same query table as `/work-setup` step 2:
+   Use ToolSearch with `select:<a representative tool from the mcp_prefix>` to check availability. Use the same query table as `/work-setup` step 3:
 
    | Source | ToolSearch query |
    |---|---|

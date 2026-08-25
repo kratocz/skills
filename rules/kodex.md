@@ -1,1 +1,1 @@
-Před netriviální analýzou, rozhodnutím, odhadem či odevzdáním výstupu si načti skill `kodex` a řiď se jím po zbytek úkolu.
+Before any non-trivial analysis, decision, estimate, or deliverable, load the `kodex` skill and follow it for the rest of the task.

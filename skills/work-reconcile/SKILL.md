@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.7.0
+version: 0.8.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -194,6 +194,12 @@ automatically: the flow is always **propose → confirm → write**.
    `effective_config.reconcile.calendar`:
    - drop all-day events if `exclude_all_day`,
    - drop events the user declined if `exclude_declined`,
+   - **drop events the user marked as Free** — `transparency: "transparent"`
+     (equivalently `availability: "AVAILABILITY_FREE"`). That flag is the
+     user's own statement that the slot is not work, and it needs no keyword
+     list to maintain. Observed 2026-08-26: a cinema showing (150 min) and four
+     grocery-courier slots sailed through the keyword filter and were proposed
+     as billable time purely because nobody had thought to add those words.
    - drop events whose title matches any `exclude_keywords` (case-insensitive
      substring). The default list is deliberately whole-word-ish: matching is a
      plain substring test, so a short token added here (`pto`, `ooo`, `off`)
@@ -351,10 +357,26 @@ automatically: the flow is always **propose → confirm → write**.
      segment — measured against a live tree, that yields `13` for
      `…/vault-platform/.claude/worktrees/INFRA-13` and `2026` for
      `…/krato-cluster-2026`, neither of which is a project. Skip segments that
-     are purely numeric or are known scaffolding (`.claude`, `worktrees`,
-     `subagents`, `src`); if nothing matches, fall back to the segment directly
-     after the `<host>/<owner>/` prefix, which is the repository name. For
-     Calendar blocks with no hint, leave `project=null` for now.
+     are purely numeric or are known scaffolding (`.claude`, `subagents`,
+     `src`); if nothing matches, fall back to the segment directly after the
+     `<host>/<owner>/` prefix, which is the repository name. For Calendar blocks
+     with no hint, leave `project=null` for now.
+   - **A worktree never names the project — the repository above it does.** On
+     a path containing `/.claude/worktrees/`, truncate it there and match only
+     the part to the left; the worktree's own name is a branch label chosen for
+     a ticket or a topic and means nothing about billing. Measured 2026-08-26:
+     `…/payroll-system-PMA/.claude/worktrees/monitoring` resolved to the Toggl
+     project `Monitoring` — a different client's — for 12 blocks, and because
+     the match *succeeded* no `'project?'` gate fired to surface it. Skipping
+     the literal token `worktrees` is not enough; the segment after it has to go
+     too.
+   - **Matching is equality on the project name's last `/`-separated part**,
+     compared case-insensitively after replacing `-`/`_` with nothing — so the
+     path segment `PMA` matches the project `NTIT/PMA`, and `payroll-system-PMA`
+     matches it too once the separators are folded. It is **not** a substring
+     test in either direction: substring makes the segment `cz` match every
+     `*.cz` project and `server` match three at once. If two projects match
+     equally well, treat it as no match and let step 8 ask.
    - **No match means no project — never a configured default.** Set
      `project=null` and add `'project?'` to `origin_marks`; the review (step 8)
      then forces the user to pick before the block can be approved. Do **not**
@@ -411,9 +433,21 @@ automatically: the flow is always **propose → confirm → write**.
      blocks (they will simply not be marked COVERED by pre-existing ClickUp
      entries). Each existing entry → (start, end, project).
    - Build a **busy map** per (project, day): the union of already-logged
-     intervals. Entries with no project go into a general per-day bucket.
+     intervals. Also build an **all-projects per-day bucket** — the union of
+     every entry that day regardless of project.
+   - **A block with `project=null` compares against the all-projects bucket for
+     its day**, never against an empty one. Since step 5 stopped applying a
+     default, unmatched blocks are the common case, not the exception: bucketing
+     them by a project they do not have means no existing entry can ever mask
+     them and every one is proposed as missing. Measured 2026-08-26, that is not
+     a small error — a four-day window already carrying 33.8 h of tracked time
+     produced **zero** COVERED blocks and proposed 66.6 h on top. A block whose
+     project is unknown is a block whose overlap is unknown too; compare it
+     against everything logged that day, and let step 8 refine it once the user
+     supplies the project.
    - For each candidate block, split it per calendar day if it crosses midnight,
-     then compute against the same (project, day):
+     then compute against its bucket — `(project, day)` when the project is
+     known, the all-projects day bucket when it is not:
      ```
      overlap  = minutes of the block already inside busy intervals
      coverage = overlap / block_minutes        (block_minutes>0)

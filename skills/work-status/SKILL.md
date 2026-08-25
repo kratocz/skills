@@ -1,7 +1,7 @@
 ---
 name: work-status
 description: Mid-day check — diff current state of volatile sources (GitHub PRs, Todoist completions) against the last /work-start snapshot. Use when the user says "/work-status", "what's new", "co se změnilo".
-version: 0.3.0
+version: 0.4.0
 allowed-tools: Read, Bash, ToolSearch, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
 license: MIT
 ---
@@ -16,7 +16,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
    Try to read `~/.claude/plugins/work/last-briefing.json`.
 
-   - If missing: stop with message "Žádný snapshot. Spusť /work-start nejdřív." Return.
+   - If missing: stop with this message — **in both languages; the config naming one is not read until step 2**: "Žádný snapshot. Spusť /work-start nejdřív." / "No snapshot. Run /work-start first." Return.
    - If `schema_version` is not `1`: warn "Snapshot je z jiné verze skillu. Pokračuju best-effort." Continue.
    - Compute snapshot age:
      ```bash
@@ -27,7 +27,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
      `age_hours = (now - snapshot_epoch) / 3600`
    - If `age_hours > 12`: warn "Snapshot je starý <X> hodin. Doporučuji /work-start." Continue anyway.
 
-2. **Read effective config** — use the same logic as `/work-start` step 1 (global config + per-project override merge). If global config is missing, stop with "Žádná konfigurace work skillů. Spusť /work-setup." Return.
+2. **Read effective config** — use the same logic as `/work-start` step 1 (global config + per-project override merge). If global config is missing, stop with (both languages, same reason) "Žádná konfigurace work skillů. Spusť /work-setup." / "No work skills config. Run /work-setup." Return.
 
    Compare current `effective_config_hash` (compute same way as in /work-start step 8) against snapshot's `effective_config_hash`. If different, append a warning: "⚠️ Konfigurace se od snapshotu změnila — diff může být zavádějící. Pro čistý stav spusť /work-start."
 
@@ -59,7 +59,11 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
    Sort `still_open` and pick the top 3 to display.
 
-5. **Render terse summary** in the configured language (Czech default):
+5. **Render terse summary** in the configured language (Czech default). **Every
+   quoted user-facing string in this skill is an example written in `cs`** —
+   render it in `effective_config.language`, keeping proper nouns, IDs, paths
+   and durations unchanged. The two step-1/2 messages above are the exception:
+   they carry both languages because they fire before the config is read.
 
    ```markdown
    ## 📊 Status — <X>h od /work-start

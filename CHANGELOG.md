@@ -2,6 +2,19 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-26
+
+### Fixed
+
+- **work-reconcile:** the default `calendar.exclude_keywords` were Czech-only (`oběd`, `lunch`, `dovolená`), so a non-Czech user's `Holiday` / `Vacation` / `Out of office` blocks were reconstructed as work and written into the timesheet as billable time. Defaults now cover the English forms too, and the skill warns that matching is a plain substring test — a short token like `pto` or `off` eats unrelated events (`pto` hits "symptom review") (v0.4.0).
+- **work-setup:** the language was asked in step 6 while the skill had been talking to the user since step 1, and in create mode there is no config for "the configured language" to resolve against — a fresh English user got the first five steps in Czech. Language is now step 1's immediate successor, asked bilingually, defaulting to `en` when neither an existing work config, the session-tracker config, nor the session's own language settles it. The no-MCP abort, the per-project override dialog and the scoring options gained English variants (v0.4.0).
+- **work-start / work-status / work-end / work-standup:** the missing-config and missing-snapshot aborts fire *before* the config is read, so they had no configured language to be phrased in and were Czech-only literals — an English user hit a dead end in a language they could not read. They now carry both languages inline, the way `work-reconcile` already did (v0.4.0, v0.4.0, v0.4.0, v0.5.0).
+
+### Changed
+
+- **work-*:** every skill in the suite now states, where it reads `config.language`, that the quoted strings below are examples written in `cs` rather than literals to emit verbatim. `work-reconcile` additionally splits its origin-label table into meaning + `cs` rendering and names its approval options by function (**all** / **select** / **skip** / **edit**) instead of by their Czech strings, which the surrounding prose had been re-canonising by referring back to "**Vše**". `work-start` now actually reads `config.language`, which it previously only mentioned in its render step (v0.4.0).
+- **repo:** the always-on `kodex` pointer line in the README is now English, matching the English-canonical `skills/kodex/SKILL.md`; `rules/kodex.md` follows it and the Czech original moves to `rules/kodex-cs.md`, mirroring the `references/kodex-cs.md` convention inside the skill.
+
 ## 2026-08-18
 
 ### Added

@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.8.0
+version: 0.9.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -182,7 +182,12 @@ automatically: the flow is always **propose → confirm → write**.
      `start`/`end` = that day's first/last ts **converted to local** (via `date`),
      `title` = the `ai-title` (or, if null, "Práce v <dir>"),
    - `project_hint` = the decoded working directory (see step 5 — the whole
-     path, not just its last segment),
+     path, not just its last segment). **The encoding is lossy**: it maps both
+     `/` and `.` to `-`, so `-Users-…-www-hunting-shop-cz` could be any of
+     several real paths. Do not guess — resolve the slug by longest-prefix match
+     against directories that actually exist under the checkout root, and where
+     the directory is gone (a deleted worktree) keep the raw slug and let the
+     step 5 markers speak,
    - `origin_marks=[]`.
 
    **B. Google Calendar** (primary, if
@@ -195,11 +200,22 @@ automatically: the flow is always **propose → confirm → write**.
    - drop all-day events if `exclude_all_day`,
    - drop events the user declined if `exclude_declined`,
    - **drop events the user marked as Free** — `transparency: "transparent"`
-     (equivalently `availability: "AVAILABILITY_FREE"`). That flag is the
-     user's own statement that the slot is not work, and it needs no keyword
-     list to maintain. Observed 2026-08-26: a cinema showing (150 min) and four
-     grocery-courier slots sailed through the keyword filter and were proposed
-     as billable time purely because nobody had thought to add those words.
+     (equivalently `availability: "AVAILABILITY_FREE"`). That flag is the user's
+     own statement that the slot is not work, and unlike a keyword list it needs
+     no maintenance. Observed 2026-08-26: four grocery-courier slots carried it
+     and had matched no keyword.
+   - **mark, but do not drop, a solo event**: no attendee other than the user
+     *and* the user is the organizer → add `'solo?'` to `origin_marks`. A block
+     of focused solo work looks exactly like this, so dropping it would lose
+     real time; but so does everything personal that was never meant as work.
+     On the same day the Free flag caught the courier slots it did **not** catch
+     a 150-minute cinema showing — that event carries no `transparency` field at
+     all, it is a plain busy event, and `kino` was in nobody's keyword list. It
+     would have been proposed as billable. (A note added here on 2026-08-26
+     claimed the Free flag covered that case; it did not — the two events were
+     conflated.) Measured over the same month, "no other attendee and organizer
+     is self" separated every unambiguous work event from every unambiguous
+     personal one, 6 for 6 — which is why it is a prompt, not a filter.
    - drop events whose title matches any `exclude_keywords` (case-insensitive
      substring). The default list is deliberately whole-word-ish: matching is a
      plain substring test, so a short token added here (`pto`, `ooo`, `off`)
@@ -214,8 +230,16 @@ automatically: the flow is always **propose → confirm → write**.
 
    **C. Confirmatory sources** (git always; GitHub/ClickUp if enabled+present):
 
-   - **git** (local, free): in the current repo (and, if configured, each repo
-     under a known root), collect commits authored by the user in the window:
+   - **git** (local, free): **not just the current repo** — that is almost
+     never where the window's work happened. Measured 2026-08-26 from a
+     checkout of this very collection: the current repo held **0** in-window
+     commits while 131 existed across seven others, so the whole source
+     contributed nothing. Derive the repo list from the work you already found:
+     every session block's decoded working directory (step 3A), resolved to its
+     enclosing git repo. Add any configured root on top. Skip paths with no
+     `.git` and say how many you skipped, so a missing local clone reads as
+     "unconfirmed", never as "no work". Then in each repo collect commits
+     authored by the user in the window:
      `--since`/`--until` filter on the **commit** date, while `%aI` is the
      **author** date — the one that says when the work happened, and the one a
      timesheet wants. Rebasing and amending move the commit date forward and
@@ -240,9 +264,15 @@ automatically: the flow is always **propose → confirm → write**.
      `effective_config.sources.github.username` in the window. Each is a
      confirmatory hit (timestamp = merged/review time, subject = title).
    - **ClickUp** (probe `select:mcp__plugin_ntit-common_clickup__clickup_filter_tasks`):
-     tasks updated by the user in the window via `clickup_filter_tasks`;
-     optionally `clickup_get_task_comments` for the user's comments. Confirmatory
-     hits (timestamp = update/comment time, subject = task name).
+     **there is no updated-date filter** — that tool ranges only over
+     `due_date_*` and `date_closed_*`, so "tasks updated by the user in the
+     window", which this step used to ask for, cannot be expressed and an agent
+     rediscovers that every run. Use `date_closed_gt`/`date_closed_lt` for tasks
+     the user closed in the window, and `clickup_get_task_comments` on the tasks
+     you already have in hand for their comment timestamps. Both are
+     confirmatory hits (timestamp = close/comment time, subject = task name).
+     Anything needing "was this touched in the window" is out of reach here —
+     say so once rather than fetching everything and filtering client-side.
    Absent MCP → warn once, skip that source.
 
    **D. Work that never ran through an agent** (ChatGPT/Gemini sessions, manual
@@ -318,7 +348,10 @@ automatically: the flow is always **propose → confirm → write**.
    working; it does not prove the user was.
 
    - **Per block:** over ~6 h in one day → mark `'long?'` in `origin_marks`.
-   - **Per day:** once every block exists, sum them per local calendar day. A
+   - **Per day:** once every block exists, sum them per local calendar day —
+     **AI blocks only**. A meeting is wall-clock time someone else can vouch
+     for; folding calendar hours into the gate would raise the threshold on
+     exactly the days that are legitimately full of meetings. A
      day over ~10 h is implausible on its own, and the per-block gate will not
      catch it — the inflation usually arrives as dozens of small blocks across
      parallel repos, none individually long. Mark every block of such a day
@@ -358,9 +391,10 @@ automatically: the flow is always **propose → confirm → write**.
      `…/vault-platform/.claude/worktrees/INFRA-13` and `2026` for
      `…/krato-cluster-2026`, neither of which is a project. Skip segments that
      are purely numeric or are known scaffolding (`.claude`, `subagents`,
-     `src`); if nothing matches, fall back to the segment directly after the
-     `<host>/<owner>/` prefix, which is the repository name. For Calendar blocks
-     with no hint, leave `project=null` for now.
+     `src`). The repository name — the segment right after the
+     `<host>/<owner>/` prefix — is simply the last segment to try, **not** a
+     fallback that assigns anything: if it also fails to match, the block has no
+     project. For Calendar blocks with no hint, leave `project=null` for now.
    - **A worktree never names the project — the repository above it does.** On
      a path containing `/.claude/worktrees/`, truncate it there and match only
      the part to the left; the worktree's own name is a branch label chosen for
@@ -370,12 +404,23 @@ automatically: the flow is always **propose → confirm → write**.
      the match *succeeded* no `'project?'` gate fired to surface it. Skipping
      the literal token `worktrees` is not enough; the segment after it has to go
      too.
-   - **Matching is equality on the project name's last `/`-separated part**,
-     compared case-insensitively after replacing `-`/`_` with nothing — so the
-     path segment `PMA` matches the project `NTIT/PMA`, and `payroll-system-PMA`
-     matches it too once the separators are folded. It is **not** a substring
-     test in either direction: substring makes the segment `cz` match every
-     `*.cz` project and `server` match three at once. If two projects match
+   - **Matching rule.** Take the project name's last `/`-separated part as its
+     *key*. Normalise key and segment alike: lowercase, and collapse every `-`,
+     `_` and `.` to one separator character. A segment matches when it
+     **equals** the key, or when the key is its **trailing separator-delimited
+     component**. Nothing else counts.
+     - `www-hunting-shop-cz` ≡ the key of `www.hunting-shop.cz` → equal, match.
+     - `payroll-system-PMA` ends with the component `pma`, the key of
+       `NTIT/PMA` → match.
+     - `webserver` does **not** match the key `server`: no separator precedes
+       it, so it is not a component. Requiring that boundary is the whole
+       point — a plain substring test makes the segment `cz` match every
+       `*.cz` project and `server` match three at once.
+     An earlier wording said "equality … after replacing `-`/`_` with nothing"
+     and then gave `payroll-system-PMA` → `NTIT/PMA` as an example of it. Those
+     contradict — folding yields `payrollsystempma`, which equals nothing — and
+     read literally it left **96 of 97 blocks unattributed on a live run**,
+     including 31 h of the very project the example names. If two projects match
      equally well, treat it as no match and let step 8 ask.
    - **No match means no project — never a configured default.** Set
      `project=null` and add `'project?'` to `origin_marks`; the review (step 8)
@@ -446,18 +491,35 @@ automatically: the flow is always **propose → confirm → write**.
      against everything logged that day, and let step 8 refine it once the user
      supplies the project.
    - For each candidate block, split it per calendar day if it crosses midnight,
-     then compute against its bucket — `(project, day)` when the project is
-     known, the all-projects day bucket when it is not:
+     then measure against its bucket — `(project, day)` when the project is
+     known, the all-projects day bucket when it is not.
+
+     **Do not divide wall-clock overlap by the gap-capped estimate.** They are
+     different units: `block_minutes` is gap-capped and routinely a fraction of
+     the block's `[start, end]` span, so that ratio exceeds 1.0 for any block
+     with long internal pauses (23 of 89 blocks on a live run) and
+     `block_minutes - overlap` goes negative. Scaling by the covered *fraction*
+     of the span is no better — it assumes activity is spread evenly across the
+     span, and on the same window it proposed 29.2 h on top of a period that
+     already held 33.3 h.
+
+     Instead **re-run the step 4 gap-capping over just the timestamps that fall
+     outside the busy intervals**. That measures the un-logged work directly
+     rather than inferring it, needs no density assumption, and is bounded in
+     `[0, 1]` by construction:
      ```
-     overlap  = minutes of the block already inside busy intervals
-     coverage = overlap / block_minutes        (block_minutes>0)
+     outside       = [t for t in raw_messages_ts if t not inside any busy interval]
+     minutes_left  = gap_capped(outside)        # same G and E as step 4
+     coverage      = 1 - minutes_left / block_minutes
      ```
+     For a Calendar block there are no timestamps to re-cap — it is contiguous,
+     so `minutes_left` is its span minus the busy overlap.
    - Decide with `coverage_covered` (0.9) and `coverage_missing` (0.1):
-     - `coverage >= coverage_covered` → **COVERED**: drop the block; count it for
-       the summary line only.
-     - `coverage_missing <= coverage < coverage_covered` → **PARTIAL**: keep, but
-       set proposed `minutes = round(block_minutes - overlap)`; label
-       `~<m>m (doplněk k <overlap>m)`.
+     - `coverage >= coverage_covered` → **COVERED**: drop the block from the
+       proposals; it still counts toward the summary line and the roll-up below.
+     - `coverage_missing <= coverage < coverage_covered` → **PARTIAL**: keep,
+       with proposed `minutes = minutes_left`; label
+       `~<m>m (doplněk k <block_minutes - minutes_left>m)`.
      - `coverage < coverage_missing` → **MISSING**: keep whole block; label
        `~<m>m (chybí)`.
    - `commit-only` blocks (`minutes=null`) skip coverage math (nothing to
@@ -465,20 +527,33 @@ automatically: the flow is always **propose → confirm → write**.
    - **COVERED means "already logged", not "impossible".** When a block is
      buried under an entry for a *different* project, the overlap may be real
      parallel work — common when an agent runs unattended on one project while
-     the user works another. Do not silently drop those: surface them, show the
-     colliding entry (its `at` field reveals whether it was measured live or
-     entered retrospectively as one lump — the latter is far weaker evidence),
-     and let the user choose between shortening the other entry, logging the
-     overlap as-is, or skipping. Attention splits across parallel work, so a
-     block approved as an overlap usually deserves fewer minutes than its
-     anchors span.
+     the user works another. Attention splits across parallel work, so a block
+     approved as an overlap usually deserves fewer minutes than its anchors
+     span.
+
+     **How to surface those without drowning the review.** An earlier version of
+     this step said both "drop the block, count it for the summary only" and
+     "do not silently drop those, show the colliding entry" — fine while
+     cross-project collisions were an occasional edge case, but once unmatched
+     blocks compare against the all-projects bucket, *every* COVERED block is
+     covered by some other project's entry, so the second rule would fire on all
+     of them (32 blocks, 50 h of anchors, on a live run). Print a **one-line
+     roll-up per (project, day)** — `pokryto: <N> bloků, <Σ>m, kolidují s
+     <projekt(y)>` — never a row each, and let the user expand a day on request.
+     Reserve the full colliding-entry detail (including its `at` field, which
+     reveals whether the entry was measured live or entered retrospectively as
+     one lump — the latter is far weaker evidence) for a day the user opens.
    - ClickUp coverage is bucketed per (project, day), not per-task, so
      same-project same-day ClickUp time can mask a distinct task's block — the
      `reconciled_tag` idempotency check (step 9) is the finer backstop.
 
 8. **Review — the heart of "confirm".** First print a **grouped table**
    (by project, then day), each row: proposed minutes + origin label +
-   `origin_marks`. End with a summary line: `N návrhů (Σ h) · K pokrytých skryto
+   `origin_marks`. Order groups by total proposed minutes, largest first, and
+   put the unattributed (`project=null`) group **first** rather than leaving it
+   unplaced — it is where the user's attention is actually needed, and it is
+   usually the biggest. Sorting it last put a single 5-minute row at the top of
+   a live run and buried a 28-row group beneath it. End with a summary line: `N návrhů (Σ h) · K pokrytých skryto
    · M bez času`. Example:
 
    ```
@@ -511,6 +586,10 @@ automatically: the flow is always **propose → confirm → write**.
      span and message count before approval**, so the user can tell a genuinely
      long day from an agent that ran unattended while they were elsewhere. It
      can be approved as-is, but never silently as part of a bulk **all**.
+   - **A block marked `'solo?'` (step 3B: a calendar event with no other
+     attendee, organised by the user) is shown with its time of day and
+     location before approval.** Solo focus time and a cinema ticket are the
+     same shape to every automatic filter; only the user can tell them apart.
    - **A day whose blocks carry `'day?'` (over ~10 h reconstructed, step 4) is
      announced once at the head of that day's group** with its reconstructed
      total and what the tracker already holds for it, before any of its rows

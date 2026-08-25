@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.5.0
+version: 0.6.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -128,9 +128,16 @@ automatically: the flow is always **propose → confirm → write**.
 
    ```bash
    DIR="${projects_dir/#\~/$HOME}"        # expand ~
-   SINCE_UTC=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "<since>" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
-             || date -u -d "<since>" +%Y-%m-%dT%H:%M:%SZ)
-   UNTIL_UTC=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "<until>" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+   # `since`/`until` are LOCAL wall-clock (step 2). On macOS `date -u -j -f`
+   # parses its input as UTC, so converting them that way shifts the window by
+   # the zone offset — verified 2026-08-26 in CEST: a July reconcile dropped the
+   # first two hours of 1 July and pulled in the last two hours of 31 July as
+   # "1 August" rows. Parse as local first (plain `-j -f` → epoch), then format
+   # as UTC; this also picks up the DST rule in force *on that date*, which
+   # appending a literal `$(date +%z)` would not.
+   SINCE_UTC=$( { E=$(date -j -f "%Y-%m-%dT%H:%M:%S" "<since>" +%s) && date -u -r "$E" +%Y-%m-%dT%H:%M:%SZ; } 2>/dev/null \
+             || date -u -d "<since>" +%Y-%m-%dT%H:%M:%SZ)   # Linux: -d already parses as local
+   UNTIL_UTC=$( { E=$(date -j -f "%Y-%m-%dT%H:%M:%S" "<until>" +%s) && date -u -r "$E" +%Y-%m-%dT%H:%M:%SZ; } 2>/dev/null \
              || date -u -d "<until>" +%Y-%m-%dT%H:%M:%SZ)
    # depth 1 only: <slug>/<session>.jsonl, never <slug>/<uuid>/subagents/*.jsonl
    find "$DIR" -mindepth 2 -maxdepth 2 -name '*.jsonl' -type f
@@ -153,7 +160,11 @@ automatically: the flow is always **propose → confirm → write**.
        t = d.get('timestamp')
        if t: ts.append(t)
        if d.get('type') == 'ai-title':
-           title = (d.get('content') or title)
+           # the field is 'aiTitle'; 'content' is a tolerant fallback for other
+           # harnesses. Reading only 'content' yields None on every Claude Code
+           # session (verified 2026-08-26: 550 of 567 files carry aiTitle), so
+           # every row degrades to the "Práce v <dir>" placeholder.
+           title = (d.get('aiTitle') or d.get('content') or title)
    ts = sorted(P(t) for t in ts if t)
    ts = [t for t in ts if lo <= t <= hi]          # clip, do not merely mark
    if not ts: sys.exit(0)
@@ -318,11 +329,19 @@ automatically: the flow is always **propose → confirm → write**.
      `subagents`, `src`); if nothing matches, fall back to the segment directly
      after the `<host>/<owner>/` prefix, which is the repository name. For
      Calendar blocks with no hint, leave `project=null` for now.
-   - Fallback to `sources.toggl.project_id` /
-     `default_project_id` from `~/.claude/plugins/session-tracker/config.json` if no match (may be null).
-   - If still unresolved, set `project=null` and add `'project?'` to
-     `origin_marks` — the review (step 8) will force the user to pick before this
-     block can be approved.
+   - **No match means no project — never a configured default.** Set
+     `project=null` and add `'project?'` to `origin_marks`; the review (step 8)
+     then forces the user to pick before the block can be approved. Do **not**
+     fall back to `sources.toggl.project_id` or `default_project_id`: those name
+     the project a *timer* starts on, which is a different question from where
+     unattributed reconstructed time belongs. Measured on a live config on
+     2026-08-26, that fallback put 55.4 of 68.4 proposed hours onto a billable
+     client project — 14.6 h of them from a personal repo — and because the
+     configured id was non-null, the `'project?'` branch below was unreachable,
+     so nothing ever surfaced for review. A reconcile writes to a timesheet
+     someone bills from; an unanswered question is cheap there and a silent
+     default is not. Bulk-assigning a whole group to one project stays one
+     keystroke away in step 8.
    - If `project_filter` (`--project`) is set, drop blocks whose resolved
      `project` does not match it (case-insensitive substring).
 
@@ -422,7 +441,12 @@ automatically: the flow is always **propose → confirm → write**.
    - **A block with `minutes=null` (the `?` items) CANNOT be approved until the
      user supplies a duration** — force the prompt; never write a `null`.
    - **A block with `'project?'` in `origin_marks` CANNOT be approved until the
-     user picks a project.**
+     user picks a project.** Since step 5 no longer applies any default, a
+     month's worth of personal-repo work can arrive as dozens of such blocks —
+     so when a group holds more than one, **offer to set the project for the
+     whole group in one answer** (with the per-block path shown) before falling
+     back to asking block by block. The gate exists to stop a silent
+     misattribution, not to charge a keystroke per row.
    - **A block marked `'long?'` (over ~6 h in one day, step 4) is shown with its
      span and message count before approval**, so the user can tell a genuinely
      long day from an agent that ran unattended while they were elsewhere. It

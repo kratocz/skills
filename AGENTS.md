@@ -12,7 +12,15 @@ A collection of portable [Agent Skills](https://agentskills.io/) — one directo
 - Directory reality on tested harnesses: `~/.agents/skills/` is read by Codex, Copilot CLI, Gemini CLI, opencode, Antigravity CLI (interactive sessions), and Claude Code (with a delayed index). `~/.claude/skills/` is picked up by Claude Code instantly, including hot-reload into running sessions.
 - Antigravity's `agy -p` (non-interactive print mode) does not load skills at all — never use it to test skill visibility; test in an interactive session.
 - Known upstream gap in the skills CLI: `-g -a antigravity-cli` installs only into `~/.agents/skills/` and never into `~/.gemini/antigravity-cli/skills/`, despite the CLI's own agent map listing that global path. It works in practice only because Antigravity reads `~/.agents/skills/`. Do not open an upstream issue for it — that is a deliberate decision, not an oversight.
-- The maintainer's machines use **live symlinks** from `~/.agents/skills/` and `~/.claude/skills/` straight into a working clone, so edits apply without reinstalling.
+- The maintainer's machines use **live symlinks** from `~/.agents/skills/<name>` straight into a working clone, so edits apply without reinstalling (`~/.claude/skills/<name>` is the CLI's own symlink to `~/.agents/skills/<name>` and resolves through). **The skills CLI does not create these — `npx skills add` always writes physical copies**, so a plain `add` silently reverts the setup, and it has to be re-established afterwards:
+  ```bash
+  CLONE=$(pwd)   # a working clone
+  for n in $(ls "$CLONE/skills"); do
+    [ -f "$CLONE/skills/$n/SKILL.md" ] || continue
+    rm -rf ~/.agents/skills/"$n" && ln -s "$CLONE/skills/$n" ~/.agents/skills/"$n"
+  done
+  ```
+  Before replacing anything under `~/.agents/skills/`, confirm each target is this repo's — its `SKILL.md` exists and its frontmatter `name` equals the directory name — and leave everything else alone; that directory also holds skills from other sources. Verified 2026-08-26: this claim had drifted from reality, all 27 skills sat as copies from the previous day, and a `/work-reconcile` run made to test a fix silently executed the **old** version instead. Trusting an installed skill to match the clone is the failure mode; check `version:` on both sides when a test result looks like the edit never happened.
 
 ## Authoring rules
 
@@ -33,7 +41,7 @@ A collection of portable [Agent Skills](https://agentskills.io/) — one directo
 
 ## Dev loop
 
-Edit in a working clone. Symlinked installs see changes immediately; copy installs refresh with `npx skills add . -g -y --all`. Verify discovery with `npx skills add . --list` (every skill must appear). When adding a skill, also add a row to the README table.
+Edit in a working clone. Symlinked installs (above) see changes immediately; copy installs refresh with `npx skills add . -g -y --all` — which also flattens any symlinks back into copies, so re-run the symlink loop after it. Verify discovery with `npx skills add . --list` (every skill must appear). When adding a skill, also add a row to the README table.
 
 **Changelog.** `CHANGELOG.md` is date-grouped and scope-prefixed (skill name, or `repo` for collection-wide changes). Every `feat`/`fix` commit — and any other change that alters an installed skill's behavior or config contract — adds a line under today's date in the same push; typo/refactor/chore noise stays out. There are no repo-level versions or tags; the complete per-skill history remains `git log -- skills/<name>/`.
 

@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.6.0
+version: 0.7.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -210,13 +210,25 @@ automatically: the flow is always **propose → confirm → write**.
 
    - **git** (local, free): in the current repo (and, if configured, each repo
      under a known root), collect commits authored by the user in the window:
+     `--since`/`--until` filter on the **commit** date, while `%aI` is the
+     **author** date — the one that says when the work happened, and the one a
+     timesheet wants. Rebasing and amending move the commit date forward and
+     leave the author date alone, so the two drift apart (7 of the commits in
+     one repo's four-day window on 2026-08-26). Filtering on one and recording
+     the other lets commits land outside the window: a commit authored at
+     `2026-07-27 02:00` surfaced in a reconcile starting `2026-07-28`. Git has
+     no author-date range filter, so **over-fetch on commit date and filter on
+     `%aI` yourself**. A commit's author date effectively never postdates its
+     commit date, so padding `--since` backwards a little (clock skew) and
+     dropping `--until` entirely is enough:
      ```bash
-     git log --all --since="<since>" --until="<until>" \
+     git log --all --since="<since> -7 days" \
        --author="$(git config user.email)" \
-       --pretty='%h|%aI|%s' 2>/dev/null
+       --pretty='%h|%aI|%s' 2>/dev/null \
+     | awk -F'|' -v s="<since_iso>" -v u="<until_iso>" '$2 >= s && $2 <= u'
      ```
-     Each commit is a confirmatory hit with a timestamp, its repo name, and
-     subject. Not a block yet — see step 5.
+     Each surviving commit is a confirmatory hit with a timestamp, its repo
+     name, and subject. Not a block yet — see step 5.
    - **GitHub** (probe `select:mcp__github__search_pull_requests`): search PRs
      reviewed/merged and issues closed by
      `effective_config.sources.github.username` in the window. Each is a
@@ -293,13 +305,27 @@ automatically: the flow is always **propose → confirm → write**.
    Then round to `round_to_min` and set `minutes`. If `minutes < min_block_min`,
    drop the block as noise. Set `origin='ai-gapcapped'`.
 
-   **Sanity gate.** Per-day splitting bounds a block at 24 h, which is not the
-   same as plausible: an agent left running unattended produces a dense
-   timestamp stream with no gap long enough to break, and gap-capping happily
-   sums it. Any block over ~6 h in one day is an outlier — keep it, but mark it
-   `'long?'` in `origin_marks` and make the review (step 8) show what it is
-   before the user can approve it. Presence in the log proves the agent was
+   **Sanity gate — per block AND per day.** Per-day splitting bounds a block at
+   24 h, which is not the same as plausible: an agent left running unattended
+   produces a dense timestamp stream with no gap long enough to break, and
+   gap-capping happily sums it. Presence in the log proves the agent was
    working; it does not prove the user was.
+
+   - **Per block:** over ~6 h in one day → mark `'long?'` in `origin_marks`.
+   - **Per day:** once every block exists, sum them per local calendar day. A
+     day over ~10 h is implausible on its own, and the per-block gate will not
+     catch it — the inflation usually arrives as dozens of small blocks across
+     parallel repos, none individually long. Mark every block of such a day
+     `'day?'`. Measured on 2026-08-26, four July days reconstructed to 19–30 h
+     each with no single block above 6 h.
+
+   The per-day gate matters most where the coverage diff (step 7) cannot help.
+   Where the tracker already holds a normal day's entries, that diff absorbs
+   almost all of the inflation on its own — 30.3 h reconstructed against 10.6 h
+   logged proposed only 1.6 h. The exposure is the thinly-logged day: 12.6 h
+   reconstructed against 1.0 h logged proposed 8.7 h, and a reconcile targets
+   exactly those days. So treat `'day?'` as the backstop for the case the diff
+   is blind to, not as a routine warning.
 
    **Calendar blocks:** `minutes` = exact `(end - start)` rounded to
    `round_to_min` (no gap-capping — a meeting is contiguous). Set
@@ -451,6 +477,10 @@ automatically: the flow is always **propose → confirm → write**.
      span and message count before approval**, so the user can tell a genuinely
      long day from an agent that ran unattended while they were elsewhere. It
      can be approved as-is, but never silently as part of a bulk **all**.
+   - **A day whose blocks carry `'day?'` (over ~10 h reconstructed, step 4) is
+     announced once at the head of that day's group** with its reconstructed
+     total and what the tracker already holds for it, before any of its rows
+     are offered. Bulk **all** on such a group asks for confirmation first.
    - **If `sink.target` includes `clickup`:** a ClickUp time entry must attach to
      a `task_id` (AI sessions / commits / meetings have no inherent ClickUp
      task). So for each block the user approves for a ClickUp write, prompt them

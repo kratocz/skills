@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.4.0
+version: 0.5.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__plugin_ntit-common_clickup__clickup_filter_tasks, mcp__plugin_ntit-common_clickup__clickup_get_task_comments, mcp__plugin_ntit-common_clickup__clickup_get_time_entries, mcp__plugin_ntit-common_clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -57,6 +57,19 @@ automatically: the flow is always **propose → confirm → write**.
      `sink.target=toggl`, `sink.billable=true`, `sink.reconciled_tag=reconciled`.
      `calendar.as_work` also gates the Calendar source: when false, Calendar is
      not fetched at all.
+   - **Where the `reconcile` block is read from.** The canonical location is
+     **top-level** `config.reconcile.*` — that is what `/work-setup` writes, and
+     `calendar.*` lives at `config.reconcile.calendar.*`. A hand-edited config
+     often puts the calendar half where it feels natural instead, under
+     `config.sources.google_calendar.reconcile.*`; observed live on 2026-08-26,
+     where a user's own `exclude_keywords` sat there and was silently ignored,
+     so the built-in defaults ran and their filter never applied. **Read that
+     nested block as a fallback, and say so out loud** — "Kalendářové nastavení
+     načteno ze `sources.google_calendar.reconcile` (zastaralé umístění);
+     přesuň ho do `reconcile.calendar`." / "Calendar settings read from
+     `sources.google_calendar.reconcile` (legacy location); move them to
+     `reconcile.calendar`." Never merge both halves silently: two live
+     locations for one setting is how the first one stops being read.
 
 2. **Resolve the window `[since, until]`.**
    - `until`: `--until` if given (bare date → `T23:59:59` local), else now.
@@ -89,11 +102,29 @@ automatically: the flow is always **propose → confirm → write**.
    **A. Agent session logs** (primary, if
    `effective_config.reconcile.ai_sessions.enabled`):
 
-   Session logs live under `<projects_dir>/<encoded-path>/*.jsonl`, one file per
-   session. The directory name is the working directory with `/` → `-`. Each
+   Session logs live at `<projects_dir>/<encoded-path>/*.jsonl`, one file per
+   session; the directory name is the working directory with `/` → `-`. Each
    line is a JSON object with `timestamp` (ISO 8601 UTC), `type`
-   (`user`/`assistant`/`ai-title`/…). Find sessions overlapping the window and
-   turn each into one `candidate_block`:
+   (`user`/`assistant`/`ai-title`/…).
+
+   **Three properties of this tree cost real hours if you take it at face
+   value** — all three measured on a live `~/.claude/projects` on 2026-08-26,
+   where the naive reading inflated one month from 141 h to 254 h:
+
+   - **Subagent transcripts are nested one level deeper**, at
+     `<projects_dir>/<slug>/<session-uuid>/subagents/agent-*.jsonl` (775 of
+     1340 files on that machine). A subagent runs *inside* its parent session,
+     so its timestamps are already covered by the parent's — counting them adds
+     the same minutes twice. A recursive `find` sweeps them in silently, so
+     **match at depth 1 only**.
+   - **A `.jsonl` is a resumable session, not a work block.** The worst case
+     observed spanned 2026-07-15 → 2026-08-09 with 24 259 messages and
+     gap-capped to 3 425 min (57 h) in a single row. Split every session into
+     one block **per local calendar day**.
+   - **A session can straddle the window edge**, so compute from timestamps
+     **inside `[since, until]` only** — clipping `start`/`end` while summing all
+     of them charges the window for work outside it (that same session carried
+     nine days of August).
 
    ```bash
    DIR="${projects_dir/#\~/$HOME}"        # expand ~
@@ -101,41 +132,47 @@ automatically: the flow is always **propose → confirm → write**.
              || date -u -d "<since>" +%Y-%m-%dT%H:%M:%SZ)
    UNTIL_UTC=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "<until>" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
              || date -u -d "<until>" +%Y-%m-%dT%H:%M:%SZ)
-   find "$DIR" -name '*.jsonl' -type f
+   # depth 1 only: <slug>/<session>.jsonl, never <slug>/<uuid>/subagents/*.jsonl
+   find "$DIR" -mindepth 2 -maxdepth 2 -name '*.jsonl' -type f
    ```
 
    For each `*.jsonl`, extract with a small Python filter (robust to non-JSON
-   lines) the sorted list of message timestamps and the `ai-title` value:
+   lines) the in-window timestamps grouped by local day, plus the `ai-title`:
 
    ```bash
    python3 - "$f" "$SINCE_UTC" "$UNTIL_UTC" <<'PY'
-   import json, sys
+   import json, sys, collections, datetime
    f, since, until = sys.argv[1], sys.argv[2], sys.argv[3]
+   P = lambda x: datetime.datetime.fromisoformat(x.replace('Z','+00:00'))
+   lo, hi = P(since), P(until)
    ts, title = [], None
-   for line in open(f, encoding='utf-8'):
+   for line in open(f, encoding='utf-8', errors='replace'):
        try: d = json.loads(line)
        except Exception: continue
+       if not isinstance(d, dict): continue
        t = d.get('timestamp')
        if t: ts.append(t)
        if d.get('type') == 'ai-title':
            title = (d.get('content') or title)
-   ts = sorted(t for t in ts if t)
+   ts = sorted(P(t) for t in ts if t)
+   ts = [t for t in ts if lo <= t <= hi]          # clip, do not merely mark
    if not ts: sys.exit(0)
-   # keep session if it overlaps [since, until]
-   if ts[-1] < since or ts[0] > until: sys.exit(0)
-   print(json.dumps({'first': ts[0], 'last': ts[-1], 'n': len(ts),
-                     'title': title, 'ts': ts}))
+   perday = collections.defaultdict(list)          # local day (use the TZ offset
+   for t in ts:                                    # the machine reports)
+       perday[t.astimezone().strftime('%Y-%m-%d')].append(t.isoformat())
+   for day, dts in sorted(perday.items()):
+       print(json.dumps({'day': day, 'first': dts[0], 'last': dts[-1],
+                         'n': len(dts), 'title': title, 'ts': dts}))
    PY
    ```
 
-   For each surviving session, create a `candidate_block`:
-   - `source='ai'`, `raw_messages_ts=ts` (kept for the duration math later, step 4),
-     `start`/`end` = first/last ts **converted to local** (via `date`),
+   Each emitted line is one `candidate_block`:
+   - `source='ai'`, `raw_messages_ts=ts` (that day's slice, kept for step 4),
+     `start`/`end` = that day's first/last ts **converted to local** (via `date`),
      `title` = the `ai-title` (or, if null, "Práce v <dir>"),
-   - `project_hint` = the repo/dir name decoded from the directory name (last
-     path segment of the decoded working directory),
+   - `project_hint` = the decoded working directory (see step 5 — the whole
+     path, not just its last segment),
    - `origin_marks=[]`.
-   - Clip `start`/`end` to `[since, until]` if the session spills over an edge.
 
    **B. Google Calendar** (primary, if
    `effective_config.reconcile.calendar.as_work` is true and MCP present —
@@ -212,8 +249,10 @@ automatically: the flow is always **propose → confirm → write**.
 4. **Estimate a duration for each block.** The estimate is always a *default to
    hand-edit*, never authoritative.
 
-   **AI blocks — gap-capping** (`raw_messages_ts` sorted, UTC is fine here since
-   we only take differences). With `G = gap_threshold_min`, `E = edge_pad_min`:
+   **AI blocks — gap-capping.** `raw_messages_ts` is one local day's slice of
+   one session, already clipped to the window by step 3A — never a whole file.
+   Sorted; UTC is fine here since we only take differences. With
+   `G = gap_threshold_min`, `E = edge_pad_min`:
 
    ```
    minutes_raw = 0
@@ -243,6 +282,14 @@ automatically: the flow is always **propose → confirm → write**.
    Then round to `round_to_min` and set `minutes`. If `minutes < min_block_min`,
    drop the block as noise. Set `origin='ai-gapcapped'`.
 
+   **Sanity gate.** Per-day splitting bounds a block at 24 h, which is not the
+   same as plausible: an agent left running unattended produces a dense
+   timestamp stream with no gap long enough to break, and gap-capping happily
+   sums it. Any block over ~6 h in one day is an outlier — keep it, but mark it
+   `'long?'` in `origin_marks` and make the review (step 8) show what it is
+   before the user can approve it. Presence in the log proves the agent was
+   working; it does not prove the user was.
+
    **Calendar blocks:** `minutes` = exact `(end - start)` rounded to
    `round_to_min` (no gap-capping — a meeting is contiguous). Set
    `origin='calendar-exact'`.
@@ -261,9 +308,16 @@ automatically: the flow is always **propose → confirm → write**.
    `/tracker-log-entry`):
    - Fetch active Toggl projects (`mcp__toggl__toggl_list_projects`, or the
      API key from `~/.claude/plugins/session-tracker/config.json` as fallback).
-   - For AI blocks: match `project_hint` (repo/dir name) case-insensitively
-     against project names; on a hit set `project`. For Calendar blocks with no
-     hint, leave `project=null` for now.
+   - For AI blocks: `project_hint` is the whole decoded working directory. Walk
+     its segments **right to left** and take the first that matches a project
+     name case-insensitively; on a hit set `project`. Do not just take the last
+     segment — measured against a live tree, that yields `13` for
+     `…/vault-platform/.claude/worktrees/INFRA-13` and `2026` for
+     `…/krato-cluster-2026`, neither of which is a project. Skip segments that
+     are purely numeric or are known scaffolding (`.claude`, `worktrees`,
+     `subagents`, `src`); if nothing matches, fall back to the segment directly
+     after the `<host>/<owner>/` prefix, which is the repository name. For
+     Calendar blocks with no hint, leave `project=null` for now.
    - Fallback to `sources.toggl.project_id` /
      `default_project_id` from `~/.claude/plugins/session-tracker/config.json` if no match (may be null).
    - If still unresolved, set `project=null` and add `'project?'` to
@@ -369,6 +423,10 @@ automatically: the flow is always **propose → confirm → write**.
      user supplies a duration** — force the prompt; never write a `null`.
    - **A block with `'project?'` in `origin_marks` CANNOT be approved until the
      user picks a project.**
+   - **A block marked `'long?'` (over ~6 h in one day, step 4) is shown with its
+     span and message count before approval**, so the user can tell a genuinely
+     long day from an agent that ran unattended while they were elsewhere. It
+     can be approved as-is, but never silently as part of a bulk **all**.
    - **If `sink.target` includes `clickup`:** a ClickUp time entry must attach to
      a `task_id` (AI sessions / commits / meetings have no inherent ClickUp
      task). So for each block the user approves for a ClickUp write, prompt them

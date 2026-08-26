@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [debate-reply](./skills/debate-reply) | Answer a public challenge to a claim you have written down — steelman and verify against primary sources, fix your own note first, reply conceding then closing with one question, archive with receipts | 2026-08-27 |
 | [skillset-adopt](./skills/skillset-adopt) | Adopt a third-party skill collection: inventory first, name-collision and trigger-overlap detection, per-skill verdict install / borrow / skip, verified install | 2026-08-26 |
 | [skill-dry-run](./skills/skill-dry-run) | Prove a skill works by running it on real data in a clean context — writes made structurally impossible, findings re-verified | 2026-08-26 |
 | [dm-catchup](./skills/dm-catchup) | Catch up on DMs with a person across ClickUp chat/Slack — threads expanded, summary + assessment + approved-draft reply | 2026-08-18 |

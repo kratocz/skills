@@ -6,13 +6,15 @@ license: MIT
 
 # init-project — procedure
 
-Bootstrap a new project at the current working directory. Always operate in the user's current `pwd` — never `cd` elsewhere. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `CLAUDE.md` / `README.md` (tell the user it already exists).
+Bootstrap a new project at the **target directory**. By default that is the user's current `pwd` — do not wander off to some other directory you picked yourself. Never overwrite existing user content; only **append** to existing `.gitignore`, and **skip** an existing `AGENTS.md` / `CLAUDE.md` / `README.md` (tell the user it already exists).
+
+**When the user names a different target** — a path in the invocation, "založ projekt v `../foo`", a sibling of the current repo — that path is the target, and it may not exist yet. Create it (`mkdir -p`) and run every step below against it, using absolute paths or `git -C <target>` rather than relying on a persistent `cd`; in some harnesses the shell's working directory resets between calls. Confirm the resolved absolute path in your first message so a typo in a relative path surfaces before a repo gets created in the wrong place.
 
 Follow these steps in order. Where a step calls for a decision the user should make, ask them — as an explicit set of options wherever the answer is a choice.
 
 ## 1. Survey the directory
 
-- Run `pwd` to capture the target directory.
+- Capture the target directory as an absolute path (`pwd` when the target is the current directory).
 - List the root with `ls -la` (or equivalent) so you can see what's already there.
 - Check if it is a git repo: `git rev-parse --is-inside-work-tree 2>/dev/null`.
 - Note which of these already exist: `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `README.md`.

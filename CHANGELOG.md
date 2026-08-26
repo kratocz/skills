@@ -2,6 +2,16 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-08-27
+
+### Added
+
+- **debate-reply:** new skill — answer a public challenge to a claim the user has already written down, in the order that keeps the durable artifact ahead of the ephemeral one: correct the note, then draft the reply, then archive. Forces a steelman before any rebuttal, because a refutation that only beats the popular version of a position invites the reply "you didn't address X" and loses the exchange on procedure — the case that prompted it turned on a genuine grammatical detail (a shift from singular to plural agent) that the note had never mentioned. Insists on raw primary text over summaries after a summarizing fetch of a scripture site returned a paraphrase that silently dropped the exact clause the argument rested on, and on quoting the opponent's own edition. Names two moves that generalize well beyond the originating topic: **the dial** — when a claim is asserted as precise where that flatters it and loose where precision would refute it, every setting that saves it from falsehood costs the evidential force it was invoked for — and **symmetry**, offering the same falsification rule to both sides before anyone knows the outcome, which converts a dispute into a dated bet or exposes the double standard. Carries the discipline that a long public reply is easiest to get wrong on attribution, and that attacking the opponent's tradition turns a solvable dispute into an identity fight.
+
+### Fixed
+
+- **init-project:** the procedure opened with "always operate in the user's current `pwd` — never `cd` elsewhere", which has no path for the common ask "založ projekt v `../foo`" where the target is a sibling directory that does not exist yet. Following it literally meant either bootstrapping in the wrong directory or breaking the skill's own rule. The target directory is now a first-class concept, defaulting to `pwd` but created with `mkdir -p` when the user names one, worked against via absolute paths or `git -C` because some harnesses reset the shell's working directory between calls, and echoed back as an absolute path so a mistyped relative path surfaces before a repo is created in the wrong place.
+
 ## 2026-08-26
 
 ### Added

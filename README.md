@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [skill-dry-run](./skills/skill-dry-run) | Prove a skill works by running it on real data in a clean context — writes made structurally impossible, findings re-verified | 2026-08-26 |
 | [dm-catchup](./skills/dm-catchup) | Catch up on DMs with a person across ClickUp chat/Slack — threads expanded, summary + assessment + approved-draft reply | 2026-08-18 |
 | [resource-busy](./skills/resource-busy) | Find which process blocks an eject/unmount or holds a file — incl. holders invisible to lsof/fuser (TM snapshot mounts, mount namespaces) — and release it safely | 2026-08-18 |
 | [mcp-server-adopt](./skills/mcp-server-adopt) | Find, compare, security-vet, install and verify a third-party MCP server — audit runs *before* any build | 2026-08-18 |

@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [skillset-adopt](./skills/skillset-adopt) | Adopt a third-party skill collection: inventory first, name-collision and trigger-overlap detection, per-skill verdict install / borrow / skip, verified install | 2026-08-26 |
 | [skill-dry-run](./skills/skill-dry-run) | Prove a skill works by running it on real data in a clean context — writes made structurally impossible, findings re-verified | 2026-08-26 |
 | [dm-catchup](./skills/dm-catchup) | Catch up on DMs with a person across ClickUp chat/Slack — threads expanded, summary + assessment + approved-draft reply | 2026-08-18 |
 | [resource-busy](./skills/resource-busy) | Find which process blocks an eject/unmount or holds a file — incl. holders invisible to lsof/fuser (TM snapshot mounts, mount namespaces) — and release it safely | 2026-08-18 |
@@ -79,6 +80,6 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 ## Related repositories
 
-- [kratocz/claude-plugins](https://github.com/kratocz/claude-plugins) — Claude Code plugins that genuinely need the plugin mechanism (hooks): session-log, statusline, tmux-hooks, desktop-notify.
+- [kratocz/claude-plugins](https://github.com/kratocz/claude-plugins) — Claude Code plugins that genuinely need the plugin mechanism (hooks): session-log, claude-statusline-state, tmux-hooks, desktop-notify.
 
 *This repository was formerly `antigravity-skills`; skills were originally developed as Claude Code plugins, then migrated to the portable Agent Skills layout.*

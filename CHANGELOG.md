@@ -17,6 +17,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Fixed
 
 - **skillify:** when a project-specific skill is scaffolded, the skill invoked `superpowers:writing-skills` "as guidance for writing a quality skill" — which also pulls in that skill's Iron Law: no skill without a failing subagent baseline test first, and "write skill before testing? Delete it." Sized for standalone authoring, that rule is wrong for the case skillify is mostly used in: a workflow the session has just executed end to end, where the execution *is* the baseline. Following it literally either burns a test cycle on a project-local skill or deletes the thing just written; ignoring it silently leaves no record of why. The guidance now scopes writing-skills to naming, description and structure, and asks for the in-session baseline to be stated in the summary instead of the cycle being run or quietly skipped.
+- **retro:** Phase 0 now confirms the checkout is on the integration branch and current with it before writing — fast-forwarding a clean, strictly-behind checkout, or reading the target file from `origin/main` when it has diverged — so a retro no longer lands on a stale copy. The doc-staleness sweep also excludes nested git worktrees, which a multi-session project can hold many of, each a full copy of every doc. (v0.4.1)
 
 ## 2026-09-01
 

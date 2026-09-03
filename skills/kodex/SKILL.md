@@ -44,8 +44,11 @@ get a first pass.
    conversation holds that role.
 5. **Adversarially verify non-trivial conclusions.** After finishing an analysis,
    run one pass aiming to REFUTE it (ideally a subagent in a fresh context; brief it
-   "refute", not "check"). Mandatory for quantitative analyses — numbers can be
-   self-serving. Record the verify outcome in the document header.
+   "refute", not "check"). Hand the refuter only the artifact and the contract it
+   has to satisfy, never the reasoning that produced it — a reviewer given
+   conclusions returns validation of those conclusions. Mandatory for quantitative
+   analyses — numbers can be self-serving. Record the verify outcome in the
+   document header.
 
 ## Decisions
 

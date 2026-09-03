@@ -113,7 +113,12 @@ let the user choose):
 
 - **Project-specific workflow** → scaffold `.claude/skills/<name>/SKILL.md` in
   this project. If `superpowers:writing-skills` is available, invoke it as
-  guidance for writing a quality skill; otherwise write the file directly with:
+  guidance for naming, description and structure — not for its test cycle:
+  that cycle (baseline subagent scenarios, "delete the skill if written
+  untested") is sized for standalone authoring, and a workflow executed end
+  to end in this session is its own baseline. State that in the summary
+  rather than running the cycle or skipping it silently. Otherwise write
+  the file directly with:
   - frontmatter: `name`, and a `description` that is a one-line summary ending
     with the trigger phrases (the words a user would say to invoke it),
   - a body of concrete, step-by-step instructions distilled from what the

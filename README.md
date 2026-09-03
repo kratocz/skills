@@ -57,6 +57,9 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [mail-catchup](./skills/mail-catchup) | Catch up on an IMAP mailbox via the zerolib-email MCP — per-thread briefing of what is asked of you and by when, dated draft file for approval, in-thread send with an RFC 2047 subject, verified against Sent before it counts as sent | 2026-09-03 |
+| [oponentura](./skills/oponentura) | Adversarial pass over a document in a fresh context — refute, not check: numbers against primary sources, strongest counter-argument, same evidential standard for the preferred and the rejected explanation, findings by severity, outcome recorded in the document header | 2026-09-03 |
+| [client-questions](./skills/client-questions) | Build the question list for a meeting with a client or other external party — parallel sweep of repo, tracker and chat, triage into live / parked / already answered, each live question phrased as spoken plus what changes on the answer | 2026-09-01 |
 | [debate-reply](./skills/debate-reply) | Answer a public challenge to a claim you have written down — steelman and verify against primary sources, fix your own note first, reply conceding then closing with one question, archive with receipts | 2026-08-27 |
 | [skillset-adopt](./skills/skillset-adopt) | Adopt a third-party skill collection: inventory first, name-collision and trigger-overlap detection, per-skill verdict install / borrow / skip, verified install | 2026-08-26 |
 | [skill-dry-run](./skills/skill-dry-run) | Prove a skill works by running it on real data in a clean context — writes made structurally impossible, findings re-verified | 2026-08-26 |

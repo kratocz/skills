@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-04
+
+### Changed
+
+- **skillset-adopt:** Phase 1 gains a pre-step for when the input is a list of skill names rather than repo URLs (a curated list or social-media post with unexpandable redirect links): resolve each name to its canonical `<owner>/<repo>` on GitHub before cloning, and pick by owner and stars because a popular skill attracts high-star forks, mirrors and re-uploads that shadow the original.
+
 ## 2026-09-03
 
 ### Added

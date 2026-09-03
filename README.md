@@ -83,4 +83,15 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 - [kratocz/claude-plugins](https://github.com/kratocz/claude-plugins) — Claude Code plugins that genuinely need the plugin mechanism (hooks): session-log, claude-statusline-state, tmux-hooks, desktop-notify.
 
+### Used alongside
+
+This collection is deliberately incomplete — it does not re-implement what the following already do well:
+
+- [obra/superpowers](https://github.com/obra/superpowers) — the process spine (brainstorming, planning, TDD, review). `kodex` sits above it as the thinking discipline, not beside it.
+- [mattpocock/skills](https://github.com/mattpocock/skills) — cherry-picked standalone skills: `grilling`, `wizard`, `codebase-design`, `diagnosing-bugs`, `resolving-merge-conflicts`. Its engineering suite needs its own tracker setup, and it ships a `code-review` and a `retro` that would replace the ones here — install it with `-s`, not `--all`.
+- [anthropics/skills](https://github.com/anthropics/skills) — `docx`, `xlsx` and `pdf` for document work.
+- [vercel-labs/skills](https://github.com/vercel-labs/skills) — the installer used above, plus `find-skills` for searching the [skills.sh](https://skills.sh/) directory. [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) is the other curated index.
+
+Popular collections overlap heavily with each other and with the above; `skillset-adopt` is the skill here that weighs a new one against what is already installed before anything gets added.
+
 *This repository was formerly `antigravity-skills`; skills were originally developed as Claude Code plugins, then migrated to the portable Agent Skills layout.*

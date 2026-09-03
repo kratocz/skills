@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, and learns from blocked or guardrail-gated actions. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.4.0
+version: 0.4.1
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -39,6 +39,20 @@ Hard rules, valid for the whole skill:
   they read as stale filler.
 
 ## Phase 0 — Gather context
+
+0. **Confirm where you are, and that it is current.** Run `pwd` and
+   `git branch --show-current` — the shell's working directory can differ from
+   the one the environment reports (seen 2026-09-03: the first command ran in
+   a nested worktree, the next one in the main checkout). Then `git fetch` and
+   compare against the integration branch (`origin/main` or the repo's
+   equivalent). If the checkout is clean and strictly behind it
+   (`git merge-base --is-ancestor HEAD origin/main`), fast-forward with
+   `git merge --ff-only origin/main` **before** reading the target file —
+   otherwise the retro writes onto a stale copy and later has to merge against
+   another session's retro (that was the case that day: 7 doc-only commits
+   behind). If the checkout has local work or has diverged, leave it alone,
+   read the target file from `origin/main` (`git show origin/main:AGENTS.md`)
+   and say so in the summary.
 
 1. **Resolve the target knowledge file** (where learnings get written):
    - If `AGENTS.md` exists in the project root → that's the target.
@@ -103,7 +117,10 @@ Dispatch ONE subagent (type `Explore`) so doc contents do not fill this
 context window. Instruct it to:
 
 - list the project's `*.md` files (exclude `node_modules`, `vendor`, build
-  output, and other third-party directories),
+  output, and other third-party directories — **and every nested git worktree**:
+  run `git worktree list` and exclude their paths, e.g. `.claude/worktrees/`,
+  plus engine/tool caches such as `.godot/` or `.venv/`; a multi-session
+  project can hold ten worktrees, each with a full copy of every doc),
 - check claims in them against the actual repo state (structure, commands,
   file paths, names),
 - return ONLY a compact list of findings — `file:line — claim — why it is

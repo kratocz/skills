@@ -30,6 +30,8 @@ Three things to take from this, each of which changed a verdict in practice:
 
 ## Phase 1 — Read the collection, not its README
 
+**When the input is a list of names rather than URLs, resolve each to its canonical repo first.** A curated list or a social-media post gives skill names and often only shortened redirect links a fetch cannot expand — so search each name on GitHub and fix `<owner>/<repo>` before cloning, choosing the canonical one by owner and stars, because a popular skill attracts high-star forks, mirrors and localized re-uploads that shadow the original (seen 2026-09-03: `caveman`, `taste-skill`, `i-have-adhd` and `ui-ux-pro-max-skill` each had several, and two unrelated repos both answered to `awesome-claude-skills`). A name alone is ambiguous.
+
 Shallow-clone the candidate into a scratch directory and read the frontmatter of every `SKILL.md`, plus its size and bundled assets:
 
 ```bash

@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-03
+
+### Fixed
+
+- **skillify:** when a project-specific skill is scaffolded, the skill invoked `superpowers:writing-skills` "as guidance for writing a quality skill" — which also pulls in that skill's Iron Law: no skill without a failing subagent baseline test first, and "write skill before testing? Delete it." Sized for standalone authoring, that rule is wrong for the case skillify is mostly used in: a workflow the session has just executed end to end, where the execution *is* the baseline. Following it literally either burns a test cycle on a project-local skill or deletes the thing just written; ignoring it silently leaves no record of why. The guidance now scopes writing-skills to naming, description and structure, and asks for the in-session baseline to be stated in the summary instead of the cycle being run or quietly skipped.
+
 ## 2026-08-27
 
 ### Added

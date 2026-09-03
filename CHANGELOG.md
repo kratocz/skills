@@ -11,6 +11,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Fixed
 
 - **skillify:** when a project-specific skill is scaffolded, the skill invoked `superpowers:writing-skills` "as guidance for writing a quality skill" — which also pulls in that skill's Iron Law: no skill without a failing subagent baseline test first, and "write skill before testing? Delete it." Sized for standalone authoring, that rule is wrong for the case skillify is mostly used in: a workflow the session has just executed end to end, where the execution *is* the baseline. Following it literally either burns a test cycle on a project-local skill or deletes the thing just written; ignoring it silently leaves no record of why. The guidance now scopes writing-skills to naming, description and structure, and asks for the in-session baseline to be stated in the summary instead of the cycle being run or quietly skipped.
+- **debate-reply:** section 5 gains a hostile-reader pass — re-read the draft as an opponent who reads every concession as a confession; a concession that stands alone in its sentence is a quote for their audience, so its limit or consequence goes in the same sentence and consequences are spelled out rather than left to be inferred; cut whole paragraphs, never the fork half of a sentence; and when the opponent supplies the hook, an unsent symmetry thread merges into this reply instead of waiting for its own. Prompted by a devil's-advocate pass in which three of the four sentences attacked were standalone concessions.
 
 ## 2026-08-27
 

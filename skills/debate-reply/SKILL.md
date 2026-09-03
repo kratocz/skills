@@ -52,6 +52,7 @@ Structure that works:
 3. **Two to four numbered objections, strongest first.** Each should be checkable, not rhetorical.
 4. **Pre-empt their best comeback** inside the relevant objection, rather than leaving it as a gotcha they can spring.
 5. **Close with exactly one question** they have to answer.
+6. **Hostile-reader pass.** Before handing the draft over, re-read every sentence as an opponent who treats each concession as a confession ("so you admit science is wrong"; "so you admit archaeology confirms it"). A concession that stands alone in its sentence is a quote for their audience: put its limit or consequence in the same sentence, and spell the consequence out — what their own claim implies for their own predictions — rather than leaving it to be inferred. When the reply needs cutting, cut whole paragraphs, never the fork half of a sentence. And when the opponent hands you the hook ("we lack the information for a definitive verdict"), an unsent symmetry thread belongs in this reply, not in a separate one.
 
 Then tell the user separately (not in the reply): which objection is actually strongest, which sentence is the weakest link, and anything you would leave out and why.
 

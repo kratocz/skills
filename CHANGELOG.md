@@ -11,6 +11,8 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **retro:** Phase 0 gains two steps and area A one rule, all three from runs that went wrong. Memory sets past roughly 40 files or 100 KB are now read by a briefed read-only subagent with a fixed output shape instead of inline — a 119-file, 328 KB set would have cost about 90k tokens of context to read directly. The write target is chosen after `git fetch` and audited against `origin/main` rather than the working tree, because a checkout ten commits behind produces findings upstream has already fixed, and a dirty or behind default branch gets a fresh worktree so the user's in-progress files are never swept up. And the area A verdict "this fact is not already in AGENTS.md" must be re-verified immediately before the write lands: with parallel sessions the target file moves mid-retro, and one run nearly shipped a file contradicting itself because another agent added the same two setup steps between analysis and merge.
+
 - **skillset-adopt:** Phase 1 gains a pre-step for when the input is a list of skill names rather than repo URLs (a curated list or social-media post with unexpandable redirect links): resolve each name to its canonical `<owner>/<repo>` on GitHub before cloning, and pick by owner and stars because a popular skill attracts high-star forks, mirrors and re-uploads that shadow the original.
 
 ## 2026-09-03

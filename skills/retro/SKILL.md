@@ -67,7 +67,30 @@ Hard rules, valid for the whole skill:
    and every memory file it indexes. If the directory is missing or empty,
    areas A and D are skipped.
 
-3. **Map the existing agent environment** (used to avoid duplicate proposals):
+   **Large memory sets (roughly more than 40 files or 100 KB): delegate the
+   reading.** Dump every indexed file with its mtime into one scratch file
+   (`for f in …; do echo "######## $f ($(stat -f %Sm -t %F $f))"; cat $f; done`)
+   and dispatch ONE read-only subagent with that path, the target knowledge
+   file, and the session facts. Brief it with the area A and D rules below
+   verbatim, tell it to verify every claim against `origin/main` and to quote
+   the AGENTS.md line when it says something is already covered, and demand a
+   fixed output shape: `<file> (mtime) — FULL|PARTIAL — fact — section — why not
+   covered` for A, `<file> (mtime) — what is stale — evidence — delete|correct`
+   for D. Spot-check its deletions yourself before proposing them (a PR state,
+   a grep) — deletion is the one irreversible step in this skill. Real case
+   (2026-09-03, 119 files / 328 KB): reading inline would have cost ~90k
+   tokens of context; the subagent returned 4 + 35 candidates in one page.
+
+3. **Fetch and pick the write target.** Run `git fetch` first and audit
+   against `origin/main`, not the working tree — a stale checkout produces
+   findings that upstream already fixed (2026-09-03: the checkout was 10
+   commits behind and 11 docs were older than upstream). If the local default
+   branch is dirty or behind, apply every repo write in a fresh worktree
+   created from `origin/main` (`git worktree add -b docs/retro-<date>
+   .claude/worktrees/retro-<date> origin/main`), commit there by path, and
+   leave the user's in-progress files untouched.
+
+4. **Map the existing agent environment** (used to avoid duplicate proposals):
    - project skills: list `.claude/skills/*/SKILL.md`
    - hooks: the `hooks` key in `.claude/settings.json` and
      `.claude/settings.local.json`, plus any hookify rule files
@@ -94,6 +117,19 @@ of these hold:
 The proposed change is: add the fact to the appropriate section of the target
 file (create the section if needed), then delete the memory file and its
 `MEMORY.md` index line.
+
+**Re-verify "not already covered" against `origin/main` immediately before the
+write lands, not only during analysis.** With parallel sessions the target file
+moves underneath a retro: the gap between deciding a fact is missing and
+committing it is long enough for another agent to add the same fact. Real case
+(2026-09-04): area A proposed migrating two setup steps into `app/README.md`
+after confirming `AGENTS.md` did not have them; by merge time another session
+had put exactly those steps into `AGENTS.md`, together with a sentence claiming
+`app/README.md` does *not* document them — so the merge would have shipped a
+file contradicting itself. It surfaced only because a rebase forced a re-read.
+So before committing, re-read the section you are writing into and re-run the
+"is this already here?" search; when it now is, the fix is usually to keep the
+prose in one place and leave a pointer in the other, not to ship both.
 
 **Partial migration when a memory mixes shareable and machine-local content.**
 A memory does not have to be all-or-nothing. When a memory's *core fact* is a

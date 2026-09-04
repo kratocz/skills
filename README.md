@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [anonymize-output](./skills/anonymize-output) | Rewrite a captured output so it can be shown to people who must not see whose it is — one consistent pseudonym per identifier across every place it hides (branches, window names, ticket prefixes, free-text titles), replacements length-matched so column alignment survives, derived columns re-derived rather than renamed, and a grep leak check before anything is quoted | 2026-09-04 |
 | [task-delivery](./skills/task-delivery) | Carry one tracker task from ready-to-start to closed — scope from the task *and* its parent epic, gates re-run after every edit and read from the last run, house-shape PR with a QA-step-to-test table, review delegated to `code-review`, merge only on a separate explicit directive | 2026-09-04 |
 | [epic-breakdown](./skills/epic-breakdown) | Turn a written work breakdown into a tracker epic with house-shape subtasks and transitively reduced dependency edges — conventions read from AGENTS.md, granularity test (one subtask = one PR with its own QA) applied before founding, whole cut shown for approval first | 2026-09-04 |
 | [mail-catchup](./skills/mail-catchup) | Catch up on an IMAP mailbox via the zerolib-email MCP — per-thread briefing of what is asked of you and by when, dated draft file for approval, in-thread send with an RFC 2047 subject, verified against Sent before it counts as sent | 2026-09-03 |

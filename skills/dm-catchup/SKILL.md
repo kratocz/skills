@@ -98,3 +98,9 @@ the draft, send the edited version verbatim.
 - If the backend's send tool ignores threading or formatting quirks are
   known (project memory often records them), mention the limitation instead
   of discovering it live on a real recipient.
+- **Messages can be edited after posting.** The API returns the *current*
+  text under the *original* timestamp (ClickUp shows no edit marker), so a
+  message read earlier in the session may say something else by the time you
+  act on it. Whenever a message carries an approval, a permission or a
+  deadline you are about to act on, re-fetch it right before acting and quote
+  the re-read wording.

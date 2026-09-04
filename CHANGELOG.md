@@ -4,6 +4,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-09-04
 
+### Added
+
+- **epic-breakdown:** new skill — turn a written work breakdown into a tracker epic with numbered subtasks and formal, transitively reduced dependency edges, reading the prefix scheme, subtask shape and what a phase number *means* from the project's AGENTS.md instead of hard-coding them. Its centre is a granularity test applied before anything is created — one subtask is one pull request with its own QA steps; a title that needs a "+", or QA steps that split into two independently passing groups, is two subtasks; a design-document line is not a task boundary — because the founding occasion (an eight-subtask cut bundled by proposal line, rejected in full and re-founded as twenty the next day) showed that the coarse cut looks tidy for an hour and costs a delete-and-recreate after that. Reads the tracker before the document: review follow-ups already filed under an older prefix are referenced or updated rather than duplicated, and a subtask someone has started is cut around, not restructured. Attaches a hard sequencing constraint to the subtasks that *produce* the constrained artifact rather than to the first one in their area, names every edge that leaves the epic, lists the dependency-free starters the coarse cut had hidden, shows the whole table for approval before founding, and rewrites the epic body afterwards so it does not go on saying "only the first task exists". Counterpart of `dependency-diagrams`, which reads the graph this writes.
+
 ### Changed
 
 - **skillset-adopt:** Phase 1 gains a pre-step for when the input is a list of skill names rather than repo URLs (a curated list or social-media post with unexpandable redirect links): resolve each name to its canonical `<owner>/<repo>` on GitHub before cloning, and pick by owner and stars because a popular skill attracts high-star forks, mirrors and re-uploads that shadow the original.

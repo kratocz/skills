@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [epic-breakdown](./skills/epic-breakdown) | Turn a written work breakdown into a tracker epic with house-shape subtasks and transitively reduced dependency edges — conventions read from AGENTS.md, granularity test (one subtask = one PR with its own QA) applied before founding, whole cut shown for approval first | 2026-09-04 |
 | [mail-catchup](./skills/mail-catchup) | Catch up on an IMAP mailbox via the zerolib-email MCP — per-thread briefing of what is asked of you and by when, dated draft file for approval, in-thread send with an RFC 2047 subject, verified against Sent before it counts as sent | 2026-09-03 |
 | [oponentura](./skills/oponentura) | Adversarial pass over a document in a fresh context — refute, not check: numbers against primary sources, strongest counter-argument, same evidential standard for the preferred and the rejected explanation, findings by severity, outcome recorded in the document header | 2026-09-03 |
 | [client-questions](./skills/client-questions) | Build the question list for a meeting with a client or other external party — parallel sweep of repo, tracker and chat, triage into live / parked / already answered, each live question phrased as spoken plus what changes on the answer | 2026-09-01 |

@@ -35,6 +35,29 @@ them into this skill.** If this is the first run for a project, ask the user
 for: source, scope (list/board/label), grouping (epics? labels? prefixes?),
 and where snapshots live — then record the answers in project memory.
 
+### Refresh scope — ask before any per-task fetch
+
+A refresh has two tiers, and they differ in cost by more than an order of
+magnitude:
+
+- **Statuses** — what actually changes day to day. On ClickUp one paginated
+  `clickup_filter_tasks` call covers a whole list (100 tasks/page).
+- **Dependency edges** — what changes only when someone founds or rewires
+  tasks. Costs **one API call per task**, so a 92-task list is ~92 calls.
+
+**Default to statuses only, and carry the edges over from the committed
+`model.json`.** Refetch edges only when the user asks or when the run has a
+concrete reason to expect the graph moved — new tasks founded, an epic broken
+down, dependencies rewired. When it does, get the scope named explicitly
+first: *which* group/epic, or an explicit "everything". Do not read "all" into
+a bare "regenerate the diagrams"; ask, and offer the status-only default as
+the cheap answer.
+
+This is not frugality for its own sake — the tracker's rate budget is shared
+across everything you do with it that day, so one unscoped fan-out can block
+*writes and reads* for hours afterwards, for work that has nothing to do with
+diagrams. See the budget note in the ClickUp recipe below.
+
 ## Step 2 — Fetch tasks and dependency edges
 
 Collect for every task: stable `id`, short `label` (the task's code like
@@ -59,15 +82,30 @@ Per-source recipes:
   `clickup_filter_tasks` does not return a task's parent; when you need the
   epic a task hangs under, `clickup_search` returns it in `hierarchy.task`
   far more cheaply than `clickup_get_task`.
-  **Rate limit:** a full-list fetch of this shape (~70 `clickup_get_task`
-  calls) can trip a workspace-wide hard limit that blocks *writes and reads*
-  for hours. Budget it: fetch once, cache the fragments, and do any ClickUp
-  edits (renames, new dependencies) **before** the fetch, not after.
-  Calibration, not a licence: on 2026-09-04 a 94-call fetch (92 tasks across
-  five subagents, each capped at four calls in flight and told to stop on the
-  first 429) completed with no throttling at all. So the ceiling is above 94
-  at that concurrency — but one clean run does not measure where it actually
-  is, and the cached fragments are what make a re-run free either way.
+  **Rate budget — the real constraint is per day, not per burst.** The
+  workspace-wide limit blocks *writes and reads* for hours once tripped, and
+  it is consumed by everything that touches the tracker that day, not just
+  this pipeline. Measured on PMA: a 92-task fan-out at 06:20 on 2026-09-04
+  went through with no throttling at all, and 59 further ordinary calls
+  through that day were fine too — 151 cumulative. The next morning at 00:27
+  a *twelve-call* single-epic fetch died on its eighth call, i.e. at 159
+  cumulative within the rolling 24 h, with `retryAfter` ≈ 481 minutes. So the
+  ceiling sits near **160 calls per rolling 24 h**, one full dependency
+  fan-out spends **more than half of it**, and the run that pays for it is
+  usually not the run that spent it.
+
+  Three consequences. **One:** a burst succeeding proves nothing about the
+  budget — concurrency is not what is being metered. **Two:** cache the
+  fragments in the scratchpad and reuse them; a re-run is then free, and the
+  09-04 snapshot was regenerated twice more that day for ~5 calls total
+  because its fragments were still on disk. **Three:** do ClickUp edits
+  (renames, new dependencies, status flips) **before** the fetch, not after —
+  after a fan-out you may have no budget left to write with.
+
+  If a 429 lands mid-fetch, stop; do not retry into the block. Keep whatever
+  fragments arrived, mark the unreached tasks as not-refreshed (see `fetched`
+  in Step 3) and say so in the snapshot README — a half-updated model that
+  looks complete is worse than an obviously partial one.
 - **GitHub:** `gh api graphql` on issues — native "blocked by" relations where
   available, else task-list checkboxes (`- [ ] #123`) or `Blocked-by: #123`
   lines in bodies; group by label/milestone.
@@ -89,9 +127,10 @@ Write `model.json` (in the scratchpad or the working directory):
     "phase-1": {"title": "Phase 1 — Foundation", "groups": ["INFRA", "AUTH"]},
     "x":       {"title": "Cross-cutting",         "groups": ["ARCH"]}
   },
+  "fetched": {"default": "2026-09-04 15:57", "edges": "2026-09-04 06:20"},
   "tasks": [
     {"id": "abc123", "label": "INFRA-01", "group": "INFRA", "status": "closed",
-     "since": "2026-09-04 08:41"},
+     "since": "2026-09-04 08:41", "fetched_at": "2026-09-05 00:27"},
     {"id": "def456", "label": "FU: audit wiring", "group": "AUTH",
      "status": "open", "wide": true}
   ],
@@ -119,6 +158,24 @@ third line, which is far better than a plausible-looking wrong date. **A generic
 the ones this pipeline makes. ClickUp exposes `date_closed` on every task but
 needs the "Total time in Status" ClickApp enabled workspace-wide for anything
 else; without it, fill `since` for closed tasks only.
+
+**Record provenance, because a partial refresh is invisible in the picture.**
+Once scoped refreshes are the default (Step 1), most snapshots are partial —
+and a node whose status is a day old is drawn exactly like a node refetched a
+minute ago. Prose in the README cannot fix that: the artifact people actually
+pass around is a PNG. So put it in the data. Top-level `fetched.default` is
+when everything not stated otherwise was read from the tracker, and
+`fetched.edges` when the dependency arrays were last fetched; a task
+refreshed more recently carries its own `fetched_at`. All are local
+`"YYYY-MM-DD HH:MM"`, same as `since`.
+
+The generator scripts ignore all three, so this costs nothing to carry. What
+it buys: the README's staleness section can be derived instead of remembered,
+a later run can tell at a glance what it may leave alone, and a reviewer
+diffing two models sees which tasks were actually re-read rather than assuming
+all of them were. Set `fetched.default` to the timestamp of the run that last
+did a full status refresh — not to "now" — whenever this run only touched a
+subset.
 
 **Write it with a fixed formatting: `json.dump(..., indent=2, ensure_ascii=False)`
 plus a trailing newline, keys left in the order above rather than sorted.**
@@ -220,15 +277,22 @@ names need a different height estimate than the default 26 characters per line.
   path buys nothing and costs a broken link in every doc, ticket and chat message
   that pointed at the previous one.
 - **The date goes in the directory's README instead**, as a metadata bullet list
-  at the very top — snapshot date and time, source list, scope, and the commit
-  of the previous snapshot:
+  at the very top — snapshot date and time, source list, scope, what this run
+  actually refreshed, and the commit of the previous snapshot:
 
   ```markdown
   - **Snapshot taken:** 2026-09-04 15:08 CEST
   - **Source:** ClickUp list **Tasks - PMA** (`901216620944`)
   - **Scope:** 92 tasks across 8 epics, 80 edges after transitive reduction
+  - **Refresh scope:** statuses for all 92 tasks; edges carried over from
+    2026-09-04 06:20
   - **Previous snapshot:** commit `4484f85`, 2026-09-03
   ```
+
+  Derive the *Refresh scope* bullet from `fetched` / `fetched_at` in the model
+  rather than from memory, and state it even when the run was complete — a
+  reader cannot tell a full refresh from a partial one by looking, so "all of
+  it" is information too.
 
   **The date names the day whose end-of-day state the snapshot captures** —
   a run early in the morning gets *yesterday's* date, not today's. Say in the

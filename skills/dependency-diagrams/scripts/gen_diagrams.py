@@ -12,7 +12,8 @@ Input: a model.json produced by the skill (see SKILL.md for the fetch step):
     },
     "tasks": [                    # every node of the graph
       {"id": "t1", "label": "INFRA-01", "group": "INFRA",
-       "status": "closed",        # open | in_progress | closed (default open)
+       "status": "closed",        # open | in_progress | review | closed (default open)
+       "since": "2026-09-04 08:41",  # optional, when the task entered that status
        "wide": false}             # true => wider node (long label)
     ],
     "edges": [                    # from = prerequisite, to = dependent task
@@ -26,7 +27,9 @@ Outputs (in --outdir, default cwd), each a graph JSON for autolayout.py:
   <prefix>-<cluster>.json  per cluster (only when "clusters" given): that cluster's
                            tasks + grey dashed ghost nodes for upstream inputs
 
-Statuses render as: closed = green + " ✓", in_progress = blue + " ▸", open = white.
+Statuses render as: closed = green + " ✓", in_progress = blue + " ▸",
+review = yellow + " ⟳", open = white. The "since" field is ignored here and
+rendered as a third node line by annotate_names.py.
 Edges whose endpoints are not in "tasks" are dropped silently.
 """
 import argparse
@@ -37,9 +40,10 @@ from collections import defaultdict
 STYLE = {
     "closed": "rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#5a9a4e;fontSize={fs};fontStyle=1;",
     "in_progress": "rounded=1;whiteSpace=wrap;html=1;fillColor=#cfe2ff;strokeColor=#3a78c2;fontSize={fs};fontStyle=1;",
+    "review": "rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize={fs};fontStyle=1;",
     "open": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9e9e9e;fontSize={fs};",
 }
-SUFFIX = {"closed": "  ✓", "in_progress": "  ▸", "open": ""}
+SUFFIX = {"closed": "  ✓", "in_progress": "  ▸", "review": "  ⟳", "open": ""}
 GHOST = ("rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#bdbdbd;"
          "fontColor=#777;fontSize=11;dashed=1;")
 EDGE = ("edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;"

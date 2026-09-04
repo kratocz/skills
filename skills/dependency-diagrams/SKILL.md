@@ -1,6 +1,6 @@
 ---
 name: dependency-diagrams
-description: "Generate task-dependency diagrams from any tracker (ClickUp, GitHub, Jira, Todoist, or a CSV/JSON export): full dependency graph with transitive reduction, group/epic overview, and per-phase detail diagrams, exported as .drawio + SVG + PNG into a dated snapshot directory. Use when the user asks to generate, regenerate, or update task dependency diagrams / graphs (\"vygeneruj diagramy závislostí\", \"dependency graph snapshot\", \"task dependency diagrams\")."
+description: "Generate task-dependency diagrams from any tracker (ClickUp, GitHub, Jira, Todoist, or a CSV/JSON export): full dependency graph with transitive reduction, group/epic overview, and per-phase detail diagrams, exported as .drawio + SVG + PNG into a stable snapshot directory that is regenerated in place. Use when the user asks to generate, regenerate, or update task dependency diagrams / graphs (\"vygeneruj diagramy závislostí\", \"dependency graph snapshot\", \"task dependency diagrams\")."
 license: MIT
 ---
 
@@ -90,7 +90,8 @@ Write `model.json` (in the scratchpad or the working directory):
     "x":       {"title": "Cross-cutting",         "groups": ["ARCH"]}
   },
   "tasks": [
-    {"id": "abc123", "label": "INFRA-01", "group": "INFRA", "status": "closed"},
+    {"id": "abc123", "label": "INFRA-01", "group": "INFRA", "status": "closed",
+     "since": "2026-09-04 08:41"},
     {"id": "def456", "label": "FU: audit wiring", "group": "AUTH",
      "status": "open", "wide": true}
   ],
@@ -98,12 +99,35 @@ Write `model.json` (in the scratchpad or the working directory):
 }
 ```
 
-Status mapping: done/complete/closed → `closed` (green ✓); anything actively
-in flight — in progress, in review, ready for CR, testing — → `in_progress`
-(blue ▸); everything else → `open` (white). Note the collapse of
-review-like states into `in_progress` in your summary so the user can ask
-for a finer split. `clusters` is optional — without it you get the full graph
-and a flat overview, no detail diagrams.
+Status mapping: done/complete/closed → `closed` (green ✓); waiting on a
+reviewer — in review, ready for CR — → `review` (yellow ⟳); work in the code
+is what it is waiting for — in progress, testing, changes requested —
+→ `in_progress` (blue ▸); everything else → `open` (white). The split is by
+*who is on the hook*, not by tracker status name, so check which statuses the
+tracker actually has before mapping: on PMA, "waiting for fix(es)" is a GitHub
+PR label with no ClickUp status of its own, and those tasks read as `review`
+unless the tracker status is flipped back. State the mapping you used in your
+summary. `clusters` is optional — without it you get the full graph and a flat
+overview, no detail diagrams.
+
+Optionally give each task a `since` — when it entered its current status,
+`"YYYY-MM-DD HH:MM"` local time — and `annotate_names.py` renders it as a third
+node line ("Closed from: …", "Review from: …"). Only fill it where the tracker
+gives you a real status-change timestamp; a task without `since` just gets no
+third line, which is far better than a plausible-looking wrong date. **A generic
+"last updated" field is not that timestamp** — it moves on any edit, including
+the ones this pipeline makes. ClickUp exposes `date_closed` on every task but
+needs the "Total time in Status" ClickApp enabled workspace-wide for anything
+else; without it, fill `since` for closed tasks only.
+
+**Write it with a fixed formatting: `json.dump(..., indent=2, ensure_ascii=False)`
+plus a trailing newline, keys left in the order above rather than sorted.**
+`model.json` is committed next to the diagrams and is the file a reader diffs to
+see what moved between two snapshots, so its formatting is load-bearing: on one
+real project two consecutive snapshots were written with `indent=1` and
+`indent=2`, which turned a 25-line content change into a 2081-line whole-file
+rewrite and hid every status change. If a regeneration shows `model.json` fully
+rewritten, the formatting drifted — renormalize before committing.
 
 ## Step 4 — Generate and export
 
@@ -188,16 +212,37 @@ names need a different height estimate than the default 26 characters per line.
 
 ## Step 5 — Snapshot directory and verification
 
-- Place the set in a dated directory, e.g. `docs/task-dependencies-<DATE>/`.
+- Place the set in a **stable, undated** directory, e.g. `docs/task-dependencies/`,
+  and regenerate **in place**. Only one snapshot is ever committed; the previous
+  ones stay reachable through git history
+  (`git log --oneline -- docs/task-dependencies/`). Do not put the date in the
+  directory name: since the old set is deleted on every refresh anyway, a dated
+  path buys nothing and costs a broken link in every doc, ticket and chat message
+  that pointed at the previous one.
+- **The date goes in the directory's README instead**, as a metadata bullet list
+  at the very top — snapshot date and time, source list, scope, and the commit
+  of the previous snapshot:
+
+  ```markdown
+  - **Snapshot taken:** 2026-09-04 15:08 CEST
+  - **Source:** ClickUp list **Tasks - PMA** (`901216620944`)
+  - **Scope:** 92 tasks across 8 epics, 80 edges after transitive reduction
+  - **Previous snapshot:** commit `4484f85`, 2026-09-03
+  ```
+
   **The date names the day whose end-of-day state the snapshot captures** —
-  a run early in the morning gets *yesterday's* date, not today's.
-- Keep only the latest set: after verifying the new directory (same file-name
-  set as the previous one, no empty files), delete/`git rm` the old dated
-  directory — but only after the user confirmed or previously asked for it.
+  a run early in the morning gets *yesterday's* date, not today's. Say in the
+  README that this is a point-in-time artifact and that a link to the default
+  branch will silently show a newer set later; a commit permalink is the way to
+  reference a particular day.
+- Before committing, verify the new set is complete (same file-name set as the
+  previous revision, no empty files) — `git status` should show modifications,
+  not a pile of deletions.
 - **Verify visually:** render one detail PNG and check statuses, new nodes,
   and new edges against what the fetch reported.
-- Update any docs index that lists the dated directory (e.g. `docs/README.md`)
-  and re-check the project's knowledge file still describes the set correctly.
+- Re-check that the docs index (e.g. `docs/README.md`) and the project's
+  knowledge file still describe the set correctly — with a stable path their
+  links no longer need touching on every refresh, only their prose.
 - Offer a commit following the project's workflow; report node/edge counts
   and what changed since the previous snapshot (new tasks, status moves,
   added/removed edges).

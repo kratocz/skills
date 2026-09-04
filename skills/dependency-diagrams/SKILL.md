@@ -63,6 +63,11 @@ Per-source recipes:
   calls) can trip a workspace-wide hard limit that blocks *writes and reads*
   for hours. Budget it: fetch once, cache the fragments, and do any ClickUp
   edits (renames, new dependencies) **before** the fetch, not after.
+  Calibration, not a licence: on 2026-09-04 a 94-call fetch (92 tasks across
+  five subagents, each capped at four calls in flight and told to stop on the
+  first 429) completed with no throttling at all. So the ceiling is above 94
+  at that concurrency — but one clean run does not measure where it actually
+  is, and the cached fragments are what make a re-run free either way.
 - **GitHub:** `gh api graphql` on issues — native "blocked by" relations where
   available, else task-list checkboxes (`- [ ] #123`) or `Blocked-by: #123`
   lines in bodies; group by label/milestone.
@@ -107,6 +112,7 @@ directory):
 
 ```bash
 python3 "$SCRIPTS/gen_diagrams.py" model.json --outdir .
+python3 "$SCRIPTS/annotate_names.py" model.json --outdir .   # optional, see below
 for f in <prefix>-*.json; do
   n="${f%.json}"
   python3 "$SCRIPTS/autolayout.py" "$f" -o "$n.drawio"
@@ -153,18 +159,32 @@ Put the whole pipeline in a script file and run it as one `bash script.sh` — i
 a worktree-isolated session a compound loop typed straight into the shell tool
 is rejected as unverifiable.
 
+**A missing `ok` line is not a failure.** `export_one` only prints its success
+line when it observes two equal sizes in a row; when draw.io exits on its own
+first, the loop leaves through the `kill -0` break and prints nothing at all.
+Judge the run by the output files — every expected path present and non-empty,
+no `FAILED:` line — not by counting log lines. Seen 2026-09-04: 14 `ok` lines
+for 22 correct exports.
+
 ### Optional — task names inside the nodes
 
 By default a node shows only the task code, which forces the reader to keep the
-tracker open. To add the name on a second, smaller line, post-process the
-generated `<prefix>-*.json` between `gen_diagrams.py` and `autolayout.py`: node
-styles carry `html=1`, so labels accept markup. Append
-`<br><font style="font-size:9px;color:#5a6672">Short name</font>` to each label,
-widen the node to ~190 px and add ~14 px of height per wrapped line of the name
-(ghost nodes one font step smaller, ~165 px wide; overview nodes take the full
-group name plus the task count). Carry the names in `model.json` as a `name`
-field per task — `gen_diagrams.py` ignores unknown fields, and the
-post-processor maps them onto node ids.
+tracker open. `annotate_names.py` adds the name on a second, smaller line,
+in place, between `gen_diagrams.py` and `autolayout.py`. It reads the same
+`model.json`, so give each task a `name` field and, for the overview diagram,
+add a top-level `groups` map of group key → one-line description:
+
+```json
+{"tasks":  [{"id": "t1", "label": "INFRA-01", "name": "K3s cluster & networking", "...": "..."}],
+ "groups": {"INFRA": "Infrastructure & baseline"}}
+```
+
+`gen_diagrams.py` ignores both keys, so one model drives the whole pipeline, and
+a task with no `name` is left exactly as generated — which is how uncoded
+follow-up nodes, whose label is already a sentence, stay untouched. The full
+graph is skipped by default (at ~90 nodes the second line stops helping and the
+file doubles); pass `--include-graph` to annotate it too, and `--wrap N` if your
+names need a different height estimate than the default 26 characters per line.
 
 ## Step 5 — Snapshot directory and verification
 

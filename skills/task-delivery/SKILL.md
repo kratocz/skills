@@ -64,10 +64,26 @@ both were learned the expensive way:
   multi-gate script's tail shows the last gate, not all of them. Grep for every
   `exit=` line, or print a summary block the tail is guaranteed to include.
 
+**Sequence the work so the expensive gate runs once.** The rule above says a
+later edit voids the result; it does not say how to avoid paying for that over
+and over. Fast gates — lint, types, migration drift — are seconds and belong in
+a tight loop while you iterate. The full suite is tens of minutes and should
+start only once you believe the tree is final. Two things follow. Do not start
+the full suite and then keep editing: you have voided the result and spent the
+wall-clock twice. And where CI runs the same gate set on the pushed tree,
+prefer **CI as the authoritative full-suite run** rather than racing it
+locally — on a machine hosting several worktrees the local run also competes
+for RAM and may simply be killed part-way. "pytest: pass, on CI, on this
+commit" is stronger evidence than a local run you watched only the tail of,
+and it costs you nothing to wait for.
+
 If a gate fails on something the change did not touch, establish that before
 reporting it: re-run the failing test after the environment step it needs
 (a static-asset build, a message compile, a seeded database). Unrelated
 environmental failures are noise; reporting them as findings wastes the round.
+A test that fails once and passes on re-run against an unchanged tree is a
+flake, not a finding — say so with both results rather than filing it or
+quietly ignoring it.
 
 ## 4. Commit and open the pull request
 

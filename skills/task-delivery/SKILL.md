@@ -115,6 +115,14 @@ per settled check and exits when all have settled. Cover **every** terminal
 state in the filter, not just success — a watcher that greps only for the happy
 path is silent through a failure, and silence looks like "still running".
 
+**Keep the watcher cheap, or the host kills it and the silence looks the same.**
+One API call per poll and an interval of 60 s or more; a watcher issuing two
+calls every 30 s was killed mid-wait for memory pressure (2026-09-06) and
+produced no output at all, which is indistinguishable from CI still running.
+Cap the loop so it gives up and *says so* rather than hanging forever, and when
+a watcher does die, re-read the checks directly instead of starting a second
+one — the answer may already be there.
+
 If the project runs an advisory AI reviewer, read its findings before your own
 pass and treat them as **claims to verify, not conclusions**. In particular,
 verify any proposed *fix* actually works before accepting or rejecting the

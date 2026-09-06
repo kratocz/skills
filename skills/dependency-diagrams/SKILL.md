@@ -267,6 +267,39 @@ graph is skipped by default (at ~90 nodes the second line stops helping and the
 file doubles); pass `--include-graph` to annotate it too, and `--wrap N` if your
 names need a different height estimate than the default 26 characters per line.
 
+### The incremental refresh — the loop you will actually run most days
+
+Once a snapshot exists, the common request is not "generate the set" but
+"bring it up to date". That run has a fixed shape, and re-deriving it every
+time is what turns a two-minute job into fifteen:
+
+1. **Sync the checkout first.** `git fetch`, then fast-forward. A snapshot
+   regenerated on a stale tree has to be rebased later, and the commit hash
+   you already reported is then no longer the one that landed.
+2. **Read every status in one call** (`clickup_filter_tasks` over the list,
+   `include_closed: true`) and diff it against `model.json`. Do not refetch
+   edges — see the scope gate in Step 1.
+3. **Apply the diff with a script**, not by hand: set `status`, refresh
+   `since` from `date_closed`, update `fetched.default`, and preserve the key
+   order and `indent=2` formatting. Have it print the changes it made — that
+   list is what the README's "Changes since" section gets written from.
+4. **Regenerate everything, export only what changed.** The pipeline is
+   deterministic, so `git status` after regeneration names exactly the
+   diagrams that moved; export PNGs for those and leave the rest alone.
+   Typically one or two of eleven.
+5. **Update the README header** — snapshot timestamp, refresh scope, previous
+   snapshot commit, and any count in the diagrams table that moved — then
+   rewrite "Changes since" from step 3's output.
+6. **Commit, then `git fetch` again before pushing.** On an active repo the
+   base moves during the regeneration itself; rebase and push.
+
+Two failure modes worth naming. **A status can go stale between the fetch and
+the commit** on a busy day, so if the run drags, re-read the statuses before
+writing the README rather than describing a state that has already moved. And
+**do not report a task as newly closed without its `date_closed`** — fetch
+that task individually when you need `since`, or the node silently loses its
+third line.
+
 ## Step 5 — Snapshot directory and verification
 
 - Place the set in a **stable, undated** directory, e.g. `docs/task-dependencies/`,

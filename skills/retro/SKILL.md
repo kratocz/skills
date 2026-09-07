@@ -131,6 +131,29 @@ So before committing, re-read the section you are writing into and re-run the
 "is this already here?" search; when it now is, the fix is usually to keep the
 prose in one place and leave a pointer in the other, not to ship both.
 
+**The check before the write is not enough — repeat it at rebase time, and
+read what you are rebasing over.** Checking drift, finding none, writing and
+committing does not make you safe: the window that matters runs from your
+commit to your merge, and on a busy day it is minutes. Worktrees also share one
+`.git`, so *another* session's `git fetch` moves your `origin/main` ref while
+you do nothing — a clean "no drift" reading can be stale seconds later without
+any action of yours. Observed 2026-09-06: three retros landed against the same
+`AGENTS.md` within twenty minutes, and two of them independently wrote the same
+paragraph about the same finding.
+
+So when the rebase conflicts, do not go straight to the conflict markers.
+Diff the incoming commits against your own work first —
+`git diff <your base>..origin/main -- <target file>` — and ask of each of your
+items **"did they already say this?"**, not "how do I fit both in?". Where they
+did, drop yours; where theirs is better written, drop yours even if you got
+there first. Keep the branch you dropped from (`git branch backup/<name>`)
+so the decision stays reviewable, and say in the commit message what you
+dropped and why, or the next reader will re-derive it.
+
+**A retro that shrinks at this step has succeeded, not failed.** The output is
+the repo being right, not your diff being large — and a duplicated paragraph is
+worse than a missing one, because it is two things to keep in step.
+
 **Partial migration when a memory mixes shareable and machine-local content.**
 A memory does not have to be all-or-nothing. When a memory's *core fact* is a
 durable, shareable project truth (e.g. "test envs are namespaces on the prod

@@ -116,9 +116,17 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    already tracked) is intentionally NOT proposed — double-booking is
    overbilling; say so if the user asks about a "missing" covered interval.
 
-7. **Create the approved entries.** Write each JSON payload to a temp file and
-   send it with `--data-binary @file` (inline generated JSON is fragile in
-   sandboxed shells):
+7. **Re-fetch, then create the approved entries.** Approval can take hours
+   (the user may answer the next morning), and other sessions write the same
+   tracker in the meantime — so repeat the step-4 fetch **immediately before
+   writing** and re-subtract: an approved interval that now collides with a
+   newer entry is trimmed to the free part (or dropped), and the user is told
+   which one and why. Never write an entry you know overlaps. (Real case,
+   2026-09-02: a parallel session logged a code review between the proposal
+   and the approval; the write went through and only the step-8 timeline check
+   caught the 20-minute overlap, which then had to be repaired by hand.) Write
+   each JSON payload to a temp file and send it with `--data-binary @file`
+   (inline generated JSON is fragile in sandboxed shells):
 
    ### Toggl Track
    ```bash

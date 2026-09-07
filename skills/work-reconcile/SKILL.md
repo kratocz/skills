@@ -366,6 +366,22 @@ automatically: the flow is always **propose → confirm → write**.
    exactly those days. So treat `'day?'` as the backstop for the case the diff
    is blind to, not as a routine warning.
 
+   **Summing blocks and unioning timestamps give different totals, and neither
+   is the true one — say so rather than picking one silently.** Parallel
+   sessions covering the same wall-clock each produce their own block, so a
+   per-block sum counts that time twice; the obvious fix is to union all of a
+   day's timestamps and gap-cap the merged stream once. But the union is not
+   simply the smaller, more conservative number. Merging streams makes them
+   denser, so a pause that exceeded `gap_threshold_min` inside one session — and
+   therefore contributed only one `edge_pad_min` — can fall under the threshold
+   once another session's timestamps land inside it, and then it is counted in
+   full. Measured 2026-09-07: the per-block sum gave 4.17 h and the union gave
+   5.33 h over the same window. So the sum double-counts overlap but misses the
+   bridges between sessions, and the union does the reverse; **the honest answer
+   is a range, and the review (step 8) should present it as one** when the two
+   differ by more than a few percent. Where the day already carries a full
+   tracker load, the difference is moot — nothing is being written there anyway.
+
    **Calendar blocks:** `minutes` = exact `(end - start)` rounded to
    `round_to_min` (no gap-capping — a meeting is contiguous). Set
    `origin='calendar-exact'`.
@@ -465,6 +481,16 @@ automatically: the flow is always **propose → confirm → write**.
      cross-check for a project that did not exist yet: `GET
      /api/v9/workspaces/<wid>/projects/<pid>` returns `created_at`, which caps
      how far back entries could possibly go.
+   - **A month-plus window overflows the tool result — expect it and parse from
+     disk.** On 2026-09-07 a five-week window returned 316 entries / ~277k
+     characters, over the inline limit, and the harness wrote it to a file
+     instead. That is the normal shape of this call at reconcile scale, not an
+     error: take the path from the result and parse the JSON there in a script
+     (the document is `{"count": N, "entries": [...]}`). Do **not** re-fetch the
+     window in narrower slices to dodge the limit, and do not read the file back
+     in chunks to summarise it — you need every entry as structured data to
+     build the busy map, and prose summarisation of a busy map loses exactly the
+     timestamps the diff runs on.
    - Load existing entries for `[since, until]` **only from the trackers in
      `sink.target`** (reading a ClickUp busy-map is pointless when writing only
      to Toggl). Toggl: `mcp__toggl__toggl_get_time_entries` (`start_date`/
@@ -514,6 +540,33 @@ automatically: the flow is always **propose → confirm → write**.
      ```
      For a Calendar block there are no timestamps to re-cap — it is contiguous,
      so `minutes_left` is its span minus the busy overlap.
+   - **Overlapping intervals are not the only way a block can already be logged
+     — compare DESCRIPTIONS too.** Coverage is measured from overlapping time,
+     so it is structurally blind to work the user entered *retrospectively*
+     under an estimated start: the entry exists, its description matches the
+     block word for word, and the two intervals do not touch. Measured
+     2026-09-07 over a 1 Aug – 7 Sep window, twice in one run — the block
+     "merge do main a odstranění label" reconstructed at 24 Aug 00:01–00:36
+     (35 m) was already in Toggl under that exact description at 01:32–02:07
+     (35 m): 1.5 h away, zero overlap, coverage 0.00, proposed as MISSING; and
+     "Staging deployment z pma-test", reconstructed at 00:41 on 5 Sep, logged
+     00:48–00:53. Writing either would have billed a second time for work the
+     user had already recorded honestly, which is a worse failure than missing
+     an hour — it inflates the invoice rather than shrinking it.
+
+     So after the coverage pass, match every surviving proposal's `title`
+     against the descriptions of that project's entries from **`[day-1,
+     day+1]`** — not the same day alone, because night work crosses midnight
+     and the reconstruction and the entry can land on opposite sides of it —
+     using a normalised similarity ratio (`difflib.SequenceMatcher` over
+     lowercased, whitespace-collapsed strings). **At or above ~0.55, treat the
+     block as a suspected duplicate: show the colliding entry with its time and
+     duration, and do not write it unless the user says it is genuinely
+     separate work.** Both confirmed duplicates scored 1.00, so the threshold
+     is deliberately generous. It fails in the other direction on short titles
+     — "EDOC-09" against "EDOC-05" scores 0.86 and they are different tasks —
+     so for titles under ~10 characters ignore the ratio and judge from the
+     time and the surrounding entries instead.
    - Decide with `coverage_covered` (0.9) and `coverage_missing` (0.1):
      - `coverage >= coverage_covered` → **COVERED**: drop the block from the
        proposals; it still counts toward the summary line and the roll-up below.

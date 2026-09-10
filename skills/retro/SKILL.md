@@ -54,6 +54,18 @@ Hard rules, valid for the whole skill:
    read the target file from `origin/main` (`git show origin/main:AGENTS.md`)
    and say so in the summary.
 
+   **One case looks diverged and is not: a task worktree whose branch was
+   squash-merged.** After a squash the branch's commits are not ancestors of
+   `origin/main`, so `merge-base --is-ancestor` says diverged and the rule above
+   would send you to a fresh worktree — but the work is already on `main` under
+   one new SHA and the branch is dead. Confirm that shape before treating it as
+   real divergence: the tree is clean, the PR reads `MERGED`, and its merge
+   commit is on `origin/main`. Then back the branch up (`git branch
+   backup/<name>`) and `git reset --hard origin/main` in place. This matters
+   more than tidiness on a machine already carrying many worktrees of one repo —
+   one session met 28 of them, and adding a 29th to hold three paragraphs of
+   docs is how that number got there.
+
 1. **Resolve the target knowledge file** (where learnings get written):
    - If `AGENTS.md` exists in the project root → that's the target.
    - Else if `CLAUDE.md` exists and contains real content (more than a

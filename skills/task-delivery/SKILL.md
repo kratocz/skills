@@ -123,6 +123,26 @@ Cap the loop so it gives up and *says so* rather than hanging forever, and when
 a watcher does die, re-read the checks directly instead of starting a second
 one — the answer may already be there.
 
+**On a loaded host the interval is not the variable that saves you — accept
+that and stop re-launching.** Three watchers were killed for memory pressure in
+one session (2026-09-07), at 60 s, 120 s **and** 180 s, on a machine hosting 28
+git worktrees of the same repo. Raising the interval did nothing because the
+pressure was not the watcher's. So treat a kill as information about the host,
+not about your polling: after the *second* one, stop launching watchers for that
+run entirely and simply read `gh pr checks <N>` at the top of each turn. It costs
+one call, it is never killed, and the notification you were waiting for was only
+ever going to tell you to do that anyway. Announcing a third watcher and having
+it die is worse than saying plainly that you will check on the next turn.
+
+**And read the exit status, not the word "failed".** `gh pr checks <N>` exits
+non-zero — 8 — while any check is still pending, so a wrapper script around it
+reports a failure when nothing has failed: a background run of one surfaced as
+"failed with exit code 8" on a pull request whose every settled check was green
+(2026-09-07). Have the script end with an explicit `exit 0`, or read the rows
+rather than the status. The same output also lists **two runs of each job** on a
+repo whose CI triggers on both push and pull_request, so "all green" means every
+row, not every distinct job name.
+
 If the project runs an advisory AI reviewer, read its findings before your own
 pass and treat them as **claims to verify, not conclusions**. In particular,
 verify any proposed *fix* actually works before accepting or rejecting the

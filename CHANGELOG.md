@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-25
+
+### Changed
+
+- **retro:** Phase 3 now closes by checking that the session's work is saved: uncommitted and untracked files, commits that exist on no remote, and stashes, in the session's own checkout and any other repository it wrote to. Unpushed commits are found with `git log --branches HEAD --not --remotes` rather than the `[ahead N]` marker, because that marker covers only the checked-out branch and appears only when it has an upstream — a never-pushed branch looks clean in `git status` while its commits live only on the local disk. The check reports and offers, never commits or pushes: in a clone shared by parallel sessions a dirty file may be another session's unfinished work, so what counts as this session's is decided by reading the diff hunks, not the file list. (v0.5.0)
+
 ## 2026-09-04
 
 ### Added

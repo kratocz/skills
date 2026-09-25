@@ -1,7 +1,7 @@
 ---
 name: retro
-description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, and learns from blocked or guardrail-gated actions. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.4.1
+description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
+version: 0.5.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -25,7 +25,7 @@ Hard rules, valid for the whole skill:
 - **Never invent findings.** An area with nothing to report is skipped
   silently. A short or trivial session may legitimately produce an empty
   retro — say so honestly.
-- **Never commit automatically.** Offer a commit at the end; the user decides.
+- **Never commit or push automatically.** Offer a commit (and a push) at the end; the user decides.
 - **Memory may be shared with parallel sessions, and it is not in git.**
   Several agents can run against one project at once, all writing the same
   memory directory: concurrent writes overwrite each other instead of merging,
@@ -336,6 +336,15 @@ Present candidate items grouped by area, then approve and apply:
 
 Report per area: applied / skipped / failed (one line each). Then:
 
+- **Is this session's work saved?** Check the checkout confirmed in Phase 0 step 0 — not a retro worktree — and report what would be lost if the machine died now. Run all three; none of them covers the others:
+  ```bash
+  git status --porcelain --branch                                 # uncommitted and untracked files
+  git log --oneline --decorate HEAD --branches --not --remotes    # commits that exist on no remote
+  git stash list                                                  # stashed work, which status does not show
+  ```
+  Do not read unpushed work off the status header. Its `[ahead N]` marker covers only the checked-out branch and appears only when that branch has an upstream, so a never-pushed branch shows a bare `## feat` header and looks clean while its commits live only on this disk; `git log @{upstream}..` fails on the same branch with `no upstream configured`. The `--branches` query covers every local branch and a detached HEAD, with or without an upstream, and `--decorate` names the branch each commit sits on. The unpushed-commit query is only as current as the remote refs from Phase 0 step 0's `git fetch` — if that fetch did not run or failed, say the remote side may be stale.
+
+  **Report, never fix.** In a clone shared by parallel sessions a dirty file, a branch or a stash may belong to another session, so split the findings in two. What this session demonstrably produced gets an offer of a commit by path and a push — and "demonstrably" means reading the diff hunks, not the file list, because shared files such as a changelog or a README table routinely hold another session's uncommitted hunks; when one file mixes both, offer to stage by hunk. Everything else is listed as present but not from this session, and left alone. The retro's own edits are not reported here; the commit offer below covers them, and a file holding both the retro's edits and earlier session work is offered once, there. A `backup/<name>` branch created by Phase 0 step 0's squash-merge reset is on no remote by design — name it as such rather than as lost work. Repeat the check in any other repository this session wrote to. Group a dirty result per repository; a clean one is a single line, not a section.
 - If repo files changed (target knowledge file, docs, project skills,
   settings): list them and offer — do not run — a commit, suggesting a
   message like `docs: apply retro session learnings`. **If the working tree

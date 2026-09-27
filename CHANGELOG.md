@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-27
+
+### Added
+
+- **session-recall:** new skill — answer "do you remember when we talked about X?" from the transcript of that session rather than from the repo document it produced. Finds the session by the `Claude-Session` trailer of a commit (the id also matches every later transcript that displayed the commit, so the author is picked by timestamps, not by grep alone), by UUID, or by topic ranking, and extracts only what the user typed: `type: "user"` entries with string content, minus task notifications, local-command echoes, injected skill text and tool results — a filter that took three attempts to get right by hand in the founding session. Its centre is the split at the session's last commit: what came before is what the repo reflects, what came after — follow-up questions, a preference stated once the artifact was already committed, the question the session ended on — may live only in the transcript, and is usually what the user is actually asking about. The one rule it insists on comes from the same day: before any "this never reached the repo", `git fetch` and compare against `origin/main`, because the founding session read a worktree sixteen commits behind and told the user a document lacked content that upstream had carried for two weeks. Transcripts are read selectively with `jq`, never dumped, and never handed to a subagent or an external service. (v1.0.0)
+
 ## 2026-09-25
 
 ### Changed

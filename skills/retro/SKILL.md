@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.6.0
+version: 0.7.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -56,7 +56,7 @@ Hard rules, valid for the whole skill:
 
    **One case looks diverged and is not: a task worktree whose branch was
    squash-merged.** After a squash the branch's commits are not ancestors of
-   `origin/main`, so `merge-base --is-ancestor` says diverged and the rule above
+   `origin/main`, so `merge-base --is-ancestor` says diverged and Phase 0 step 3
    would send you to a fresh worktree — but the work is already on `main` under
    one new SHA and the branch is dead. Confirm that shape before treating it as
    real divergence: the tree is clean, the PR reads `MERGED`, and its merge
@@ -103,8 +103,9 @@ Hard rules, valid for the whole skill:
    commits behind and 11 docs were older than upstream). If the local default
    branch is dirty or behind, apply every repo write in a fresh worktree
    created from `origin/main` (`git worktree add -b docs/retro-<date>
-   .claude/worktrees/retro-<date> origin/main`), commit there by path, and
-   leave the user's in-progress files untouched.
+   .claude/worktrees/retro-<date> origin/main`), stage there by path — whether
+   the commit is then made follows the hard rules and Phase 3 — and leave the
+   user's in-progress files untouched.
 
 4. **Map the existing agent environment** (used to avoid duplicate proposals):
    - project skills: list `.claude/skills/*/SKILL.md`
@@ -188,7 +189,7 @@ code, or already recorded (in the target file or in a memory proposed in A).
 
 ### C. Project docs audit (subagent)
 
-Dispatch ONE subagent (type `Explore`) so doc contents do not fill this
+Dispatch ONE read-only exploration subagent so doc contents do not fill this
 context window. Instruct it to:
 
 - list the project's `*.md` files (exclude `node_modules`, `vendor`, build
@@ -232,7 +233,7 @@ recover from.
 
 **On apply, delegate to skillify when installed.** If the `skillify` skill is
 available (its skill appears in your available-skills list), hand each approved
-skill candidate to it — invoke `skillify:skillify` with a one-line description
+skill candidate to it — invoke the `skillify` skill with a one-line description
 of the candidate (its targeted mode); skillify then handles placement,
 scaffolding, and the source-repo rules below. If skillify is not installed,
 follow the guidance below yourself. Detection during this phase is unchanged
@@ -348,10 +349,12 @@ Report per area: applied / skipped / failed (one line each). Then:
   ```
   Do not read unpushed work off the status header. Its `[ahead N]` marker covers only the checked-out branch and appears only when that branch has an upstream, so a never-pushed branch shows a bare `## feat` header and looks clean while its commits live only on this disk; `git log @{upstream}..` fails on the same branch with `no upstream configured`. The `--branches` query covers every local branch and a detached HEAD, with or without an upstream, and `--decorate` names the branch each commit sits on. The unpushed-commit query is only as current as the remote refs from Phase 0 step 0's `git fetch` — if that fetch did not run or failed, say the remote side may be stale.
 
-  **Report, never fix.** In a clone shared by parallel sessions a dirty file, a branch or a stash may belong to another session, so split the findings in two. What this session demonstrably produced gets an offer of a commit by path and a push — and "demonstrably" means reading the diff hunks, not the file list, because shared files such as a changelog or a README table routinely hold another session's uncommitted hunks; when one file mixes both, offer to stage by hunk. Everything else is listed as present but not from this session, and left alone. The retro's own edits are not reported here; the commit offer below covers them, and a file holding both the retro's edits and earlier session work is offered once, there. A `backup/<name>` branch created by Phase 0 step 0's squash-merge reset is on no remote by design — name it as such rather than as lost work. Repeat the check in any other repository this session wrote to. Group a dirty result per repository; a clean one is a single line, not a section.
+  **Report, never fix.** In a clone shared by parallel sessions a dirty file, a branch or a stash may belong to another session, so split the findings in two. What this session demonstrably produced gets an offer of a commit by path and a push — and "demonstrably" means reading the diff hunks, not the file list, because shared files such as a changelog or a README table routinely hold another session's uncommitted hunks; when one file mixes both, offer to stage by hunk. Everything else is listed as present but not from this session, and left alone — with whose it is, where you can find out: search the session transcripts for the file's path (`grep -rl --include='*.jsonl' '<path>' <harness-home>/projects/`, `<harness-home>` being `~/.claude` in Claude Code), keep the sessions where it is the `file_path` of a write or edit, read the closing message of each for what it meant to do with the change, and say whether that session is still running. Work whose session has moved on gets committed by nobody unless the user decides now: on 2026-09-27 four files edited by three other sessions had sat uncommitted for two days, each session having handed the commit to the user. The retro's own edits are not reported here; the commit offer below covers them, and a file holding both the retro's edits and earlier session work is offered once, there. A `backup/<name>` branch created by Phase 0 step 0's squash-merge reset or by area A's rebase drop is on no remote by design — name it as such rather than as lost work. Repeat the check in any other repository this session wrote to. Group a dirty result per repository; a clean one is a single line, not a section.
 - If repo files changed (target knowledge file, docs, project skills,
   settings): list them and offer — do not run — a commit, suggesting a
-  message like `docs: apply retro session learnings`. **If the working tree
+  message like `docs: apply retro session learnings`. Under the hard-rule
+  exception (the project instructs committing and pushing every change), make
+  that commit by path yourself, push it, and report the SHA instead. **If the working tree
   also holds unrelated in-progress work, commit only the retro-touched files
   by path (`git commit -- <paths>`), never `git add -A` / `git add .`** —
   the retro's changes must not sweep up the user's other work. Mention when

@@ -4,7 +4,7 @@
 Input: a model.json produced by the skill (see SKILL.md for the fetch step):
 
   {
-    "prefix": "deps",            # output file prefix (default "deps")
+    "prefix": "deps",             # output file prefix (default "deps")
     "direction": "LR",            # passed through to autolayout (default LR)
     "clusters": {                 # optional grouping of groups (phases, milestones)
       "phase-1": {"title": "Phase 1 — Foundation", "groups": ["INFRA", "AUTH"]},

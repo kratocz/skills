@@ -14,7 +14,7 @@ before anyone sees it.
 
 ## Why it exists
 
-A `session-manager status` table was anonymized on 2026-09-04 to show a tmux-session
+A session-manager status table was anonymized on 2026-09-04 to show a tmux-session
 manager to friends. The employer's name sat in one column — and its four-letter
 internal shorthand also sat in a tmux window name, in a ticket prefix inside a
 worktree branch (`task-INVC-02`), and in a session title. Two colleagues were

@@ -1,8 +1,8 @@
 ---
 name: work-setup
 description: Configure the work-* skills — detect available MCP sources (Todoist, GitHub, ClickUp, Google Calendar) and write ~/.claude/plugins/work/config.json. Use when the user says "/work-setup", "configure work", or when /work-start fails because config is missing.
-version: 0.4.0
-allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp__clickup__clickup_get_workspace_members
+version: 0.4.1
+allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion
 license: MIT
 ---
 
@@ -43,7 +43,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
    |---|---|
    | todoist | `select:mcp_Todoist__find-tasks` |
    | github | `select:mcp__github__search_pull_requests` |
-   | clickup | `select:mcp__clickup__clickup_filter_tasks` |
+   | clickup | `select:mcp__clickup__clickup_filter_tasks`; ClickUp servers are published under many names, so if that misses, search the tools by the keyword `clickup_filter_tasks` and take whatever prefix precedes it |
    | google_calendar | `select:mcp_Google_Calendar__list_events` |
 
    If the query returns a function definition, the source is **available**. If the query returns no match, the source is **unavailable**.
@@ -60,7 +60,7 @@ Configure the work-* skills: detect which MCP sources are available in this sess
 
    **GitHub-specific follow-up:** if user enables `github`, ask for their GitHub username (free-text). Pre-fill with `existing_config.sources.github.username` in edit mode, or with the output of `gh api user --jq .login 2>/dev/null` if `gh` CLI is available (best-effort, don't fail if it errors). Store as `sources.github.username`.
 
-   **ClickUp-specific follow-up:** if user enables `clickup`, the skills need the user's member ID to filter `assignee=me`. Call `mcp__clickup__clickup_get_workspace_members` (no args) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, offer the members as options for the user to pick from (at most four — if there are more, list them inline with numbers and let them pick by number). Store as `sources.clickup.member_id`.
+   **ClickUp-specific follow-up:** if user enables `clickup`, the skills need the user's member ID to filter `assignee=me`. Call `<mcp_prefix>clickup_get_workspace_members` (no args, with the prefix detected in step 3) — it returns a list of members. If exactly one workspace member matches the user's name (heuristic: contains the GitHub username collected above, OR the user's email local-part), pick that ID automatically. Otherwise, offer the members as options for the user to pick from (at most four — if there are more, list them inline with numbers and let them pick by number). Store as `sources.clickup.member_id`.
 
    **Default filter sets** for each source (used unless user later edits the JSON manually — no per-source filter UI in v1):
 

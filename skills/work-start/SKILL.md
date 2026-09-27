@@ -1,8 +1,8 @@
 ---
 name: work-start
 description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today". Does not start the time tracking timer — that is tracker-start.
-version: 0.4.0
-allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__clickup__clickup_filter_tasks, mcp_Google_Calendar__list_events
+version: 0.4.1
+allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp_Google_Calendar__list_events
 license: MIT
 ---
 
@@ -54,7 +54,7 @@ Morning briefing across all configured task and code review sources.
    |---|---|
    | todoist | `select:mcp_Todoist__find-tasks` |
    | github | `select:mcp__github__search_pull_requests` |
-   | clickup | `select:mcp__clickup__clickup_filter_tasks` |
+   | clickup | `select:<sources.clickup.mcp_prefix>clickup_filter_tasks` |
    | google_calendar | `select:mcp_Google_Calendar__list_events` |
 
    If unavailable, mark the source as skipped, append to warnings:
@@ -81,7 +81,7 @@ Morning briefing across all configured task and code review sources.
    - Call `mcp__github__search_pull_requests` with `{ "q": "is:open draft:false author:<username> <repo_filter>" }`
 
    **ClickUp** (if enabled):
-   - Call `mcp__clickup__clickup_filter_tasks` with arguments that filter to the user's member_id (from `effective_config.sources.clickup.member_id`), open status, and due_date_lt = tomorrow midnight (covers overdue + today). Refer to the ClickUp MCP tool's exact schema for the argument shape.
+   - Call `<sources.clickup.mcp_prefix>clickup_filter_tasks` with arguments that filter to the user's member_id (from `effective_config.sources.clickup.member_id`), open status, and due_date_lt = tomorrow midnight (covers overdue + today). Refer to the ClickUp MCP tool's exact schema for the argument shape.
 
    **Google Calendar** (if enabled):
    - Get current time and 12h-later time:

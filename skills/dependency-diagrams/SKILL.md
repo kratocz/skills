@@ -85,7 +85,7 @@ Per-source recipes:
   **Rate budget — the real constraint is per day, not per burst.** The
   workspace-wide limit blocks *writes and reads* for hours once tripped, and
   it is consumed by everything that touches the tracker that day, not just
-  this pipeline. Measured on ACC: a 92-task fan-out at 06:20 on 2026-09-04
+  this pipeline. Measured on one project: a 92-task fan-out at 06:20 on 2026-09-04
   went through with no throttling at all, and 59 further ordinary calls
   through that day were fine too — 151 cumulative. The next morning at 00:27
   a *twelve-call* single-epic fetch died on its eighth call, i.e. at 159
@@ -143,7 +143,7 @@ reviewer — in review, ready for CR — → `review` (yellow ⟳); work in the 
 is what it is waiting for — in progress, testing, changes requested —
 → `in_progress` (blue ▸); everything else → `open` (white). The split is by
 *who is on the hook*, not by tracker status name, so check which statuses the
-tracker actually has before mapping: on ACC, "waiting for fix(es)" is a GitHub
+tracker actually has before mapping: on one project, "waiting for fix(es)" is a GitHub
 PR label with no ClickUp status of its own, and those tasks read as `review`
 unless the tracker status is flipped back. State the mapping you used in your
 summary. `clusters` is optional — without it you get the full graph and a flat

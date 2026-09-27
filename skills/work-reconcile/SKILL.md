@@ -2,8 +2,8 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.9.0
-allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp__clickup__clickup_filter_tasks, mcp__clickup__clickup_get_task_comments, mcp__clickup__clickup_get_time_entries, mcp__clickup__clickup_add_time_entry, mcp_Google_Calendar__list_events
+version: 0.9.1
+allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
 
@@ -263,7 +263,7 @@ automatically: the flow is always **propose → confirm → write**.
      reviewed/merged and issues closed by
      `effective_config.sources.github.username` in the window. Each is a
      confirmatory hit (timestamp = merged/review time, subject = title).
-   - **ClickUp** (probe `select:mcp__clickup__clickup_filter_tasks`):
+   - **ClickUp** (probe `select:<mcp_prefix>clickup_filter_tasks`, the prefix being `effective_config.sources.clickup.mcp_prefix`):
      **there is no updated-date filter** — that tool ranges only over
      `due_date_*` and `date_closed_*`, so "tasks updated by the user in the
      window", which this step used to ask for, cannot be expressed and an agent
@@ -415,8 +415,8 @@ automatically: the flow is always **propose → confirm → write**.
      a path containing `/.claude/worktrees/`, truncate it there and match only
      the part to the left; the worktree's own name is a branch label chosen for
      a ticket or a topic and means nothing about billing. Measured 2026-08-26:
-     `…/billing-system-ACC/.claude/worktrees/monitoring` resolved to the Toggl
-     project `Monitoring` — a different client's — for 12 blocks, and because
+     `…/<repo>/.claude/worktrees/monitoring` resolved to the Toggl project
+     `Monitoring` — a different client's — for 12 blocks, and because
      the match *succeeded* no `'project?'` gate fired to surface it. Skipping
      the literal token `worktrees` is not enough; the segment after it has to go
      too.
@@ -444,8 +444,8 @@ automatically: the flow is always **propose → confirm → write**.
      fall back to `sources.toggl.project_id` or `default_project_id`: those name
      the project a *timer* starts on, which is a different question from where
      unattributed reconstructed time belongs. Measured on a live config on
-     2026-08-26, that fallback put roughly four fifths of the proposed hours onto a billable
-     client project — a fifth of them from a personal repo — and because the
+     2026-08-26, that fallback put roughly four fifths of the proposed hours onto
+     a billable client project — a fifth of them from a personal repo — and because the
      configured id was non-null, the `'project?'` branch below was unreachable,
      so nothing ever surfaced for review. A reconcile writes to a timesheet
      someone bills from; an unanswered question is cheap there and a silent
@@ -494,7 +494,7 @@ automatically: the flow is always **propose → confirm → write**.
    - Load existing entries for `[since, until]` **only from the trackers in
      `sink.target`** (reading a ClickUp busy-map is pointless when writing only
      to Toggl). Toggl: `mcp__toggl__toggl_get_time_entries` (`start_date`/
-     `end_date`). ClickUp: probe `select:mcp__clickup__clickup_get_time_entries`
+     `end_date`). ClickUp: probe `select:<mcp_prefix>clickup_get_time_entries`
      first; if present, call it with `start_date`/`end_date` and
      `assignee=["me"]`-equivalent (omit `assignee` — it defaults to the
      authenticated user's own entries, which is what a personal reconcile
@@ -546,10 +546,10 @@ automatically: the flow is always **propose → confirm → write**.
      under an estimated start: the entry exists, its description matches the
      block word for word, and the two intervals do not touch. Measured
      2026-09-07 over a 1 Aug – 7 Sep window, twice in one run — the block
-     "<merge task>" reconstructed at 24 Aug 00:01–00:36
+     titled after a merge task, reconstructed at 24 Aug 00:01–00:36
      (35 m) was already in Toggl under that exact description at 01:32–02:07
      (35 m): 1.5 h away, zero overlap, coverage 0.00, proposed as MISSING; and
-     "<staging deployment task>", reconstructed at 00:41 on 5 Sep, logged
+     one titled after a staging deployment, reconstructed at 00:41 on 5 Sep, logged
      00:48–00:53. Writing either would have billed a second time for work the
      user had already recorded honestly, which is a worse failure than missing
      an hour — it inflates the invoice rather than shrinking it.
@@ -697,7 +697,7 @@ automatically: the flow is always **propose → confirm → write**.
        "billable":<bool>,"tags":["<reconciled_tag>"]}'
    ```
    (Add `"project_id":<pid>` only when a project was resolved.)
-   **ClickUp** — `mcp__clickup__clickup_add_time_entry`
+   **ClickUp** — `<mcp_prefix>clickup_add_time_entry`
    with `task_id` (the block's `clickup_task_id`, chosen during review — step 8),
    `start` (`YYYY-MM-DD HH:MM`), `duration` (`Xh Ym`), `description`, `billable`,
    `tags:[<reconciled_tag>]`. A block without a `clickup_task_id` was never

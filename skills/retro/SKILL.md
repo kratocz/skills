@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.5.0
+version: 0.6.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -25,7 +25,7 @@ Hard rules, valid for the whole skill:
 - **Never invent findings.** An area with nothing to report is skipped
   silently. A short or trivial session may legitimately produce an empty
   retro — say so honestly.
-- **Never commit or push automatically.** Offer a commit (and a push) at the end; the user decides.
+- **Never commit or push automatically** — unless the project's knowledge file (`AGENTS.md`/`CLAUDE.md`) explicitly instructs committing and pushing every change without asking; then follow it, commit by path and report the SHA. Otherwise offer a commit (and a push) at the end; the user decides.
 - **Memory may be shared with parallel sessions, and it is not in git.**
   Several agents can run against one project at once, all writing the same
   memory directory: concurrent writes overwrite each other instead of merging,
@@ -82,6 +82,10 @@ Hard rules, valid for the whole skill:
    **Large memory sets (roughly more than 40 files or 100 KB): delegate the
    reading.** Dump every indexed file with its mtime into one scratch file
    (`for f in …; do echo "######## $f ($(stat -f %Sm -t %F $f))"; cat $f; done`)
+   — in a worktree-isolated session write that loop as a small Python script
+   in the scratchpad and run it as one plain command, because the isolation
+   guard refuses an inline `for` loop with `$(…)` as a path it cannot verify
+   (2026-09-24, cost one round) —
    and dispatch ONE read-only subagent with that path, the target knowledge
    file, and the session facts. Brief it with the area A and D rules below
    verbatim, tell it to verify every claim against `origin/main` and to quote

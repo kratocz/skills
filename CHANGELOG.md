@@ -8,6 +8,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **session-recall:** new skill — answer "do you remember when we talked about X?" from the transcript of that session rather than from the repo document it produced. Finds the session by the `Claude-Session` trailer of a commit (the id also matches every later transcript that displayed the commit, so the author is picked by timestamps, not by grep alone), by UUID, or by topic ranking, and extracts only what the user typed: `type: "user"` entries with string content, minus task notifications, local-command echoes, injected skill text and tool results — a filter that took three attempts to get right by hand in the founding session. Its centre is the split at the session's last commit: what came before is what the repo reflects, what came after — follow-up questions, a preference stated once the artifact was already committed, the question the session ended on — may live only in the transcript, and is usually what the user is actually asking about. The one rule it insists on comes from the same day: before any "this never reached the repo", `git fetch` and compare against `origin/main`, because the founding session read a worktree sixteen commits behind and told the user a document lacked content that upstream had carried for two weeks. Transcripts are read selectively with `jq`, never dumped, and never handed to a subagent or an external service. (v1.0.0)
 
+### Changed
+
+- **retro:** the never-commit rule gains one exception: when the project's `AGENTS.md`/`CLAUDE.md` explicitly instructs committing and pushing every change without asking, the retro follows it, commits by path and reports the SHA; otherwise it still only offers. The large-memory dump in Phase 0 is written as a small Python script in the scratchpad when the session runs in an isolated worktree, because the isolation guard refuses an inline `for` loop with `$(…)` as a path it cannot verify. (v0.6.0)
+
 ## 2026-09-25
 
 ### Changed

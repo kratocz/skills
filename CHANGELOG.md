@@ -11,6 +11,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **retro:** the never-commit rule gains one exception: when the project's `AGENTS.md`/`CLAUDE.md` explicitly instructs committing and pushing every change without asking, the retro follows it, commits by path and reports the SHA; otherwise it still only offers. The large-memory dump in Phase 0 is written as a small Python script in the scratchpad when the session runs in an isolated worktree, because the isolation guard refuses an inline `for` loop with `$(…)` as a path it cannot verify. (v0.6.0)
+- **code-review:** a PR that gates, permits or filters something (auth, feature toggles, tenant isolation, permissions, rate limits) gets a second fresh-context refuter that sees neither the findings nor the diff's rationale, only the artifact and the contract it must satisfy, briefed to break the contract rather than to check the review. A refuter handed findings re-litigates them; the first contract-only pass found two material facts about what a gate actually enforced that three self-verification passes had missed.
 
 ## 2026-09-25
 

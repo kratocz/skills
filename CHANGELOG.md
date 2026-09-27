@@ -14,6 +14,11 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 - **code-review:** a PR that gates, permits or filters something (auth, feature toggles, tenant isolation, permissions, rate limits) gets a second fresh-context refuter that sees neither the findings nor the diff's rationale, only the artifact and the contract it must satisfy, briefed to break the contract rather than to check the review. A refuter handed findings re-litigates them; the first contract-only pass found two material facts about what a gate actually enforced that three self-verification passes had missed.
 - **retro:** Phase 3 now says whose foreign uncommitted work is — it finds the session that wrote each file from the transcripts, reads what that session meant to do with it, and says whether it is still running — because work whose session has moved on is committed by nobody: four files from three other sessions had sat for two days, each having handed the commit to the user. The commit offer honours the hard-rule exception (commit by path, push, report the SHA), a `backup/<name>` branch from area A's rebase drop is recognised as intentional alongside the one from the squash-merge reset, and Phase 0 step 3 only stages in the retro worktree rather than committing. Also fixed: a cross-reference to the wrong step, the `skillify` invocation name, and a harness-specific subagent type. (v0.7.0)
 
+### Fixed
+
+- **session-recall:** the by-commit grep is now recursive and reaches subagent transcripts under `<uuid>/subagents/`, which its own edge case relied on — a second glob would have aborted the command in zsh for any slug without subagents — and a hit there is attributed to the parent session; commands use the resolved `<harness-home>` instead of a hard-coded `~/.claude`; and deriving the running session's UUID from the scratchpad path is marked as Claude Code-specific, with a fallback. (v1.0.1)
+- **skillify:** the deep scan names a read-only exploration subagent instead of a harness-specific agent type. (v0.1.2)
+
 ## 2026-09-25
 
 ### Changed

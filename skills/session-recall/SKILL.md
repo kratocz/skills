@@ -2,7 +2,7 @@
 name: session-recall
 description: Find the transcript of an earlier agent session — by the `Claude-Session` trailer of a commit, by session UUID, or by topic — and recover what the USER said in it (their prompts verbatim, in order), which commits that session made, and what was said after its last commit and therefore may never have reached the repo. Use when the user says "/session-recall", "načti předchozí session", "dokázal bys načíst session, kde jsme…", "co jsme řešili minule", "víš, jak jsme se bavili o…", "recall the session where we…", "what did we discuss last time", "load the previous conversation about X". Not time tracking over transcripts — that is tracker-backfill / work-reconcile.
 argument-hint: "[commit | session-uuid | topic keywords]"
-version: 1.0.0
+version: 1.0.1
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -37,8 +37,9 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
    session runs in a worktree — list all slugs that share the repo prefix:
 
    ```bash
-   ls -d ~/.claude/projects/*<repo-name>* 2>/dev/null
-   ls -lat ~/.claude/projects/<slug>/*.jsonl | head -20
+   H=~/.claude   # or ~/.gemini/antigravity-cli — the <harness-home> resolved above
+   ls -d $H/projects/*<repo-name>* 2>/dev/null
+   ls -lat $H/projects/<slug>/*.jsonl | head -20
    ```
 
    Filenames are session UUIDs with no date; the `mtime` is the session's last
@@ -49,24 +50,30 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
    - **By commit.** The trailer names the session:
      ```bash
      git log -1 --format='%(trailers:key=Claude-Session,valueonly)' <sha>
-     grep -l '<session-id-from-url>' ~/.claude/projects/<slug>*/*.jsonl
+     grep -rl --include='*.jsonl' '<session-id-from-url>' $H/projects/<slug>*/
      ```
+     The recursive form also reaches `<uuid>/subagents/`; spelling that out as a
+     second glob aborts the whole command in zsh (`no matches found`) whenever
+     one slug has no subagents.
+     A hit under `<uuid>/subagents/` belongs to the session `<uuid>`, not to a
+     separate one.
      The id matches **every** transcript that ever displayed that commit — the
      session that wrote it, and any later session that ran `git show` or `git
      log` on it (today's included). The author is the file whose **first user
      prompt predates the commit and whose mtime is after it**; verify with
      Step 3's timestamps before trusting it.
-   - **By UUID.** If the user or a note has it: `~/.claude/projects/<slug>/<uuid>.jsonl`.
+   - **By UUID.** If the user or a note has it: `$H/projects/<slug>/<uuid>.jsonl`.
    - **By topic.** Count hits per file and rank; prefer distinctive words
      (a filename the session created, a proper noun) over common ones:
      ```bash
-     for f in ~/.claude/projects/<slug>*/*.jsonl; do printf '%6d %s\n' "$(grep -c -i '<keyword>' "$f")" "$f"; done | sort -rn | head
+     for f in $H/projects/<slug>*/*.jsonl; do printf '%6d %s\n' "$(grep -c -i '<keyword>' "$f")" "$f"; done | sort -rn | head
      ```
      Then confirm with Step 3 — a high count can be a session that merely read
      the file the earlier session wrote.
 
-   Exclude the running session: its UUID is the second-to-last component of
-   the scratchpad path in your system prompt.
+   Exclude the running session. In Claude Code its UUID is the second-to-last
+   component of the scratchpad path in your system prompt; elsewhere it is the
+   transcript under the current slug with the newest mtime.
 
 3. **Extract what the user said — and only that.** A transcript mixes the
    user's typed prompts with tool results, injected skill text, task
@@ -75,7 +82,7 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
    made only of `text` items with no `tool_result`), minus the harness noise:
 
    ```bash
-   F=~/.claude/projects/<slug>/<uuid>.jsonl
+   F=$H/projects/<slug>/<uuid>.jsonl
    jq -r '
      select(.type=="user" and (.isMeta|not))
      | .message.content as $c
@@ -149,7 +156,7 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
 - **Session spanned a `Došly tokeny` / rate-limit pause** — the transcript is
   still one file; long gaps between prompts are pauses, not session ends.
 - **Session ran in a worktree whose directory is gone** — the slug directory
-  under `~/.claude/projects/` survives the worktree; search by repo prefix.
+  under `$H/projects/` survives the worktree; search by repo prefix.
 - **Content `.message.content` is an array of `text` items with no
   `tool_result`** — that is a typed prompt with an attachment or pasted text;
   the filter above keeps it. An array with `tool_result` is a tool round-trip,

@@ -1,7 +1,7 @@
 ---
 name: work-status
 description: Mid-day check — diff current state of volatile sources (GitHub PRs, Todoist completions) against the last /work-start snapshot. Use when the user says "/work-status", "what's new", "co se změnilo".
-version: 0.4.0
+version: 0.4.1
 allowed-tools: Read, Bash, ToolSearch, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
 license: MIT
 ---
@@ -59,7 +59,7 @@ Lightweight diff: what closed, what's new, what's still open — since `/work-st
 
    Sort `still_open` and pick the top 3 to display.
 
-5. **Render terse summary** in the configured language (Czech default). **Every
+5. **Render terse summary** in the configured language. **Every
    quoted user-facing string in this skill is an example written in `cs`** —
    render it in `effective_config.language`, keeping proper nouns, IDs, paths
    and durations unchanged. The two step-1/2 messages above are the exception:

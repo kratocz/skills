@@ -2,7 +2,7 @@
 name: work-standup
 description: Standup recap — what you actually worked on since the last standup, pulled from Toggl time entries + git commits + GitHub reviews/merges and grouped into a report you can paste into the standup channel. Use when the user says "/work-standup", "standup", "stand-up status", "co jsem dělal od minula", "co jsem udělal od posledního stand-upu", "recap since last standup".
 argument-hint: "[--since YYYY-MM-DD[THH:MM]] [--project <name>]"
-version: 0.5.0
+version: 0.5.1
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_issues, mcp__github__search_pull_requests, mcp__github__list_commits
 license: MIT
 ---
@@ -52,7 +52,7 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
       replace, scalars override). Invalid JSON → warn and skip the override.
 
    The merged result is `effective_config`. Read `effective_config.language`
-   (default `"cs"`); render all user-facing prose in it. Keep proper nouns,
+   (default `"en"`); render all user-facing prose in it. Keep proper nouns,
    code identifiers, URLs, and durations unchanged. **Every quoted user-facing
    string below is an example written in `cs`** — none of them is a literal the
    user must see verbatim. The message in (a) is the exception: it carries both
@@ -208,7 +208,7 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
      incident/outage/fix/deploy → **Ops / incidents**
    - everything else → **Development / other**
 
-6. **Render the recap** in the configured language (Czech default). Structure
+6. **Render the recap** in the configured language. Structure
    it so it's paste-ready for a standup, most-important first:
 
    ```markdown

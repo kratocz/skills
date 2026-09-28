@@ -16,7 +16,10 @@ import sys
 
 HOME = os.path.expanduser("~")
 LIVE = os.path.join(HOME, ".agents", "skills")
-REPO = os.path.join(HOME, "IdeaProjects", "github.com", "kratocz", "skills", "skills")
+# The clone this script lives in (bin/ sits next to skills/); a symlinked
+# script resolves to the clone. SKILLS_REPO overrides it.
+REPO = os.environ.get("SKILLS_REPO") or os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "skills")
 LOCK = os.path.join(HOME, ".agents", ".skill-lock.json")
 
 

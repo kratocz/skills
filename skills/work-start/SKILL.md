@@ -1,7 +1,7 @@
 ---
 name: work-start
 description: Morning briefing — pull tasks/PRs from configured sources (Todoist, ClickUp, GitHub, Calendar), score them, and print top N with categories. Use when the user says "/work-start", "morning briefing", "co dneska řešit", "what's on my plate today". Does not start the time tracking timer — that is tracker-start.
-version: 0.4.1
+version: 0.4.2
 allowed-tools: Read, Write, Bash, ToolSearch, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -35,7 +35,7 @@ Morning briefing across all configured task and code review sources.
 
    The merged result is `effective_config`. Use it for the rest of the steps.
 
-   Read `effective_config.language` (default `"cs"`) and phrase all user-facing
+   Read `effective_config.language` (default `"en"`) and phrase all user-facing
    text in it. **Every quoted user-facing string in this skill — warnings, the
    briefing template, the edge-case messages — is an example written in `cs`**;
    none of them is a literal the user must see verbatim. Keep proper nouns, IDs,
@@ -219,7 +219,7 @@ Morning briefing across all configured task and code review sources.
 
 7. **Render briefing + recommendation**:
 
-   Build a markdown briefing in the configured language. Use this template (Czech default; translate the labels and recommendation prose if `effective_config.language` is something else):
+   Build a markdown briefing in the configured language. Use this template (its labels and recommendation prose are written in `cs` as an example; render them in `effective_config.language`):
 
    ```markdown
    ## 📋 Briefing — <today's date as DD. MM. YYYY>

@@ -1,7 +1,7 @@
 ---
 name: work-end
 description: End-of-day summary — what got done, what carries over, what's new since /work-start. Use when the user says "/work-end", "konec dne", "shrnutí dne", "wrap up the day". Does not stop the time tracking timer — that is tracker-stop.
-version: 0.4.1
+version: 0.4.2
 allowed-tools: Read, Write, Bash, ToolSearch, AskUserQuestion, mcp_Todoist__find-completed-tasks, mcp_Todoist__find-tasks, mcp_Todoist__find-tasks-by-date, mcp__github__search_issues, mcp__github__search_pull_requests
 license: MIT
 ---
@@ -58,7 +58,7 @@ End-of-day retrospective: what closed, what carries over, what arrived during th
 
    Sort each list by score descending (re-score `carry_over` and `new_unhandled` using current data via `/work-start` step 5 scoring; for `completed_today` use the score they had in the snapshot if available, else 0).
 
-5. **Render summary** in the configured language (Czech default). **Every quoted
+5. **Render summary** in the configured language. **Every quoted
    user-facing string in this skill is an example written in `cs`** — render it
    in `effective_config.language`, keeping proper nouns, IDs, paths and
    durations unchanged. The step-1 message above is the exception: it carries

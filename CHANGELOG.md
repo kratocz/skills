@@ -2,6 +2,13 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-28
+
+### Changed
+
+- **work-start, work-standup, work-reconcile, work-end, work-status:** when the config carries no `language`, the suite now answers in English, as `tracker-*` already did, instead of Czech; the Czech templates stay in the skills as the worked examples they were declared to be. (work-start v0.4.2, work-standup v0.5.1, work-reconcile v0.9.2, work-end v0.4.2, work-status v0.4.1)
+- **repo:** `bin/check-skill-drift.py` locates the repository from its own position in the clone (bin/ next to skills/, symlinks resolved), with `SKILLS_REPO` as an override, instead of the maintainer's hard-coded path.
+
 ## 2026-09-27
 
 ### Added

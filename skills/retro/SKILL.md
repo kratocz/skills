@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.7.0
+version: 0.7.1
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -69,7 +69,8 @@ Hard rules, valid for the whole skill:
 1. **Resolve the target knowledge file** (where learnings get written):
    - If `AGENTS.md` exists in the project root → that's the target.
    - Else if `CLAUDE.md` exists and contains real content (more than a
-     redirect like "See AGENTS.md") → target `CLAUDE.md`.
+     redirect such as "See AGENTS.md" or an import line `@AGENTS.md`) → target
+     `CLAUDE.md`.
    - Else ask the user whether to create `AGENTS.md` (minimal skeleton:
      project overview, structure, commands, conventions). If declined, areas
      A and B run in report-only mode (findings shown, nothing written).

@@ -7,6 +7,8 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **work-start, work-standup, work-reconcile, work-end, work-status:** when the config carries no `language`, the suite now answers in English, as `tracker-*` already did, instead of Czech; the Czech templates stay in the skills as the worked examples they were declared to be. (work-start v0.4.2, work-standup v0.5.1, work-reconcile v0.9.2, work-end v0.4.2, work-status v0.4.1)
+- **init-project:** the `CLAUDE.md` it writes is now the import line `@AGENTS.md` instead of a Markdown link. A link is text the agent may or may not act on, and since Claude Code 2.1.277 reads `AGENTS.md` natively only when no `CLAUDE.md` exists, a link-only `CLAUDE.md` hid `AGENTS.md` outright; the import loads it once on every version. When an existing `CLAUDE.md` is nothing but such a link, the skill now offers the same replacement.
+- **retro:** step 1 treats a `CLAUDE.md` holding only `@AGENTS.md` as a redirect, like the "See AGENTS.md" form. (v0.7.1)
 - **repo:** `bin/check-skill-drift.py` locates the repository from its own position in the clone (bin/ next to skills/, symlinks resolved), with `SKILLS_REPO` as an override, instead of the maintainer's hard-coded path.
 
 ## 2026-09-27

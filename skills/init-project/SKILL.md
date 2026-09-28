@@ -102,13 +102,15 @@ If `AGENTS.md` already exists, skip and tell the user.
 
 ## 5. Create `CLAUDE.md` (if it doesn't exist)
 
-Contents — keep it to a single redirect so AGENTS.md is the single source of truth:
+Contents — a single import line, so AGENTS.md stays the single source of truth:
 
 ```markdown
-See [AGENTS.md](AGENTS.md).
+@AGENTS.md
 ```
 
-If `CLAUDE.md` already exists, skip and tell the user.
+It has to be the `@` import, not a Markdown link. A link is plain text the agent may or may not act on; the import inlines the file. Claude Code reads `AGENTS.md` on its own from 2.1.277, but only when no `CLAUDE.md` exists in the directory or above it, so a link-only `CLAUDE.md` actively hides `AGENTS.md` there, while the import loads it exactly once on every version, including the stable channel and hosted variants that do not read `AGENTS.md` yet. Verified 2026-09-28 on 2.1.281 with a marker sentence in each file: link → marker absent from context, import → present.
+
+If `CLAUDE.md` already exists, skip and tell the user — unless it consists of nothing but a link to `AGENTS.md`; then offer to replace it with the import line, for the reason above.
 
 ## 6. Create `README.md` (if it doesn't exist)
 

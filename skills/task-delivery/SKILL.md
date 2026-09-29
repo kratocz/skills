@@ -132,6 +132,17 @@ per settled check and exits when all have settled. Cover **every** terminal
 state in the filter, not just success — a watcher that greps only for the happy
 path is silent through a failure, and silence looks like "still running".
 
+**A job that has not finished reports `.conclusion` as an empty string, not
+`null`** — so the obvious jq default never fires. `.conclusion // "running"`
+yields `""` for every in-progress job, a watcher switching on that value sees no
+"running" state, concludes everything has settled and exits on its first poll,
+reporting an empty verdict for a run that had barely started (2026-09-17, on
+`gh run view --json jobs`). Test for both:
+`if (.conclusion == null or .conclusion == "") then "running" else .conclusion end`.
+Same shape for `.status` on the run itself. This is the failure mode the rule
+above cannot catch, because the watcher does not die — it succeeds at measuring
+nothing.
+
 **Keep the watcher cheap, or the host kills it and the silence looks the same.**
 One API call per poll and an interval of 60 s or more; a watcher issuing two
 calls every 30 s was killed mid-wait for memory pressure (2026-09-06) and

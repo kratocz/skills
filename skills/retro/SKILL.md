@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.7.1
+version: 0.7.2
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -74,6 +74,17 @@ Hard rules, valid for the whole skill:
    - Else ask the user whether to create `AGENTS.md` (minimal skeleton:
      project overview, structure, commands, conventions). If declined, areas
      A and B run in report-only mode (findings shown, nothing written).
+
+   **A fork of someone else's upstream has no writable target.** When the
+   checkout is a fork whose `origin` is another project (`git remote -v`), its
+   `AGENTS.md` belongs to that project's maintainer: writing session learnings
+   into it means opening a PR to a stranger, not recording a note. Run areas A
+   and B report-only there, and route each finding by who it serves — a fact
+   about the project's own conventions becomes an upstream docs PR the user
+   approves separately; a fact about how *you* work with that project stays in
+   memory; a fact about the user's machine or shell goes to the user's global
+   `CLAUDE.md`. Area C behaves the same way: its findings are upstream's to
+   fix, so present them as PR candidates, never as local edits to apply.
 
 2. **Read memory.** Your file-based memory directory (path given in your
    system prompt, `.../projects/<project-slug>/memory/`): read `MEMORY.md`

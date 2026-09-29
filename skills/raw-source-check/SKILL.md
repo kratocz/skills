@@ -1,6 +1,8 @@
 ---
 name: raw-source-check
 description: Verify every quotation in a note or draft against the raw source page — fetched with curl and stripped to text, never through a summarizer — fragment by fragment across ellipses, then read what surrounds each hit, because a verbatim quote can still misrepresent its source. Records bot blocks, login walls and parked mirrors as what the sourcing cost. Use when the user says "/raw-source-check", "ověř citace", "zkontroluj citace proti zdroji", "sedí ty citáty?", "check the quotes against the source", "verify quotations", "is that quote really there", or before a note that quotes a web page is called done.
+version: 1.0.0
+license: MIT
 ---
 
 # Raw source check — quotations against the page they came from

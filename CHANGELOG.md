@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-09-29
+
+### Changed
+
+- **task-delivery:** two rules learnt delivering an infrastructure task. Where and when a change deploys is now derived from the deploy configuration actually read — the GitOps Application's sync policy and target revision, the CD workflow's triggers — rather than from a rule about image pins: a manifest-only change was announced as reaching staging "with the next pre-release" when the staging Application synced from `main` on merge. And a time-tracking timer that belongs to another session is left running; the task's own time is logged retroactively for the span that does not overlap it, and the report says so.
+
 ## 2026-09-28
 
 ### Added

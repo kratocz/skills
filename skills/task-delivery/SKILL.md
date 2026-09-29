@@ -36,6 +36,13 @@ follow-up migration.
 If a tracker MCP is available, read the task through it rather than from the
 user's paraphrase.
 
+**If a time-tracking timer is already running and it belongs to another
+session, leave it alone.** Stopping or replacing it rewrites that session's
+entry, and parallel sessions against one account are the normal case, not an
+accident. Note your own start time instead, and at the end log a retroactive
+entry for the span that does not overlap the other one — then say in the
+report that you did, and how much overlapping time you left out.
+
 ## 2. Decide what is genuinely open, and ask once
 
 Before writing code, separate:
@@ -49,6 +56,16 @@ ask about things the task or the epic already answers, and do not ask twice.
 
 State any deviation from the literal task text out loud, in the PR body and in
 the summary — never silently.
+
+**When you tell the user where and when a change will deploy, derive it from
+the deploy configuration you have actually read** — the GitOps Application's
+sync policy and target revision, the CD workflow's triggers — not from a rule
+about image pins. The two differ more often than the knowledge file admits:
+on 2026-09-24 a manifest-only change was announced as reaching staging "with
+the next pre-release", because that is when staging's *image* moves; the
+staging Application synced automatically from `main` and the change rolled out
+minutes after the merge. One `grep` of the Application manifest would have
+said so before the question was asked.
 
 ## 3. Implement, then run the gates and read the *last* run
 

@@ -77,6 +77,13 @@ Deliver three layers, in this order:
    nothing owed) from *open items that wait on the user*, and say which is
    which. Where you disagree with a proposal in the messages, say so directly
    with the reason and an alternative.
+   Before calling an item *open*, check whether it was already closed
+   elsewhere: when the person works across several projects, read every
+   affected project's memory index — a session only loads its own — and
+   when the assessment rests on repository state, `git fetch` and read
+   `origin/main` plus that repository's own agent notes (`AGENTS.md`), not
+   the working tree. A request can be days-old news to another session
+   while it still looks open in the thread.
 3. **Draft reply** — only for items that need one. Follow outward-message
    rules: continuous paragraphs (no mid-sentence line breaks), no greeting
    mid-conversation, expand abbreviations at first use ("Virtual Private

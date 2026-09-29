@@ -168,7 +168,17 @@ GitHub alone would under-report a review-heavy or ops-heavy stretch.
 
    **GitHub** (if enabled). Substitute the configured `username` for `@me`.
    If `effective_config.sources.github.repos` is set, OR-join
-   `repo:<owner/name>` filters and AND them into each query. Run in parallel:
+   `repo:<owner/name>` filters and AND them into each query. When `--project`
+   names a Toggl project, resolve the repos through
+   `effective_config.sources.github.project_repos` — a map from Toggl project
+   name to `["owner/name", …]` — and use those instead of the flat list: a
+   `repos` list written for one client silently queries the wrong repositories
+   for another (observed 2026-09-22: the list held one client's single repo,
+   and the other project's PRs had to come from memory rather than from the
+   query). With no entry for the project, fall back to the current checkout's
+   `origin` remote when its repository name matches the project by the
+   `work-reconcile` pairing rule, and say which repo the recap was built
+   from. Run in parallel:
    - Merged PRs I authored:
      `mcp__github__search_pull_requests` with
      `{ "q": "is:pr author:<username> merged:>=<since date> <repo_filter>" }`

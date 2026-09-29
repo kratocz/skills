@@ -339,7 +339,9 @@ automatically: the flow is always **propose → confirm → write**.
    PY
    ```
    Then round to `round_to_min` and set `minutes`. If `minutes < min_block_min`,
-   drop the block as noise. Set `origin='ai-gapcapped'`.
+   drop the block as noise. Set `origin='ai-gapcapped'`. Apply that threshold
+   once more after placement (step 9): a block that rounds up to
+   `min_block_min` can still have no free wall-clock to land in.
 
    **Sanity gate — per block AND per day.** Per-day splitting bounds a block at
    24 h, which is not the same as plausible: an agent left running unattended
@@ -420,6 +422,18 @@ automatically: the flow is always **propose → confirm → write**.
      the match *succeeded* no `'project?'` gate fired to surface it. Skipping
      the literal token `worktrees` is not enough; the segment after it has to go
      too.
+   - **Even the repository is only a hint — the session's content decides.** A
+     worktree named for a topic rather than a ticket (`questions-<person>`,
+     `ai-cr`, `standup`) can host work for a different client entirely.
+     Measured 2026-09-22: two sessions in `<repo-A>/.claude/worktrees/questions-<person>`
+     spent 60 min drafting replies about `<repo-B>`'s staging environment, and
+     path-based pairing put all of it on repo A's project — again with no
+     `'project?'` gate, because the match *succeeded*. For every topic-named
+     worktree, grep the session's user messages (the `type: user` lines) for
+     the other projects' names before trusting the path, and reassign the
+     block when they win. Say in the review which blocks were reassigned and
+     why; when `--project` then drops them, say that too, so the time is not
+     silently lost for the other project.
    - **Matching rule.** Take the project name's last `/`-separated part as its
      *key*. Normalise key and segment alike: lowercase, and collapse every `-`,
      `_` and `.` to one separator character. A segment matches when it
@@ -683,7 +697,18 @@ automatically: the flow is always **propose → confirm → write**.
    `round(minutes) * 60` (seconds; `minutes` is the approved per-item value).
    If the block's `end` is null (commit-only or manual items filled in without
    an end time), derive it with `date` as `start + duration` before building
-   the payload. Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
+   the payload.
+
+   **Place the entry in free wall-clock before you write it.** `start` is the
+   block's first timestamp, but `start + duration` can run into an entry the
+   tracker already holds — rounding to `round_to_min` alone causes it: a
+   2-minute sliver wedged between two logged entries rounds to 5 and overlaps
+   the second one. Walk forward from `start`, skipping every existing entry,
+   until the approved minutes are placed; when the free space inside the
+   block's span is below `min_block_min`, drop the item and say so instead of
+   writing an overlap. Measured 2026-09-22: one such sliver, caught only
+   because the write script compared every payload against every fetched
+   entry before posting — keep that comparison, it is the last guard. Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
    original end), `duration` (seconds), `description`, `project_id` (only when
    resolved), `billable` (from `sink.billable`), and `tags` including
    `sink.reconciled_tag` — mirroring `/tracker-log-entry`'s Toggl body:
@@ -709,7 +734,17 @@ automatically: the flow is always **propose → confirm → write**.
    **Idempotency:** before writing, and on any re-run, treat an existing entry
    that already carries `sink.reconciled_tag` overlapping the same block as
    already-written and skip it (belt-and-braces on top of the coverage diff, so
-   a second `/work-reconcile` writes nothing).
+   a second `/work-reconcile` writes nothing). Scope that check to entries that
+   actually **overlap the block**: the fetch in step 7 deliberately covers
+   `[day-1, day+1]` for description matching, so a tagged entry from outside
+   the window sits in the same result set and must not be read as "already
+   written" (2026-09-22: one such entry, a day before the window, from the
+   previous run). After the batch, re-fetch the window and identify your own
+   writes by the returned ids and `created_with`, not by the tag or the day —
+   the user may add entries by hand within minutes of the run (observed the
+   same day: a manual entry carrying the same `reconciled_tag` landed three
+   minutes after the batch), and the summary must report it as theirs, not
+   claim it.
 
    **No sink credentials** (neither Toggl nor ClickUp key available): do not
    write. Instead offer an **export** — print the approved items as a Markdown

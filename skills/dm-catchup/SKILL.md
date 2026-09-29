@@ -50,6 +50,20 @@ available, say so and stop.
   `clickup_get_chat_message_replies` call; Slack threads likewise need
   `slack_read_thread`. The newest development is usually IN a thread, not at
   the top level.
+- **A channel read is anchored at *now*, so two reads leave an unread gap
+  between them — page back to the last message id you already saw before
+  claiming anyone did not answer.** Expanding threads proves nothing about the
+  window *between* two sweeps: read a channel at 05:00, read it again at 12:00,
+  and everything said in between sits in neither page while "I checked the
+  channel" feels true. Before asserting absence, page back until you reach the
+  last id you had already read (or the date of the question you are chasing) and
+  **say in the output which id or date the search reached** — an absence claim
+  that does not name its window is not evidence. `limit: 100` with
+  `text/plain` covers roughly a month in one call and is the cheap first move,
+  ahead of expanding threads or checking side channels. Real case (2026-09-17):
+  two reads seven hours apart, a confident "he did not answer anywhere" backed
+  by thread expansion, PR review bodies and the team channel — and both answers
+  had been sitting in that same DM since the previous morning.
 - Convert message timestamps to local time before deciding what falls inside
   the window; label which day each item belongs to.
 - **Compute epoch bounds with a command, never in your head.** Slack's

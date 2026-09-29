@@ -10,6 +10,16 @@
 
 <2–4 sentences in the reviewer's own words, based on the actual diff — not a copy of the PR description.>
 
+## Verified rather than assumed (optional — include when the review rested on checks)
+
+> For claims that are **not findings** but would otherwise be re-derived or re-argued: what you actually ran, and what came back. A reviewer who measured something and did not record it has paid for the measurement twice — once now, once when the author or the next round re-opens the question.
+>
+> Worth a line each: a reproducibility or clean-rebuild check on a committed build artifact; a number that kills an obvious objection before it is raised (a size, a timing, a count); a hypothesis you formed and **refuted**, so it does not come back as a finding later; and a convention you checked the change against and found it matches (so its absence from Findings is a result, not an oversight).
+>
+> Say what you ran, not just the conclusion — "`npm ci && npm run build:css` reproduces the committed file byte-for-byte, on the PR head and on a simulated merge with current `main`" is checkable; "the rebuild is fine" is not.
+
+- **<claim>.** <what you ran, and what it returned.>
+
 ## Status of prior findings (round 2+ only — omit on round 1)
 
 > Carry over every finding from the previous round's file and mark its current status. This file is then the canonical source of unresolved blockers.

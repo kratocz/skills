@@ -15,6 +15,7 @@ Start a new time tracking session in the configured backend.
 
 1. **Read config**: Read `~/.claude/plugins/session-tracker/config.json`.
    - If the file doesn't exist: "No configuration found. Please run /tracker-setup-tracker first." Then stop.
+   - ⚠️ **The file contains the API key in plaintext, so never `cat` it.** Read only the fields you need, and read them *inside* the script that uses them (`json.load(open(...))["toggl"]["api_key"]`) rather than into a shell variable or the conversation. A `cat` of this file puts the key in the transcript, in any log that captures tool output, and past any secret-redaction that only watches command arguments — it is the same leak the `--config -` trick below exists to prevent, arriving by the other door. If you need to know *whether* a field is set, test it and print the boolean.
    - Read `config.language` (default `"en"` if missing). All user-facing text generated in the steps below — prompts, confirmations, URL-derived descriptions — should be phrased in this language. Keep proper nouns, code identifiers, URLs, and numeric durations unchanged.
 
 2. **Gather project context** (best-effort — ignore errors if not in a git repo):
@@ -54,8 +55,10 @@ Start a new time tracking session in the configured backend.
    - If no arguments were provided, ask the user — in the configured language — for a brief description of what they're working on.
 
 5. **Resolve tracker project** (optional):
-   - Fetch the active project list and look for a project whose name matches the detected repo/dir name (case-insensitive).
+   - **First check `config.project_map`** — an optional object mapping a repo name to a tracker project ID (`{"payroll-system-PMA": 219087737}`). If the detected repo is a key there, use that ID and skip the name matching entirely.
+   - Otherwise fetch the active project list and look for a project whose name matches the detected repo/dir name (case-insensitive).
    - If matched, use its ID. Otherwise fall back to `default_project_id` from config (may be null — in which case no project is attached).
+   - **Name matching fails silently whenever the tracker project is not named after the repo**, which is the normal case once projects are grouped by client: repo `payroll-system-PMA` against project `NTIT/PMA` matches on neither exact nor substring comparison, so the entry is created with no project at all and has to be repaired with a follow-up `PUT`. When that happens, say which project you attached (or that you attached none) in the step-8 report so it is visible immediately, and offer to add a `project_map` entry so the next start gets it right.
 
    ### Toggl Track
    ```bash

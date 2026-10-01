@@ -171,6 +171,8 @@ rather than the status. The same output also lists **two runs of each job** on a
 repo whose CI triggers on both push and pull_request, so "all green" means every
 row, not every distinct job name.
 
+**Once the pull request is open, the task's state lives outside the session — so a long wait is a place to end it.** The branch, the PR body, the checks, the review threads and the tracker status are all readable from scratch, and a fresh session told "task X, PR #N" picks up from them at a fraction of the context. Resuming the delivery session after a human review or the next morning is the expensive path: the prompt cache expires after an hour, so the first turn back rewrites the session's whole context at twice the input price, and a 30-day transcript audit (2026-10-01) put such rewrites at 16–22 % of all tokens spent, with multi-day sessions carrying most of the cost. When the next step is a wait longer than about an hour, say in the report that the work can continue in a fresh session and name what it should be told.
+
 If the project runs an advisory AI reviewer, read its findings before your own
 pass and treat them as **claims to verify, not conclusions**. In particular,
 verify any proposed *fix* actually works before accepting or rejecting the

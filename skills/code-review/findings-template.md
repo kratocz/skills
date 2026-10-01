@@ -5,6 +5,7 @@
 - **Reviewer:** <name or @handle>
 - **Date:** <YYYY-MM-DD>
 - **Round:** <N>
+- **Reviewed head:** <full SHA of the PR head this round reviewed>
 
 ## Summary of changes
 

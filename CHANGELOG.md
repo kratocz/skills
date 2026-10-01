@@ -2,6 +2,13 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-01
+
+### Changed
+
+- **code-review:** a new review round is meant to start in a fresh session rather than in the one that ran the previous round; when invoked in a session that already carries an earlier round of the same target, the skill says so in one line and suggests a fresh session. Everything a round needs is already durable — prior findings files, GitHub commits, comments and replies — and the findings header (and template) now records the head SHA each round reviewed, so the next round knows where its delta starts without the conversation. Motivated by a 30-day transcript audit in which sessions resumed after more than an hour rewrote their whole context into the prompt cache at twice the input price — 16–22 % of all tokens — with multi-day review sessions the typical case.
+- **task-delivery:** once the pull request is open, a wait longer than about an hour (human review, CI overnight) is treated as a place to end the session; the report says the work can continue in a fresh session and names what that session should be told, since the branch, PR, checks, review threads and tracker status carry the whole state. Same audit as above.
+
 ## 2026-09-29
 
 ### Changed

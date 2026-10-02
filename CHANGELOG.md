@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-02
+
+### Added
+
+- **dm-compose:** new skill — compose a *proactive* message to a colleague (status check-in, nudge, heads-up, handover note), the inverse of `dm-catchup`'s reply. Its reason for existing is that an initiated message rests entirely on the agent's own snapshot, which is systematically incomplete: meetings, calls and side DMs have already moved things, so a check-in assembled from tracker statuses and open PRs asks questions that were settled yesterday and reads as not having listened. The skill therefore puts one question to the user *before* drafting — "is there an agreement or meeting outcome I would not see?" — defaults a check-in to *on-track + blockers* rather than a list of open questions, and requires every commitment, handover or deadline in the draft that the user has not actually stated to be flagged outside it, because the message goes out under their name. Also carries the outward-message rules that bite hardest on a first message: the recipient's language, continuous paragraphs, no idioms to a non-native speaker, no internal task IDs to anyone outside the tracker, and an approval that covers the drafted message only. (v1.0.0)
+
 ## 2026-10-01
 
 ### Changed

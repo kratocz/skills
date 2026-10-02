@@ -2,7 +2,7 @@
 name: token-audit
 description: Find what actually drives token cost across agent sessions and measure whether a change to how you work reduced it — price-weighted shares, cache rewrites after idle gaps vs model switches, cost by context size, multi-day sessions, tool-result and skill residency, subagents against doing the same work inline — then refute the conclusions in a fresh context and compare against a saved baseline. Use when the user asks "kde mi utíkají tokeny", "jak ušetřit tokeny", "zanalyzuj spotřebu tokenů z logů", "zabralo to?", "přeměř token audit", "where do my tokens go", "why is my usage so high", "did the change reduce token use". Not the general usage dashboard (tokens per project, skill, subagent, top prompts) — that is the `session-report` plugin.
 license: MIT
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Token audit
@@ -31,13 +31,16 @@ Weights relative to uncached input: input 1, 5-minute cache write 1.25, 1-hour c
 
 | Driver in the output | What it means | Lever |
 |---|---|---|
-| cache read dominates, cost concentrated in `>400k` context | every turn re-reads a huge context | shorter sessions — one task or review round per session; a lower auto-compact window is a personal setting, offer it as such |
+| cache read dominates, cost concentrated in `>400k` context | every turn re-reads a huge context | shorter sessions — one task or review round per session; a lower auto-compact window is a personal setting, offer it as such, sized as described below the table |
 | `idle > 1h` rewrites | resuming a big session after the 1-hour cache TTL writes the whole context again at 2× | compact or end the session before a break; work that keeps its state in files (findings files, PRs, trackers) restarts cheaply. Claude Code hooks can react to compaction but not start it (hooks docs, checked 2026-10-01), so this is a habit, not an automation |
 | `model switch` rewrites (incl. `idle + model switch`) | each model has its own cache | switch models only at the start of a session |
+| no metric of its own — list, per short time window, how many sessions made their first request after more than an hour idle | many finished sessions woken within minutes of each other — a `/retro` or "commit and push" sweep across every open session, a cross-session message to sessions that are done — each writes its whole context again, and a model switch on the way in makes that certain | run a retro at the end of the session it reviews, while the cache is warm and on the same model; do not wake a finished session just to inform it. Measured 2026-10-02 over one month: four such sweeps came to ~10–14 % of cost (upper bound), about half of it pure rewrites |
 | high `later day` share | multi-day sessions carry the cost | same as the first row |
 | tool-result residency (with the `Bash by command` breakdown) | a large output stays in context, paid on every later turn and again on every rewrite | delegate long read-only exploration to a subagent when the main context is already large; read files in ranges rather than whole |
 | subagent `inline/actual` | estimated cost of doing the same work inline, as a multiple of the subagents' actual cost. Two numbers: with their reads staying in context until compaction (upper bound), and without (lower) — the truth is between | above 1 on both: keep delegating; below ~10 tool calls from a small context they lose |
 | skills share | skill listing plus loaded skill bodies | usually small; trimming descriptions costs triggering accuracy for little gain |
+
+**Sizing an auto-compact window.** A lower window is triggered by size alone: it cannot tell a pause or a change of topic from a large task still in progress, so it fires mostly mid-work. Derive it from the data rather than picking a round number — find the largest contexts of sessions that were large for a reason (one task carried through, short gaps between prompts) and set the window just above them, so that only the runaway tail gets compacted. Simulated 2026-10-02 over one month: a 200k window would have compacted ~200 times, about 80 % of them within five minutes of the previous request; a window just above the legitimate single-task maximum (~500k in that data) compacted 44 times and left those sessions alone. A simulation's saving is an upper bound (step 4). Say how reversible each habit is when recommending it: a conversation left with `/clear` stays available to `/resume` at full context, at the cost of the cache rewrite a pause would have caused anyway; `/compact` cannot be undone within the session, and the Claude Code docs suggest `/branch` before it when the full history may be needed again.
 
 Two traps observed in real data: `hook_success` attachments can make up half of a transcript's bytes but never reach the model — measure from `usage`, not file size; and `<synthetic>` records carry no usage.
 

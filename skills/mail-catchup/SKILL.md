@@ -2,7 +2,7 @@
 name: mail-catchup
 description: Catch up on an IMAP mailbox exposed through the zerolib-email MCP server (mcp-email-server) — list unread mail, read the relevant threads, summarize per thread what is asked of you and by when, recommend what to do, draft the reply into a dated file for approval, send it in-thread with a correctly encoded subject, and verify the copy in Sent before calling it sent. Use when the user says "/mail-catchup", "zkontroluj mi nové maily", "co mi přišlo do schránky", "check my mailbox", "catch up on email", or "odpověz na ten mail" for a mailbox served by mcp__zerolib-email__* tools. Gmail via the Gmail MCP is a different tool with different traps — that is gmail-compose.
 argument-hint: "[account] [since-date]"
-version: 1.0.0
+version: 1.1.0
 license: MIT
 ---
 
@@ -26,6 +26,15 @@ and `delete_emails` only when a reply is actually going out.
 `list_available_accounts` → use an account with `can_receive=true`. If the
 result is empty, the server is not configured — say so and stop; never ask
 for credentials in chat.
+
+When a reply is going out, also call `list_allowed_recipients` **before
+drafting**: since mcp-email-server 1.9 an empty list denies every recipient
+(the send fails with "Recipient(s) not in allowlist"). In legacy mode the
+list comes from `MCP_EMAIL_SERVER_ALLOWED_RECIPIENTS` in the server's `env`
+(`.mcp.json`), comma-separated addresses or globs; it is the user's guard, so
+propose the minimal set (the user's own address for the self-test plus the
+real recipient), let the user add it, and remind them the server reads it
+only on restart (`/mcp` → reconnect).
 
 ### 2. List what is new
 
@@ -126,6 +135,20 @@ First time a new pattern is used (encoded subject, attachment, new server
 version): send the same shape to the user's own address first, read it back
 with `list_emails_metadata` (the decoded subject shows there), then send the
 real one. Delete the test from INBOX and Sent afterwards with `delete_emails`.
+
+Attachments (`attachments` = absolute paths) work as of 1.9.1, but verify
+them the right way: `list_emails_metadata` shows `attachments: []` for the
+test even when they are there — `get_emails_content` on the test's INBOX id
+lists them. `download_attachment` / `get_attachment_content` are usually
+disabled in the server settings, and that is the user's choice; do not flip
+it — ask the user to open the test mail in their client and confirm the
+files open, then delete the test. A `.docx` from `pandoc` needs a compact
+reference doc (10.5 pt, 2 cm margins) to keep a 500-word note on one page.
+
+The harness may deny the send itself: after this skill has edited the
+server's config (`.mcp.json`), the auto-mode classifier can block
+`send_email` as "Self-Modification" even for the self-test. That is the
+user's approval to give — say what was blocked and why, and stop.
 
 If the call raises instead of returning an outcome, do **not** retry blindly:
 check Sent for a copy and reason from the error text which phase failed

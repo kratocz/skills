@@ -2,7 +2,7 @@
 name: tracker-start
 description: Start the time tracking timer (Toggl/Clockify) for what you are about to work on. Use when the user says "/tracker-start", "start timer", "start tracking", "spusť stopky", "I'm starting work on <task>", or names the task they are beginning. Not the morning briefing over tasks and PRs — that is work-start.
 argument-hint: "[task-description-or-url]"
-version: 1.7.0
+version: 1.8.0
 allowed-tools: Read, Write, Bash, WebFetch
 license: MIT
 ---

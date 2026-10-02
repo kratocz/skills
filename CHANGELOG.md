@@ -17,6 +17,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 - **code-review:** finding numbers continue across rounds instead of restarting at `n1`, so "the n1 you waived" stays unambiguous in findings files, GitHub threads and the author's commit messages; the round header states the convention and prior-round identifiers stay untouched in `Status of prior findings`.
 - **mail-catchup:** before drafting a reply it now reads the server's recipient allowlist, since mcp-email-server 1.9 denies every recipient when the list is empty, and proposes the minimal set for the user to add (the server reads it only on restart). Step 6 covers attachments as of 1.9.1 — verified through `get_emails_content`, because the metadata listing shows them empty — and says to stop and report when the auto-mode classifier blocks the send after the skill has edited the server config. (v1.1.0)
 - **retro:** the worktree-isolation note adds that the guard reads a command as text, so a heredoc is refused merely for *mentioning* the word in prose it writes; such a script goes through the file-writing tool and runs as one command, from a path that does not itself contain the word. (v0.7.3)
+- **retro:** Phase 3 finds the author of an uncommitted hunk by a distinctive phrase from the hunk in the write, edit and shell tool inputs, not only by its path — a path search misses edits made through a patch script, a heredoc or a copy edited outside the clone. (v0.7.4)
 
 ## 2026-10-01
 

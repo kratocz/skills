@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.6.1
+version: 1.7.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -106,6 +106,21 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    arithmetic — never do timezone math in your head. Drop leftover fragments
    shorter than ~2 minutes (noise). If nothing remains in any block, report
    "tracking already covers the whole session" and stop.
+
+   **But check *what* covers it before calling it covered.** An interval can be
+   fully tracked and still be wrong: another session (or the user) may have had a
+   timer running for a different project or client while this session worked on
+   something else, so the time is booked against the wrong thing rather than
+   missing. Compare each block against the *description and project* of the entry
+   covering it, not only against its start and stop. When they disagree, say so
+   and offer a **split** rather than reporting "already covered": shorten the
+   existing entry with a `PUT` to its `start`/`stop` (plus `duration`), then create
+   the correct entry in the freed window — both writes need the same explicit
+   approval as a new entry, and the shortening goes first so no overlap ever
+   exists on the wire. This matters most where two projects belong to one client:
+   an overlap there is double-billing the same payer (real case, 2026-09-15: 33
+   minutes of one client's work sat inside another project's entry because a
+   parallel session had started its timer mid-block).
 
 6. **Confirm before writing** (this is billing data — never create entries
    silently): show the proposed entries in **local time** (start–stop,

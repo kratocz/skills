@@ -11,8 +11,13 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-09-29
 
+### Added
+
+- **raw-source-check:** new skill — verify every quotation in a note against the page it came from, in three passes that catch three different failures. The page is fetched with curl and stripped to text, never through a summarizer (one returned a paraphrase of Ezekiel 29:17–20 missing the very clause an argument rested on); a mechanical pass requires every fragment between ellipses to be a verbatim, whitespace-normalized substring of a source and bisects the misses; a context pass then prints and reads what surrounds each hit, because the expensive failure is a quotation that is on the page character for character and still misrepresents it — cut two sentences before the argument turns, lifted from a paragraph that is one-way from its first line, or a "concession" whose next sentence makes it a *tu quoque* premise. All three happened in one note (2026-09-14/17), and the correction published over the first reading had itself to be retracted. Bot blocks (IIS 999), login-walled bibliographies and parked mirrors are recorded in the note as what the sourcing cost, with the unread source then used "as a position, not as a citation". Ships `scripts/strip_html.py` and `scripts/check_quotes.py`. (v1.0.0)
+
 ### Changed
 
+- **retro:** the Phase 0 note on worktree isolation now also names the two refusal shapes seen since — a heredoc piped into an interpreter, and a line chaining `cd` or other commands with `git` — and the fix: keep every `git` call a single plain command and put anything longer in a script file run as one command. (v0.7.2)
 - **task-delivery:** two rules learnt delivering an infrastructure task. Where and when a change deploys is now derived from the deploy configuration actually read — the GitOps Application's sync policy and target revision, the CD workflow's triggers — rather than from a rule about image pins: a manifest-only change was announced as reaching staging "with the next pre-release" when the staging Application synced from `main` on merge. And a time-tracking timer that belongs to another session is left running; the task's own time is logged retroactively for the span that does not overlap it, and the report says so.
 
 ## 2026-09-28

@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.9.2
+version: 0.9.3
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -190,6 +190,17 @@ automatically: the flow is always **propose → confirm → write**.
      step 5 markers speak,
    - `origin_marks=[]`.
 
+   **Drop sessions a hook started, not a person.** Some setups run a PostToolUse
+   hook that spawns a fresh agent session to review each diff for security
+   issues; those land in the same tree as ordinary sessions, under the repo's
+   own slug. Their tell is the content: every user prompt in them is the
+   hook's fixed brief (e.g. "Review this change for security vulnerabilities").
+   They run inside a session the user is already working in, so their minutes
+   are either covered by that parent or pure agent time — never time to bill.
+   Measured 2026-09-22 and 2026-09-24: 6 and 17 such sessions in two windows,
+   each one to three minutes long. Skip a block when **all** its user prompts
+   carry the hook's brief.
+
    **B. Google Calendar** (primary, if
    `effective_config.reconcile.calendar.as_work` is true and MCP present —
    probe `select:mcp_Google_Calendar__list_events`):
@@ -300,6 +311,15 @@ automatically: the flow is always **propose → confirm → write**.
      often state the work's substance. Best of all, the user's own past
      estimates ("cca 2 h, z toho 1 h už mám za sebou") are the strongest
      calibration available — prefer them over your own reconstruction.
+   - **The session's own pauses.** Manual work done *during* an agent session
+     leaves a gap in its log, and gap-capping reduces any gap over
+     `gap_threshold_min` to one `edge_pad_min`. Read the first user prompt after
+     each such gap: when it reports work finished in the meantime ("I set the
+     secrets in the test environment", "seeded", "done, it was painful"), the
+     gap was work, not a break. Propose it as a `manual` row spanning the gap and
+     quote the prompt as evidence. Measured 2026-09-24: a 15-minute stretch of
+     seeding a secrets store by hand, invisible to gap-capping, surfaced only
+     from the prompt that followed it.
 
    Blocks from this source get `source='offline'`, `origin='anchored'`, and a
    `minutes` estimate the user MUST confirm — the anchors fix *when*, never
@@ -516,7 +536,11 @@ automatically: the flow is always **propose → confirm → write**.
      skip it, warn once** ("ClickUp historie nedostupná — kontrola překryvu jen
      přes Togglu."), and fall through to Toggl-only coverage for ClickUp-bound
      blocks (they will simply not be marked COVERED by pre-existing ClickUp
-     entries). Each existing entry → (start, end, project).
+     entries). Each existing entry → (start, end, project). **A running entry
+     has no end**: Toggl returns it with `stop: null` and a negative
+     `duration`. Treat it as busy from `start` to *now*, never skip it — a
+     timer left running since the morning is exactly the entry that already
+     covers the work you are about to propose.
    - Build a **busy map** per (project, day): the union of already-logged
      intervals. Also build an **all-projects per-day bucket** — the union of
      every entry that day regardless of project.
@@ -708,7 +732,15 @@ automatically: the flow is always **propose → confirm → write**.
    block's span is below `min_block_min`, drop the item and say so instead of
    writing an overlap. Measured 2026-09-22: one such sliver, caught only
    because the write script compared every payload against every fetched
-   entry before posting — keep that comparison, it is the last guard. Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
+   entry before posting — keep that comparison, it is the last guard. "Existing"
+   includes the entries this batch has already written, and the items the user
+   supplied in review: when a user-sized item (a call they give 10 minutes to)
+   lands on top of a session row for the same project, shorten the session row
+   and say so rather than writing two entries over the same minutes — the
+   user's number is the stronger evidence. Place at **second** precision, too:
+   live entries end at arbitrary seconds, so minute-rounded pieces collide with
+   them (2026-09-29: five of thirteen pieces, all overlapping by under a minute,
+   all stopped by the guard). Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
    original end), `duration` (seconds), `description`, `project_id` (only when
    resolved), `billable` (from `sink.billable`), and `tags` including
    `sink.reconciled_tag` — mirroring `/tracker-log-entry`'s Toggl body:

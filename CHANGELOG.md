@@ -8,6 +8,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **dm-compose:** new skill — compose a *proactive* message to a colleague (status check-in, nudge, heads-up, handover note), the inverse of `dm-catchup`'s reply. Its reason for existing is that an initiated message rests entirely on the agent's own snapshot, which is systematically incomplete: meetings, calls and side DMs have already moved things, so a check-in assembled from tracker statuses and open PRs asks questions that were settled yesterday and reads as not having listened. The skill therefore puts one question to the user *before* drafting — "is there an agreement or meeting outcome I would not see?" — defaults a check-in to *on-track + blockers* rather than a list of open questions, and requires every commitment, handover or deadline in the draft that the user has not actually stated to be flagged outside it, because the message goes out under their name. Also carries the outward-message rules that bite hardest on a first message: the recipient's language, continuous paragraphs, no idioms to a non-native speaker, no internal task IDs to anyone outside the tracker, and an approval that covers the drafted message only. (v1.0.0)
 
+### Changed
+
+- **work-reconcile:** four rules from a reconcile run. Sessions spawned by a hook (every user prompt is the hook's fixed brief, e.g. a per-diff security review) are skipped, since their minutes are covered by the parent session or are pure agent time. A gap inside a session is read through the first prompt after it: when that prompt reports work done in the meantime, the gap is proposed as a `manual` row instead of being capped away. A running Toggl entry (`stop: null`, negative `duration`) counts as busy until now rather than being skipped. And the final overlap guard also covers entries written earlier in the same batch and items the user sized in review — the session row is shortened rather than double-booked — with pieces placed at second precision so they no longer collide with live entries by a few seconds. (v0.9.3)
+
 ## 2026-10-01
 
 ### Changed

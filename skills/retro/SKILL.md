@@ -119,6 +119,21 @@ Hard rules, valid for the whole skill:
    (2026-09-03, 119 files / 328 KB): reading inline would have cost ~90k
    tokens of context; the subagent returned 4 + 35 candidates in one page.
 
+   **Keep that dump somewhere that outlives the day — it is the only record of
+   what the memory directory held.** Memory is not versioned, so once a file is
+   deleted its content exists nowhere else; the dump is the sole artefact that
+   can answer "what did that deletion take with it?" later. A scratchpad path
+   cannot do that job: scratchpads are wiped between days, and on 2026-10-02 a
+   retro went looking for its own 2026-09-28 dump to audit fourteen deletions
+   made by concurrent sessions and found the directory empty — the content of
+   all fourteen was simply gone, unauditable. So write the dump outside the
+   scratchpad (`~/.claude/memory-snapshots/<project-slug>-<date>.txt` or
+   similar), state its path in the Phase 3 summary so a later session can find
+   it, and when several sessions run at once treat your dump as the shared
+   before-picture rather than private working state. Take it even when the set
+   is small enough to read inline and no subagent is dispatched: the reason to
+   keep it has nothing to do with context size.
+
 3. **Fetch and pick the write target.** Run `git fetch` first and audit
    against `origin/main`, not the working tree — a stale checkout produces
    findings that upstream already fixed (2026-09-03: the checkout was 10
@@ -350,6 +365,22 @@ Present candidate items grouped by area, then approve and apply:
      **only after** the corresponding write succeeded, and its index line is
      removed from `MEMORY.md` in the same step. Delete memory files with
      `rm` on the exact path read in Phase 0 — never glob-delete.
+   - **Before deleting a memory, grep `origin/main` for each sentence you are
+     not migrating — not for the paragraph around them.** "The repo already
+     covers this file" is the claim that gets a fact killed, and it is usually
+     true of the bulk and false of one line. Walk the file's own sentences:
+     for each, run `git grep -F "<a distinctive fragment>" origin/main` and
+     keep the file when any fragment has no hit. Verified failure
+     (2026-10-02): a memory had been trimmed hours earlier to exactly the one
+     fact missing from `AGENTS.md` — that `git grep <pat> origin/main` prefixes
+     hits with `origin/main:<path>`, so the printed line refs are not
+     clickable. A concurrent session confirmed the surrounding paragraph was in
+     `AGENTS.md`, deleted the whole file, and that sentence then existed
+     nowhere; it had to be reconstructed from a live session's context, which
+     only worked because one happened to still hold it. The corollary already
+     stated in this skill's hard rules is the fix: when a sentence is worth
+     keeping, **move it into the repo and then delete** — do not delete on the
+     strength of a neighbourhood match.
    - Doc fixes (area C) are applied one finding at a time.
    - Skill items (area E) follow area E's apply path: when the `skillify`
      skill is installed, area E delegates creation to it; otherwise scaffold

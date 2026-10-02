@@ -78,6 +78,12 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **retro:** Phase 3 now closes by checking that the session's work is saved: uncommitted and untracked files, commits that exist on no remote, and stashes, in the session's own checkout and any other repository it wrote to. Unpushed commits are found with `git log --branches HEAD --not --remotes` rather than the `[ahead N]` marker, because that marker covers only the checked-out branch and appears only when it has an upstream — a never-pushed branch looks clean in `git status` while its commits live only on the local disk. The check reports and offers, never commits or pushes: in a clone shared by parallel sessions a dirty file may be another session's unfinished work, so what counts as this session's is decided by reading the diff hunks, not the file list. (v0.5.0)
 
+## 2026-09-24
+
+### Changed
+
+- **code-review:** three additions from an infrastructure-only review. An infra PR (Terraform/OpenTofu, Kubernetes manifests) is planned on a throwaway local merge of the integration branch into the PR head, never on the head alone — a branch behind `main` makes its plan "revert" everything applied since the branch point and buries the PR's own changes in noise. After the third verification pass a fresh-context subagent, given only the findings file and the diff, is briefed to refute the findings and look for what the review missed; on its first use that pass produced the review's only finding visible in the running environment, which three self-verification passes had walked past. And a review the user scoped to part of a PR is posted as a Comment with the scope stated first, not as an Approve, because a green Approve reads as a sign-off on the whole PR.
+
 ## 2026-09-04
 
 ### Added

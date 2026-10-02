@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.9.3
+version: 0.10.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -634,6 +634,25 @@ automatically: the flow is always **propose → confirm → write**.
      Reserve the full colliding-entry detail (including its `at` field, which
      reveals whether the entry was measured live or entered retrospectively as
      one lump — the latter is far weaker evidence) for a day the user opens.
+   - **Check the other direction too: time logged that no work backs.** The
+     diff above only finds work missing from the tracker; a timer left running
+     while the user was away is the mirror error, and nothing else in this
+     skill sees it. For every entry in the window longer than ~60 min, measure
+     the stretch inside it with **no session timestamp in any repo** (not just
+     the project's — the user may have moved to another client) and **no commit
+     authored in any repo found in step 3C**. When that idle stretch exceeds
+     ~45 min, list the entry under its own heading — start, stop, duration,
+     the idle span, the last activity before it — and whether the `at` field
+     equals its stop time (stopped live, so a forgotten timer is the likely
+     story) or lies later (entered by hand, so the user chose that length).
+     Offer to **trim** it to the last activity plus `edge_pad_min`; never trim
+     without an explicit yes, because manual work outside any agent (a phone
+     call, a console session, a UI) leaves exactly this shape. Measured
+     2026-09-29: one entry ran 11:35–18:00 (385 min) while every log and every
+     repo stayed silent from 12:50 until the next timer started at 17:55 —
+     310 min over-logged, more than the whole missing time the same run
+     proposed. Write the trim as a `PUT` on the entry's id, with the same
+     stdin-fed auth as step 9.
    - ClickUp coverage is bucketed per (project, day), not per-task, so
      same-project same-day ClickUp time can mask a distinct task's block — the
      `reconciled_tag` idempotency check (step 9) is the finer backstop.

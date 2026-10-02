@@ -52,7 +52,7 @@ Structure that works:
 3. **Two to four numbered objections, strongest first.** Each should be checkable, not rhetorical.
 4. **Pre-empt their best comeback** inside the relevant objection, rather than leaving it as a gotcha they can spring.
 5. **Close with exactly one question** they have to answer.
-6. **Hostile-reader pass.** Before handing the draft over, re-read every sentence as an opponent who treats each concession as a confession ("so you admit science is wrong"; "so you admit archaeology confirms it"). A concession that stands alone in its sentence is a quote for their audience: put its limit or consequence in the same sentence, and spell the consequence out — what their own claim implies for their own predictions — rather than leaving it to be inferred. When the reply needs cutting, cut whole paragraphs, never the fork half of a sentence. And when the opponent hands you the hook ("we lack the information for a definitive verdict"), an unsent symmetry thread belongs in this reply, not in a separate one.
+6. **Hostile-reader pass.** Before handing the draft over, re-read every sentence as an opponent who treats each concession as a confession ("so you admit science is wrong"; "so you admit archaeology confirms it"). A concession that stands alone in its sentence is a quote for their audience: put its limit or consequence in the same sentence, and spell the consequence out — what their own claim implies for their own predictions — rather than leaving it to be inferred. Then run the same pass over your *objections*, wearing the other hat: the opponent who knows the field and has thirty seconds. Each objection must survive their best short correction, or it hands them a win they did not earn. Real case: a draft said charges detonating in a fraction of a second "cannot coexist with a ten-second descent" — but demolition only cuts supports, gravity does the descent, and that takes 9.2 s from 417 m whatever cut them; the opponent would have corrected it in one line and been right. The user's question caught it, not the pass. When the reply needs cutting, cut whole paragraphs, never the fork half of a sentence. And when the opponent hands you the hook ("we lack the information for a definitive verdict"), an unsent symmetry thread belongs in this reply, not in a separate one.
 
 Then tell the user separately (not in the reply): which objection is actually strongest, which sentence is the weakest link, and anything you would leave out and why.
 
@@ -89,6 +89,16 @@ One directory per person, one file per exchange, in whatever repo the user keeps
 ```
 
 The internal section is the part with long-term value: in a year nobody remembers which sentence was solid and which was borrowed from a summary.
+
+## 6b. When it runs to several rounds
+
+The procedure above is written for one reply. Public threads rarely stop there, and the multi-round case has its own shape — seen in full over six rounds in 2026-09.
+
+- **One file per round, each linking the previous.** The archive's durable output is not any single reply but the *sequence*: what the opponent claimed in round one and what was left by round six. Record each retreat as it happens, in their words, with the round it happened in. An opponent rarely concedes; they drop a claim and open a new topic in the same breath. The file is where that becomes visible.
+- **Name the exit round in the archive before you reach it.** Write "this is the last reply from our side" into the file when you send it, not afterwards. The pull to answer one more time is strong precisely when the opponent is losing on the facts, because that is when their replies get easiest to refute — and also when replying stops changing anything.
+- **The bar for an exception is a checkable citation that refutes them.** After the declared exit, reply only if the opponent has supplied a source and reading it raw shows it says the opposite of what they claim. That is one verifiable quotation the audience can open in two clicks, not another round of physics. Anything else — new numbers, new topics, insults — is archived and left.
+- **When they move to victims and morality, the numbers have run out.** A shift from mechanism to the dead, to motive, or to "you have no ethics" is the end state, not a new front. Their facts may now even be *true* (they often are — the horror is real); what fails is the inference. Do not enter: a public argument over the remains of the dead has no good outcome for anyone, and it is exactly where you are being invited.
+- **Say out loud when your recommendation changes, and why.** Over six rounds the advice went: send → don't → send this one line → don't → send, this is the exception → don't. Each switch was justified by something the opponent did (a civil turn, a citation). Give the reason each time, so the user can see the rule being applied rather than a mood swinging.
 
 ## 7. Discipline
 

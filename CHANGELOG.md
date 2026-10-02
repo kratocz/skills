@@ -11,6 +11,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **work-reconcile:** four rules from a reconcile run. Sessions spawned by a hook (every user prompt is the hook's fixed brief, e.g. a per-diff security review) are skipped, since their minutes are covered by the parent session or are pure agent time. A gap inside a session is read through the first prompt after it: when that prompt reports work done in the meantime, the gap is proposed as a `manual` row instead of being capped away. A running Toggl entry (`stop: null`, negative `duration`) counts as busy until now rather than being skipped. And the final overlap guard also covers entries written earlier in the same batch and items the user sized in review — the session row is shortened rather than double-booked — with pieces placed at second precision so they no longer collide with live entries by a few seconds. (v0.9.3)
+- **debate-reply:** the hostile-reader pass in step 6 now runs over the reply's own *objections* too, as the opponent who knows the field and has thirty seconds — each must survive their best one-line correction. New section 6b for threads that run to several rounds: one archive file per round, the exit round named in the archive before it is reached, a checkable citation that refutes the opponent as the only bar for replying after it, the turn to victims and morality read as the end state rather than a new front, and every change of recommendation stated with its reason.
 
 ## 2026-10-01
 

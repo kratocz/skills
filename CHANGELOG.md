@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-06
+
+### Changed
+
+- **work-reconcile:** agent session logs are now read from every harness the user runs, through one adapter per harness, with none treated as primary — previously the skill picked the first log root that existed, so the days a user spent in a second harness looked empty. Adapters exist for the Claude Code layout and for Codex (`~/.codex/sessions`); for Codex the skill selects files by modification time rather than the start-date directory, skips approval-reviewer and spawned-thread subagent files, reads prompts only from real user messages instead of injected instructions, and strips the opaque `~/.codex/worktrees/<id>/` prefix before project pairing. A harness without an adapter is inspected before it is counted, never parsed by guesswork, and the per-day union runs across all harnesses together so parallel sessions are not counted twice. On its first use two whole working days of one project existed only in the second harness. (v0.11.0)
+
 ## 2026-10-02
 
 ### Added

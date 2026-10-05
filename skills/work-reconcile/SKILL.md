@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.10.0
+version: 0.11.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -49,8 +49,11 @@ automatically: the flow is always **propose → confirm → write**.
      `default_window=last_month`, `gap_threshold_min=15`, `edge_pad_min=2`,
      `round_to_min=5`, `min_block_min=5`, `coverage_covered=0.9`,
      `coverage_missing=0.1`, `ai_sessions.enabled=true`,
-     `ai_sessions.projects_dir=<harness-home>/projects` (`~/.claude` or
-     `~/.gemini/antigravity-cli`, first that exists), `calendar.as_work=true`,
+     `ai_sessions.harnesses=auto` (every adapter in step 3A whose root exists —
+     all of them, not the first one found), `ai_sessions.projects_dir` (root of
+     the Claude Code layout; default `~/.claude/projects`, and
+     `~/.gemini/antigravity-cli/projects` is read with the same adapter when it
+     exists), `ai_sessions.codex_dir=~/.codex/sessions`, `calendar.as_work=true`,
      `calendar.exclude_all_day=true`, `calendar.exclude_declined=true`,
      `calendar.exclude_keywords=["oběd","lunch","dovolená","holiday",
      "vacation","day off","out of office"]`,
@@ -102,7 +105,42 @@ automatically: the flow is always **propose → confirm → write**.
    **A. Agent session logs** (primary, if
    `effective_config.reconcile.ai_sessions.enabled`):
 
-   Session logs live at `<projects_dir>/<encoded-path>/*.jsonl`, one file per
+   **Read every harness the user runs, and treat none of them as primary.**
+   People mix harnesses — one as the daily driver, another as a fallback when a
+   usage limit hits or for a particular kind of task — and each keeps its own
+   log tree. Reading only one makes the days spent in the other look empty, and
+   an empty day reads as "nothing to reconcile". Measured 2026-10-06: in a
+   one-week window, two whole working days of one project ran only in a second
+   harness, without a single line in the first one's tree — about four and a
+   half hours of agent time that a single-harness read would never have seen.
+
+   Each harness is read through an **adapter** that answers the same few
+   questions; everything after extraction — clipping to the window, the
+   per-day split, gap-capping, project pairing, the coverage diff — is shared:
+
+   | Harness | Root | Session file | User prompt | Working dir | Subagent tell |
+   |---|---|---|---|---|---|
+   | Claude Code | `projects_dir` | `<slug>/<session>.jsonl` (depth 1) | `type: user` lines with text content | `cwd` on each line | lives in `<slug>/<session>/subagents/` |
+   | Codex | `codex_dir` | `YYYY/MM/DD/rollout-<start>-<id>.jsonl` | `event_msg` + `payload.type: item_completed` + `payload.item.type: UserMessage` | `session_meta.payload.cwd` | `session_meta.payload.source` is an object with a `subagent` key |
+
+   `~/.gemini/antigravity-cli/projects` is read with the Claude Code adapter —
+   that is the layout this skill has always assumed for it — but it has not
+   been re-verified against this procedure; if its files yield no timestamps,
+   handle it as an unknown harness (below) rather than reporting no work.
+
+   **A harness without an adapter here is inspected before it is counted.**
+   Open one of its files, tally the line types, and find the timestamp field,
+   the shape of a user prompt, the working directory and how a subagent's file
+   differs from its parent's; then write the adapter. Never fold such files in
+   through a guessed parser: a parser that matches nothing returns zero, and
+   zero is indistinguishable from a day without work.
+
+   **All adapters feed one pool.** Two harnesses can run at the same
+   wall-clock, so the per-day union in step 4 runs over the timestamps of every
+   harness together; summing per-harness totals counts that time twice.
+
+   **Claude Code layout.** Session logs live at
+   `<projects_dir>/<encoded-path>/*.jsonl`, one file per
    session; the directory name is the working directory with `/` → `-`. Each
    line is a JSON object with `timestamp` (ISO 8601 UTC), `type`
    (`user`/`assistant`/`ai-title`/…).
@@ -178,7 +216,8 @@ automatically: the flow is always **propose → confirm → write**.
    ```
 
    Each emitted line is one `candidate_block`:
-   - `source='ai'`, `raw_messages_ts=ts` (that day's slice, kept for step 4),
+   - `source='ai'`, `harness='claude'`, `raw_messages_ts=ts` (that day's slice,
+     kept for step 4),
      `start`/`end` = that day's first/last ts **converted to local** (via `date`),
      `title` = the `ai-title` (or, if null, "Práce v <dir>"),
    - `project_hint` = the decoded working directory (see step 5 — the whole
@@ -199,7 +238,71 @@ automatically: the flow is always **propose → confirm → write**.
    are either covered by that parent or pure agent time — never time to bill.
    Measured 2026-09-22 and 2026-09-24: 6 and 17 such sessions in two windows,
    each one to three minutes long. Skip a block when **all** its user prompts
-   carry the hook's brief.
+   carry the hook's brief. The rule holds for every adapter, not only this one.
+
+   **Codex layout.** Session files live at
+   `<codex_dir>/YYYY/MM/DD/rollout-<start>-<id>.jsonl`; every line carries a
+   `timestamp` (ISO 8601 UTC), a `type` and a `payload`. Three traps, all
+   measured on a live tree on 2026-10-06:
+
+   - **The date directory is the day the session started, not the days it
+     ran.** A session filed under 30 September carried lines from 1 October.
+     Select files by modification time (`mtime >= since`) and clip their
+     timestamps to the window — never by the directory name.
+   - **Subagents sit beside their parent, not below it.** The approval
+     reviewer (`source: {"subagent": {"other": "guardian"}}`) and spawned
+     threads (`{"subagent": {"thread_spawn": …}}`) get their own rollout file in
+     the same day directory, with the parent's working directory — 10 of 17
+     files in that window, one of them worth two hours on its own. Like Claude
+     Code subagents they run inside a parent session, so skip every file whose
+     `session_meta.payload.source` is an object with a `subagent` key; a
+     top-level session has a string there (`cli`, `vscode`).
+   - **Not every `role: user` message is the user.** `response_item` lines with
+     `role: user` also carry the instructions file the harness injects at the
+     start of a turn, so reading prompts from them makes every session look
+     like it is about whatever that file says — which breaks both the hook rule
+     above and the content check in step 5. Read prompts only from
+     `event_msg` lines whose payload is `item_completed` with an item of type
+     `UserMessage`.
+
+   ```python
+   # one Codex rollout file -> per-day blocks; run once per file selected by mtime
+   import json, sys, collections, datetime
+   f, since, until = sys.argv[1], sys.argv[2], sys.argv[3]
+   P = lambda x: datetime.datetime.fromisoformat(x.replace('Z', '+00:00'))
+   lo, hi = P(since), P(until)
+   ts, prompts, cwd, sub = [], [], None, False
+   for line in open(f, encoding='utf-8', errors='replace'):
+       try: d = json.loads(line)
+       except Exception: continue
+       if not isinstance(d, dict): continue
+       pl = d.get('payload') or {}
+       if d.get('type') == 'session_meta':
+           cwd = pl.get('cwd')
+           src = pl.get('source')
+           sub = isinstance(src, dict) and 'subagent' in src
+       t = d.get('timestamp')
+       if not t: continue
+       ts.append(P(t))
+       it = pl.get('item') or {}
+       if pl.get('type') == 'item_completed' and it.get('type') == 'UserMessage':
+           prompts.append((t, ' '.join(c.get('text', '') for c in it.get('content', [])
+                                       if isinstance(c, dict))))
+   if sub: sys.exit(0)                             # covered by the parent session
+   perday = collections.defaultdict(list)
+   for t in sorted(t for t in ts if lo <= t <= hi):  # clip, do not merely mark
+       perday[t.astimezone().strftime('%Y-%m-%d')].append(t.isoformat())
+   for day, dts in sorted(perday.items()):
+       ps = [p for p in prompts if P(p[0]).astimezone().strftime('%Y-%m-%d') == day]
+       print(json.dumps({'day': day, 'first': dts[0], 'last': dts[-1], 'n': len(dts),
+                         'cwd': cwd, 'title': (ps[0][1][:60] if ps else None),
+                         'prompts': ps, 'ts': dts}))
+   ```
+
+   Codex writes no session title, so the first prompt of the day stands in for
+   one. Each emitted line becomes a `candidate_block` exactly as above, with
+   `source='ai'`, `harness='codex'` and `project_hint` = `cwd` taken as is —
+   it is a real path, not a lossy slug.
 
    **B. Google Calendar** (primary, if
    `effective_config.reconcile.calendar.as_work` is true and MCP present —
@@ -413,7 +516,7 @@ automatically: the flow is always **propose → confirm → write**.
    reads in `cs`:
    | `origin` | Label means | Rendered (`cs` example) |
    |----------|-------------|-------------------------|
-   | `ai-gapcapped` | estimate, from session gaps | `~<m>m (AI, gap-capped)` |
+   | `ai-gapcapped` | estimate, from session gaps; names the harness when more than one was read | `~<m>m (AI/codex, gap-capped)` |
    | `calendar-exact` | exact, from a meeting's length | `<m>m (kalendář)` |
    | `commit-only` | **no duration known — user must supply one** | `? (jen commit — DOPLŇ ČAS)` |
    | `manual` | supplied by the user | `<m>m (ručně)` |
@@ -441,7 +544,10 @@ automatically: the flow is always **propose → confirm → write**.
      `Monitoring` — a different client's — for 12 blocks, and because
      the match *succeeded* no `'project?'` gate fired to surface it. Skipping
      the literal token `worktrees` is not enough; the segment after it has to go
-     too.
+     too. Codex puts its worktrees the other way round, outside the repository:
+     `~/.codex/worktrees/<id>/<repo>`. There the last segment *is* the
+     repository and the `<id>` before it is an opaque hash, so skip everything
+     up to and including the `<id>` and match the rest.
    - **Even the repository is only a hint — the session's content decides.** A
      worktree named for a topic rather than a ticket (`questions-<person>`,
      `ai-cr`, `standup`) can host work for a different client entirely.

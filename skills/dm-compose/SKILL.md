@@ -1,7 +1,7 @@
 ---
 name: dm-compose
 description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`.
-version: 1.0.0
+version: 1.1.0
 license: MIT
 ---
 
@@ -29,6 +29,16 @@ Check project memory and `AGENTS.md` first for a roster with pinned DM channel
 IDs — a pinned ID beats a fresh lookup and costs no API budget. Note the
 recipient's **language** and anything recorded about how they read messages
 (non-native speaker, prefers terse, does not know internal task IDs).
+
+Then read the tail of that DM channel (the last handful of messages). It tells
+you whether a conversation is running (no greeting) and, more importantly,
+what the recipient has **already been told** — by the user, or by another
+agent session working in parallel that this one never saw. Read it again right
+before sending (step 7) if any time has passed: real case (2026-10-07), a
+drafted "the tech lead will do the fix" was approved, but earlier that day the same
+recipient had been promised the fix "tonight" from a message this session
+never saw; only the re-read caught it, and the draft had to change to correct
+that promise.
 
 ### 2. Gather only what you can verify
 
@@ -109,6 +119,10 @@ after it, or a second message to someone else each needs its own go-ahead, even
 when it feels like a natural continuation.
 
 ### 7. Send and verify
+
+If time has passed since the draft was approved, re-read the channel tail
+first (step 1): a message that changed what the draft should say means
+re-showing the draft, not sending the approved one.
 
 Send, then report the message id and channel so the user can find it. If the
 backend returns an error, say what was *not* sent rather than retrying blind.

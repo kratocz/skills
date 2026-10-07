@@ -8,6 +8,11 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **cart-fill:** new skill — fill e-shop carts in the user's own logged-in browser from a vetted list and read the cart back before handing over. Born from two manual rounds on 2026-10-04/05 (Alza, Senetic): a listing-card add button that reported success and added nothing, extras pre-offered in the add dialog, a price that moved +21.5 % between the morning research and the evening cart, and a paid service in the cart the agent had not added — reported, not removed, and it turned out to be the user's own. The order button is out of scope by design.
 
+### Changed
+
+- **dm-catchup:** a sentence that does not parse is checked for an autocorrect swap before any reading of it is built — a "did not arrive" that was "did not pass" cost three guessed readings and a clarifying round-trip.
+- **dm-compose:** read the tail of the recipient's DM before drafting, and again before sending when time has passed — an approved draft would have contradicted a promise the recipient had received that morning from a message the session never saw.
+
 ## 2026-10-06
 
 ### Changed

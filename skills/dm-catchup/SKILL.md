@@ -2,7 +2,7 @@
 name: dm-catchup
 description: Catch up on direct messages with a named person across whatever IM the environment offers (ClickUp chat, Slack), including thread replies, then summarize, assess what needs action, and draft a reply for approval. Use when the user says "/dm-catchup", "přečti si zprávy od/s <person>", "co mi psal <person>", "catch up on DMs with <person>", or "shrň konverzaci s <person>".
 argument-hint: "[person] [time-window]"
-version: 1.0.0
+version: 1.1.0
 license: MIT
 ---
 
@@ -125,3 +125,12 @@ the draft, send the edited version verbatim.
   act on it. Whenever a message carries an approval, a permission or a
   deadline you are about to act on, re-fetch it right before acting and quote
   the re-read wording.
+- **A sentence that does not parse may be autocorrect, not meaning.** Phone
+  keyboards and dictation swap a word for a similar-looking one, and the
+  result reads as a riddle rather than a typo. Before building hypotheses
+  about what an odd sentence means, ask which near-spelled word would make it
+  ordinary; when you still ask the sender, quote their literal words. Real
+  case (2026-10-06): "Poslední mi nějak nepřijel" ("the last one did not
+  arrive") was "neprošel" ("did not pass") — a red CI run, not a missing
+  notification — and three readings were offered before the sender wrote
+  "zas ta autooprava".

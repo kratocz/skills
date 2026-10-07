@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-08
+
+### Changed
+
+- **task-delivery:** new *Checking on a task in flight* paragraph in step 5 — a status check reads the tracker (status in the list's workflow, assignees, dependencies), every pull request found by the task ID through the search API, chat threads expanded, and the live environment, with timestamps converted by command. A recency-paged pull-request list missed a teammate's follow-up, and a fixed review finding was reported as still open.
+
 ## 2026-10-07
 
 ### Added

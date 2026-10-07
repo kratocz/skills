@@ -173,6 +173,15 @@ row, not every distinct job name.
 
 **Once the pull request is open, the task's state lives outside the session — so a long wait is a place to end it.** The branch, the PR body, the checks, the review threads and the tracker status are all readable from scratch, and a fresh session told "task X, PR #N" picks up from them at a fraction of the context. Resuming the delivery session after a human review or the next morning is the expensive path: the prompt cache expires after an hour, so the first turn back rewrites the session's whole context at twice the input price, and a 30-day transcript audit (2026-10-01) put such rewrites at 16–22 % of all tokens spent, with multi-day sessions carrying most of the cost. When the next step is a wait longer than about an hour, say in the report that the work can continue in a fresh session and name what it should be told.
 
+**Checking on a task in flight.** Between handoffs — review, QA, a teammate's follow-up — the user asks "what is the state of X, anything new, what is left". The answer is only as good as its weakest source, so check every one of them in the same turn:
+
+- **Tracker:** the status *and* where it sits in the list's workflow (read the list's available statuses — a status called "review" may be the QA rung, not code review), the assignees (a reassignment to a tester is news in itself), the due date, the comments, and dependencies in both directions (what is waiting on this task).
+- **Forge:** every pull request whose title carries the task ID, found through the search API (`gh api "search/issues?q=repo:<owner>/<repo>+is:pr+<TASK-ID>+in:title"`), not by paging the most recently updated pull requests. Teammates open follow-ups on your task without telling you, and a recency page drops them as soon as other pull requests are busier. For each one: state, reviews, unresolved AI-review findings, and whether the post-merge deploy run actually ran.
+- **Chat:** the recent messages with the people involved, with every threaded reply expanded — answers tend to arrive in a thread under your message, not as a new top-level one.
+- **Environment**, when the task changed one: the live state the task promised (the deployed definition, the log line, the config value), not the plan you applied.
+
+Convert every epoch timestamp with a command before quoting it. Report what changed since the last check, what is done, what remains and who acts next. Never call something "still open" on the strength of an earlier check. Seen 2026-10-07: three status checks paged the fifteen most recently updated pull requests, missed a teammate's follow-up that had fixed an AI-review finding a day earlier, and kept reporting the finding as open — until a later read of the workflow file on `main` showed more matches than the session's own change could account for.
+
 If the project runs an advisory AI reviewer, read its findings before your own
 pass and treat them as **claims to verify, not conclusions**. In particular,
 verify any proposed *fix* actually works before accepting or rejecting the

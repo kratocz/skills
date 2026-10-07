@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-07
+
+### Added
+
+- **cart-fill:** new skill — fill e-shop carts in the user's own logged-in browser from a vetted list and read the cart back before handing over. Born from two manual rounds on 2026-10-04/05 (Alza, Senetic): a listing-card add button that reported success and added nothing, extras pre-offered in the add dialog, a price that moved +21.5 % between the morning research and the evening cart, and a paid service in the cart the agent had not added — reported, not removed, and it turned out to be the user's own. The order button is out of scope by design.
+
 ## 2026-10-06
 
 ### Changed

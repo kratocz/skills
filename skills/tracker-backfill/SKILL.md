@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.7.0
+version: 1.8.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -121,6 +121,20 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    an overlap there is double-billing the same payer (real case, 2026-09-15: 33
    minutes of one client's work sat inside another project's entry because a
    parallel session had started its timer mid-block).
+
+   **And check the time nobody has logged *yet*.** Toggl shows only what was
+   written. Parallel sessions working for the same payer often have not logged
+   their time yet; a later `work-reconcile` turns their transcripts into
+   entries, and an entry you write over that time then becomes double billing.
+   So before writing, also scan the other sessions' transcripts
+   (`<harness-home>/projects/*/*.jsonl` modified that day, minus this session)
+   for user/assistant events inside each candidate interval, map each session
+   to its client by its project directory (and `project_map`), and cut the
+   interval wherever a same-client session was active. Real case (2026-10-07):
+   Toggl held a single entry for the whole day, yet extending it to the end
+   time the user named, and adding the evening block, would have overlapped one
+   session of the same client at 12:55–12:59 and three more at 23:27–23:55. None
+   of them had logged anything yet.
 
 6. **Confirm before writing** (this is billing data — never create entries
    silently): show the proposed entries in **local time** (start–stop,

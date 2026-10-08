@@ -215,6 +215,16 @@ merged?"), nor a selection in an options dialog, nor a prior approval of the
 review is authorization. Require an imperative — "merge it", "ship it" — in the
 user's own message, and read a standing instruction narrowly.
 
+**When the project requires a human code review before merge, that review is
+the next gate — not the user's merge word.** Read the knowledge file for it
+("every merge goes through a reviewed PR", a named tech lead as reviewer). On
+such a project green CI plus a clean AI review is *not* merge-ready, and the
+user's "merge" does not override the reviewer either. So the delivery report
+ends with "waiting for <reviewer>'s review", and asks for the merge directive
+only once that review is in. Seen 2026-10-08: a report closed with "not
+merging, waiting for your 'merge'", and the user had to correct it — on that
+project nothing merges without the tech lead's review.
+
 After merging:
 
 - **A `--delete-branch` failure from inside a git worktree does not mean the

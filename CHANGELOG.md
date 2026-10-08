@@ -4,6 +4,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-10-08
 
+### Added
+
+- **pr-rebase-sweep:** new skill — the sweep that clears `needs-rebase` on every open PR after main moved: a local `git merge-tree` survey instead of the API's `mergeable`, dependency order (code before docs, stack parents before children), `git rebase --onto` after a squash-merged parent, the add/add trap of a cherry-picked copy of a squash-merged sibling, scripted conflict resolution with one-anchor asserts (same-day amendments cut at the ` · ` separator), migration re-chaining, the false-drift trap of a local test DB already at the branch head, a `diff --stat` proof that the branch's own diff is unchanged, a lease on the last *pushed* SHA, plumbing replay (`merge-tree --merge-base` + `commit-tree`) when the worktree is busy, and a second pass at the end. Distilled from a sixteen-PR afternoon on 2026-10-08.
+
 ### Changed
 
 - **oponentura:** new *Common mistakes* entry — verifying a finding's *fix* with a tool that is not the one that will run it proves the look-alike, not the fix (a CloudWatch alarm design "verified" with `get-metric-data` paged on staging because the alarm engine evaluates a missing metric as 0); when the reviewer marks its own evidence as an inference, the fix stays untested until the real path has run it.

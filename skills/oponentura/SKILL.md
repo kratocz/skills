@@ -49,6 +49,7 @@ Add document-specific targets (a clinical boundary, a legal claim, a calculation
 
 - Briefing "review" or "check" — the reviewer confirms instead of attacking.
 - Applying findings without reproducing the top ones; the reviewer's URL may not say what the reviewer says it says.
+- Verifying a finding's *fix* with a tool that is not the one that will run it. A probe through a look-alike path proves the look-alike: on 2026-10-08 a CloudWatch alarm design was "verified" with `get-metric-data` (missing metric → no data) and then paged on staging, because the *alarm engine* evaluates a missing metric as 0. When the reviewer itself marks its evidence as an inference (it did: "~85 %"), the fix stays untested until the real path has run it.
 - Running the pass in the same context that wrote the document — the anchor survives.
 - Treating the pass as a gate to pass rather than a source of edits: a pass with zero applied changes on a non-trivial document usually means the brief was too soft.
 - Skipping the header record, so the next session repeats the same pass or trusts an untested draft.

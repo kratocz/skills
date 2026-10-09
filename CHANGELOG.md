@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-10
+
+### Changed
+
+- **teammate-check:** a deadline check next to the runway. The work due by the nearest clustered date is compared with the person's capacity until then: working days counted by command, minus days off. The verdict is fits, tight or over, and the deadline line leads the report when it is not fits. On over, §5 proposes nothing new and lists instead what could move. A dependency now counts as resolved by the project's rule; without one, once the blocking change is merged, even while its task is still in QA, and the report says which rule changed a task's class. The first real run reported "enough work" while twenty-one of the person's tasks were due in ten working days, and the 4-hour threshold could not say so. (v1.2.0)
+
 ## 2026-10-09
 
 ### Added

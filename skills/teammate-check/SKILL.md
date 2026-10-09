@@ -1,8 +1,8 @@
 ---
 name: teammate-check
-description: "Check on a teammate you lead: do they have enough work for the next hours, and what of theirs is waiting on you — reviews, merges, unanswered questions in direct messages, the team channel or the tracker, and your own drafts not yet posted. Works with any tracker, chat and forge; the project's own notes supply the specifics. Ends in a two-line verdict, the waiting items ordered by what they block, and the next work to assign, in depth when the runway runs short; nothing is assigned, sent or relabelled without a go-ahead. Use when the user says \"má <kolega> dost práce?\", \"čeká na mě <kolega>?\", \"čeká na mě někdo z týmu?\", \"co <kolegovi> přidělit dál?\", \"má tým co dělat?\", \"does X have enough work\", \"what should X work on next\", \"is X blocked on me\", \"what is waiting on me from X\". Not reading one conversation and replying — that is `dm-catchup`; not your own queue — that is `work-start`; not writing a check-in message — that is `dm-compose`."
+description: "Check on a teammate you lead: do they have enough work for the next hours — or too much for the next deadline — and what of theirs is waiting on you — reviews, merges, unanswered questions in direct messages, the team channel or the tracker, and your own drafts not yet posted. Works with any tracker, chat and forge; the project's own notes supply the specifics. Ends in a short verdict, the waiting items ordered by what they block, and the next work to assign, in depth when the runway runs short; nothing is assigned, sent or relabelled without a go-ahead. Use when the user says \"má <kolega> dost práce?\", \"čeká na mě <kolega>?\", \"čeká na mě někdo z týmu?\", \"co <kolegovi> přidělit dál?\", \"má tým co dělat?\", \"does X have enough work\", \"what should X work on next\", \"is X blocked on me\", \"what is waiting on me from X\". Not reading one conversation and replying — that is `dm-catchup`; not your own queue — that is `work-start`; not writing a check-in message — that is `dm-compose`."
 argument-hint: "<person> [window, default today and the 2 preceding working days] [runway threshold, default 4 h]"
-version: 1.1.0
+version: 1.2.0
 license: MIT
 ---
 
@@ -38,6 +38,8 @@ Without a map, read the project's instructions file (`AGENTS.md`, `CLAUDE.md` or
 | What the person may not be assigned (access, skills, contract) | A candidate in §5 that needs access the person lacks is not a candidate |
 | Where priority lives (a field, a label, an order in the backlog) and which way is higher | §5 orders candidates by it |
 | Task size — estimates on the tasks, or a calibration such as "a subtask is half a day to a day", and the hours in a working day when it is given in days | The only honest way to turn a task count into hours in §3 |
+| The person's capacity — hours per working day, known days off — and where due dates live | §3 checks the work against the nearest deadline, not only against the threshold |
+| When a dependency counts as resolved — once the blocking change is merged, or only once the blocking task is closed after QA | Decides what is ready in §3. Without a project rule, use the default in §3 and say so |
 | Rate limits on the tracker or chat API, and whether other sessions share the budget | The call plan in §2 |
 
 When entries are missing, ask the user once for the whole set, then offer to record it in the project's memory or roster as a note that names this skill, so the next run finds it. Never guess a channel or a container silently. The one exception is a run where the user cannot be asked: then read at most three candidate channels, label them in Coverage as candidates rather than the mapped team channel, and ask at the end which one it is.
@@ -64,7 +66,7 @@ Reserve a call per item for the cross-checks in §4: an answer looked up elsewhe
 Classify each of the person's open tasks by **where the ball actually is**, not by its status alone:
 
 - **In progress, with the person** — they are working on it and nothing of it waits on anyone else. Cross-check with the forge through the link convention from §1. Never page the most recently updated pull requests instead: that drops a follow-up as soon as other pull requests are busier.
-- **Ready** — not started, every dependency resolved, assignable to this person under the constraints from §1. When the budget did not reach a task's dependencies, it is **ready, dependencies unchecked**, counted separately and never silently as ready.
+- **Ready** — not started, every dependency resolved, assignable to this person under the constraints from §1. When the budget did not reach a task's dependencies, it is **ready, dependencies unchecked**, counted separately and never silently as ready. A dependency is resolved by the project's rule from §1. Without one, the default is that it is resolved once the blocking change is merged into the branch the dependent work starts from, even while the blocking task is still in QA. Say which rule you applied whenever it changed a task's class, because a tracker edge that stays until QA closes reads as blocked when the code is already there.
 - **With the user** — waiting for the user's review, merge, decision or input. This includes a task "in progress" whose pull request waits on the user's review. Goes to §4 as well.
 - **With someone else** — QA, a client's answer, another teammate, a reviewer who is not the user. Note who and since when. Without status history, or when the budget did not reach it, write "unknown" or "not reached" rather than substituting the last-updated date, which any comment moves.
 - **Blocked** — an unresolved dependency, or an external wait with no owner. Also *soft* blocks: the task should not start yet because it collides with a pull request in flight or its description is known to be wrong. And a task assigned against the person's constraints, which needs reassignment rather than work. Say what would unblock each.
@@ -77,6 +79,8 @@ Classify each of the person's open tasks by **where the ball actually is**, not 
 - **thin** — there is work, every part of it is bounded, and the lower bound stays below the threshold;
 - **dry** — nothing ready (dependencies checked or not) and nothing in progress with the person;
 - **unknown** — the bounded part stays below the threshold and something cannot be bounded: no estimates or calibration, an "unknown remaining", dependencies unchecked. Report the counts instead of hours.
+
+**Deadline check.** The threshold asks whether the person has enough work; a deadline asks whether they have too much. Take the person's open tasks with a due date, group them by date, and for the nearest date that holds a cluster compare the work due by then (as a range, by the same calibration) with their capacity until then: working days × hours a day, minus known days off. Count the working days with a command (a calendar tool), skipping weekends and public holidays, never in your head. Call it **fits** when the upper bound of the work fits the capacity, **tight** when only the lower bound does, and **over** when even the lower bound exceeds it. Work that sits with the user or with someone else still counts here if it is due by that date: a pull request waiting on review is not done. Without due dates, skip the check and say so.
 
 An agreement found during the sweep, such as a work order in the direct messages, decides the order of the runway and is quoted in the report.
 
@@ -98,7 +102,7 @@ Read every source. For each item record what is asked, where (a link), since whe
 
 ## 5. Next work to assign
 
-Always runs; its depth follows the verdict. On *thin*, *dry* or *unknown*, propose up to three candidates with every check below. On *enough*, name only the one or two next in line, so the user can line them up before the runway runs out, and check their dependencies only if the budget allows — otherwise mark them "dependencies unchecked".
+Always runs; its depth follows the verdict. When the deadline check says *over*, propose no new work at all. List instead what could move: the lowest-priority tasks due by that date, for the user to renegotiate or reassign. Adding work to an over-committed person is the one recommendation worse than none. On *thin*, *dry* or *unknown*, propose up to three candidates with every check below. On *enough*, name only the one or two next in line, so the user can line them up before the runway runs out, and check their dependencies only if the budget allows — otherwise mark them "dependencies unchecked".
 
 Candidates come from two places:
 
@@ -115,8 +119,11 @@ In the user's language, conclusion first. The template is an example of the shap
 
 ```
 <Person> — runway: <enough | thin | dry | unknown>, ~<range or counts> (<basis>)
+Deadline: <fits | tight | over> — <N> tasks due by <date>, ~<range> of work against ~<capacity> in <n> working days
 Waiting on you: <N> actions (<what they cover: pull requests, tasks, messages, drafts>; oldest: <age>, <what>)
 ```
+
+When the deadline line says *tight* or *over*, it leads the report: "enough work" is then the less important half of the answer.
 
 Count actions, not objects, and give each action one kind from §4. Approving ten pull requests in one sitting is one *review* action, and answering three questions in one thread is one *answer* action. Three questions in three places are three actions, and so are reviewing five pull requests and merging three others: one *review*, one *merge*. The grouping is for counting only; approvals in §7 are per write.
 
@@ -150,6 +157,7 @@ For "the team": load one map and make one call plan for everyone, with the budge
 | Shape | Why it fails |
 |---|---|
 | "Four open tasks — busy" | Counted by status. Three wait on the reviewer and one on a dependency; classify by where the ball is (§3). |
+| "Runway: enough" — and nothing else — for someone with twenty tasks due in ten working days | The threshold only measures a floor. Run the deadline check (§3); there the answer is *over*, and §5 must not add work. |
 | "Runway: dry" for someone deep in one large task | Work in progress left out of the runway; §5 then piles tasks on someone fully loaded. |
 | "No reply from them" after reading the channel's top level | The answer sits in a thread, or arrived between two reads. Expand threads, page back, name the window. |
 | Scanning only the main task list | The bug tracker or a second board holds half of the assignments. |

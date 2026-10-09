@@ -1,7 +1,7 @@
 ---
 name: dm-compose
-description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`.
-version: 1.1.0
+description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`; whether a teammate has enough work or is waiting on you is `teammate-check`.
+version: 1.1.1
 license: MIT
 ---
 

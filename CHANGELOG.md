@@ -2,6 +2,17 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-09
+
+### Added
+
+- **teammate-check:** new skill that answers a lead's three standing questions about a teammate: is there enough work for the next hours, what is waiting on me, and what to assign next. It works with any tracker, chat and forge, and reads the project specifics from a saved map (checked against the live list of containers and channels) or from the project's own notes. Tasks are classified by where the ball actually is rather than by status. Hours appear only as a range with its basis, and the verdict is enough, thin, dry or unknown. The sweep covers five sources: the forge, the tracker, the direct messages, the team channel, and the lead's own unposted drafts. The next work comes from open tasks and from follow-ups not yet filed, in depth when the runway runs short. Actions are counted for the report but approved per write, and nothing is assigned or sent without a go-ahead. A dry run on real data (2026-10-09) surfaced eighteen text issues; the decisive one was ten pull requests shown as awaiting review whose reviews were already written and unposted in the lead's notes. A text-only refutation then caught a description over the specification's 1024-character limit, and a dry-run fix that had dropped work in progress from the runway and would have called a busy teammate idle. (v1.0.0)
+
+### Changed
+
+- **dm-compose:** the description names `teammate-check` as the counterpart for "does a teammate have enough work, is anything waiting on me", so a check-in request and a workload check route apart. (v1.1.1)
+- **work-start:** the description names `teammate-check` as the counterpart for a teammate's workload and what waits on the user from them; `work-start` stays the user's own queue. (v0.4.3)
+
 ## 2026-10-08
 
 ### Added

@@ -36,6 +36,15 @@ follow-up migration.
 If a tracker MCP is available, read the task through it rather than from the
 user's paraphrase.
 
+**When the task is a reviewer's list of follow-ups, check each item against
+the open pull requests before implementing it** — the ones touching the same
+files, including commits other people pushed onto *your own* open PRs. A
+reviewer sometimes fixes a point themselves on whatever branch already holds
+the file. On 2026-10-09 one of three "important" review findings had been fixed
+an hour earlier by the tech lead's own commit on the author's open docs PR;
+doing it again on a fresh branch would only have produced a conflict with that
+PR. Name such an item in the PR body as already handled, and where.
+
 **If a time-tracking timer is already running and it belongs to another
 session, leave it alone.** Stopping or replacing it rewrites that session's
 entry, and parallel sessions against one account are the normal case, not an
@@ -66,6 +75,15 @@ the next pre-release", because that is when staging's *image* moves; the
 staging Application synced automatically from `main` and the change rolled out
 minutes after the merge. One `grep` of the Application manifest would have
 said so before the question was asked.
+
+**The same holds for every consequence an option in the question round
+states** — an error code, what an old client or an in-flight request sees, a
+migration's effect on existing rows. Read the code path before writing the
+consequence into the option, because the user decides on that sentence. On
+2026-10-09 an option said an old pagination cursor would "return a 4xx once
+after the deploy"; the router let the service's `ValueError` escape, so it
+would have been a 500, and the correction arrived only after the user had
+chosen.
 
 ## 3. Implement, then run the gates and read the *last* run
 

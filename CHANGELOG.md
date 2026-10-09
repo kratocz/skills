@@ -7,6 +7,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **teammate-check:** a deadline check next to the runway. The work due by the nearest clustered date is compared with the person's capacity until then: working days counted by command, minus days off. The verdict is fits, tight or over, and the deadline line leads the report when it is not fits. On over, §5 proposes nothing new and lists instead what could move. A dependency now counts as resolved by the project's rule; without one, once the blocking change is merged, even while its task is still in QA, and the report says which rule changed a task's class. The first real run reported "enough work" while twenty-one of the person's tasks were due in ten working days, and the 4-hour threshold could not say so. (v1.2.0)
+- **task-delivery:** step 1 — when the task is a reviewer's follow-up list, each item is checked against the open pull requests touching the same files first, including commits other people pushed onto the author's own open PRs; one of three review findings had already been fixed by the tech lead on the author's docs PR. Step 2 — every consequence an option in the question round states (an error code, what an old client sees) is read from the code path before it is written into the option; an option promised a 4xx for an old cursor where the router would have returned a 500.
 
 ## 2026-10-09
 

@@ -2,7 +2,7 @@
 name: teammate-check
 description: "Check on a teammate you lead: do they have enough work for the next hours, and what of theirs is waiting on you — reviews, merges, unanswered questions in direct messages, the team channel or the tracker, and your own drafts not yet posted. Works with any tracker, chat and forge; the project's own notes supply the specifics. Ends in a two-line verdict, the waiting items ordered by what they block, and the next work to assign, in depth when the runway runs short; nothing is assigned, sent or relabelled without a go-ahead. Use when the user says \"má <kolega> dost práce?\", \"čeká na mě <kolega>?\", \"čeká na mě někdo z týmu?\", \"co <kolegovi> přidělit dál?\", \"má tým co dělat?\", \"does X have enough work\", \"what should X work on next\", \"is X blocked on me\", \"what is waiting on me from X\". Not reading one conversation and replying — that is `dm-catchup`; not your own queue — that is `work-start`; not writing a check-in message — that is `dm-compose`."
 argument-hint: "<person> [window, default today and the 2 preceding working days] [runway threshold, default 4 h]"
-version: 1.0.0
+version: 1.1.0
 license: MIT
 ---
 
@@ -50,10 +50,12 @@ When an API is rate-limited, and above all when other sessions of the same accou
 
 1. **Tasks** — one bulk query for the person's open tasks across the containers; one status-set read per container whose mapping the map lacks; with a saved map, one listing of containers and channels to compare against it.
 2. **Chat** — the direct-message channel and each team channel back to the window's start (a single read with a generous limit often covers a week or more; page further only within the 30-day cap), plus one expansion per thread with replies inside the window.
-3. **Forge** — the person's open pull requests by author in one call, then reviews, commits, comments and changed files per pull request; plus one search per in-progress task that has no pull request in that list, to catch a follow-up someone else opened.
+3. **Forge** — the person's open pull requests by author in one call, then reviews, commits, comments and changed files per pull request; plus one search per in-progress task that has no pull request in that list, to catch a follow-up someone else opened. On GitHub, `scripts/github_prs.py` (next to this file; needs an authenticated `gh`) returns all of it in one command, task-id searches included: `python3 <skill-dir>/scripts/github_prs.py --repo OWNER/NAME --author <person> --reviewer <user> [--task-id ID …] [--json]`. It is read-only, takes a few seconds, and replaces dozens of per-pull-request calls.
 4. **Dependencies** of the person's tasks that have not started, when the bulk query does not return them. This is usually the largest line, one call per task. A tracker without a dependency model has none to check.
 5. **Task comments and status history** — only for the person's tasks updated inside the window, or a single mentions search when the tracker offers one.
 6. **Candidates** (§5) — one query for open unassigned tasks, and dependencies in both directions for the ones picked; on an *enough* verdict this line goes last and may stay unspent.
+
+**Issue independent reads together.** Most of the time a run takes goes into sequential round-trips, not into the APIs. Wherever the harness can make several tool calls at once, batch every read that does not need another read's output: the bulk task query, the direct-message channel, each team channel, the container listing and the forge snapshot go out in the first round. The dependencies of all not-started tasks, the thread expansions and the comment reads go out in the second round, once the task list and the channel pages are in. Sequence only what truly depends on an earlier result. Batching changes the wall-clock time, not the call count, so the budget above still applies.
 
 Reserve a call per item for the cross-checks in §4: an answer looked up elsewhere, a third-party conversation, a message re-fetched before acting on it. When the reserve is spent, the remaining cross-checks are listed in Coverage as not done. When the budget runs out, whatever is left goes into Coverage by name as not reached, and any value it would have supplied (a dependency, a "since when") is written as "not reached", never guessed. Without a rate limit there is no plan, and Coverage lists the reads only.
 

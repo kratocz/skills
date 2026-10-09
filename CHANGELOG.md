@@ -12,6 +12,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 - **dm-compose:** the description names `teammate-check` as the counterpart for "does a teammate have enough work, is anything waiting on me", so a check-in request and a workload check route apart. (v1.1.1)
 - **work-start:** the description names `teammate-check` as the counterpart for a teammate's workload and what waits on the user from them; `work-start` stays the user's own queue. (v0.4.3)
+- **teammate-check:** a run is now mostly two rounds of parallel reads instead of a long chain of single calls, and the forge is one command. §2 tells the agent to batch every independent read (tasks, direct messages, team channels and the forge snapshot first, then dependencies, threads and comments), because the time went into sequential round-trips rather than the APIs: the first real run took 9.5 minutes over 51 tool calls. New `scripts/github_prs.py` fetches a teammate's open pull requests in one GraphQL request. Each comes with labels, review requests, the reviewer's last review and whether the head moved since, unresolved threads ending in the author's reply, the author's comments after the review, changed files and CI, plus task-id searches for follow-ups by others. On real data it took under 3 seconds and matched an independent per-PR read. (v1.1.0)
 
 ## 2026-10-08
 

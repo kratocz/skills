@@ -120,6 +120,18 @@ A test that fails once and passes on re-run against an unchanged tree is a
 flake, not a finding — say so with both results rather than filing it or
 quietly ignoring it.
 
+**When the task cites ADRs or a design document, run an adversarial
+compliance pass before the PR goes out.** Hand a read-only subagent the diff
+(or the branch), the cited ADR sections, the task text with its QA steps and
+the parent epic, and brief it to *refute* compliance, not to confirm it: list
+every requirement sentence, point to the implementing line or write
+"missing", and label each finding FACT / INFERENCE. Keep your own reasoning
+out of the brief — a reviewer handed conclusions returns validation of them.
+Fix what it finds before opening the PR. On 2026-10-08 such a pass found an
+in-place update of a row the cited ADR declares immutable, planned
+deliberately by the author behind a trigger-based exception; the rework cost
+an hour before the PR and would have cost a review round after it.
+
 ## 4. Commit and open the pull request
 
 Stage files **explicitly, one by one** — never `git add .` — and check
@@ -140,7 +152,14 @@ Then:
    is what lets a reviewer skip re-deriving your evidence.
 5. Apply the project's defaults for assignee, reviewer and labels. **Do not
    attach a reviewer or a label unless the project's conventions say so** —
-   defaulting to "helpful" here is a recurring annoyance.
+   defaulting to "helpful" here is a recurring annoyance. But read the
+   convention from practice as well as from the knowledge file: before
+   deciding there is none, look at the sibling PRs of the same task or epic
+   (`gh pr view <N> --json reviewRequests,labels`). The knowledge file may
+   state the rule for a subset only — on 2026-10-08 it named the tech lead as
+   reviewer for infra PRs, every open PR in the chain had the tech lead
+   requested, and the app PR of the same task went out with no reviewer
+   until the user asked why.
 6. Flip the tracker status to whatever the project calls "ready for review".
 
 ## 5. Wait for CI and any advisory AI review

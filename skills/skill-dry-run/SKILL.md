@@ -2,7 +2,7 @@
 name: skill-dry-run
 description: Prove an already-written skill actually works by executing it end to end against real data, in a clean context, with writes made structurally impossible rather than merely forbidden — fingerprint the target, deny the credential path, dispatch a neutral-prompted fresh-context agent, diff the fingerprint, and re-verify every finding it reports. Use when the user says "/skill-dry-run", "ověř ten skill", "otestuj skill nanečisto", "does this skill actually work", "dry-run the skill", "verify my skill against real data", or has just changed a skill that writes somewhere and wants proof before trusting it. Not for authoring a skill or pressure-testing whether an agent complies with its wording — that is superpowers:writing-skills.
 argument-hint: "<skill-name> [-- <args to pass through>]"
-version: 1.0.0
+version: 1.1.0
 license: MIT
 ---
 
@@ -93,6 +93,19 @@ own text supplies the intent the text is missing.
 6. **Diff the fingerprint — after the run.** Re-capture step 3's values and
    compare. Report the comparison, never the agent's own statement that it wrote
    nothing. If anything moved, that is the finding; stop and surface it.
+
+   **Where step 4 could not remove the credential, audit the agent's own
+   calls as well.** MCP tools that carry their own auth leave nothing to take
+   away, and a fingerprint rarely covers every surface they can write to — a
+   chat channel, a comment thread, a label. The agent's transcript records
+   every tool call it made: in Claude Code a subagent's lives in its own file,
+   `<harness-home>/projects/<slug>/<session-id>/subagents/*.jsonl`, not in the
+   parent's transcript. List each `tool_use` by tool name, flag every name
+   that creates, updates, sends or deletes, and check the shell commands for
+   writes (`git commit`/`push`, `gh` with a non-GET method). Seen 2026-10-13: a
+   run against a tracker with read and write tools under one login was proven
+   read-only this way — 24 tracker calls, every one a read — where the
+   fingerprint covered only the repository and the forge.
 
 7. **Re-verify every reported finding against the file.** Treat the report as
    claims, not results. Read the lines it names and confirm the defect exists as

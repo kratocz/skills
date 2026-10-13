@@ -6,6 +6,9 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **skill-dry-run:** step 6 — where the credential could not be removed (MCP tools with their own auth), the agent's own transcript is audited too: every tool call listed by name, mutating ones flagged, shell commands checked for writes; a subagent's calls live in its own `subagents/*.jsonl` file. (v1.1.0)
+- **work-standup:** the description names `team-standup` as its counterpart, so a request for the whole team's stand-up no longer routes to the personal recap on the generic "standup" trigger. (v0.5.2)
+- **teammate-check:** the description names `team-standup` as its counterpart for the whole team's stand-up cheat sheet. (v1.2.1)
 - **team-standup:** items are named the way people name them — the project's human key or a shortened title, with the link on that text; an opaque tracker id never appears as text, since "scope of <hash>" told its readers nothing in the first real run. (v0.1.1)
 - **code-review:** every review agent's brief now forbids requests to external services (third-party APIs, object storage, secret managers, deployed environments), unauthenticated probes included; a refuter checking redirect handling had sent a POST to a live SMS provider's production API. A timer from another session that is stopped at the start of a review is stopped at that work's last activity, or the gap is reported, instead of at "now": one such entry ran 7 h 48 min over about 1 h 45 min of work. A posted batch removes its database containers.
 

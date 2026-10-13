@@ -2,7 +2,7 @@
 name: team-standup
 description: "Prepare the cheat sheet a team projects at its stand-up: for every attendee, what they did since the last meeting, what they are on now and by when, who they are waiting on and who is waiting on them, open questions, and what comes next — a one-line TL;DR per person above the detail, every claim linked to its source and every inference marked as one. Reads the tracker, the team channel, direct messages, the forge and the user's own time tracking for the window since the previous meeting; writes nothing but its own local file. Use when the user says \"připrav tahák na standup\", \"co dělal tým od minula\", \"standup pro celý tým\", \"shrň práci týmu na meeting\", \"team standup cheat sheet\", \"prepare the team stand-up\", \"what did the team do since the last meeting\". Not your own recap since the last stand-up — that is `work-standup`; not whether one teammate has enough work or waits on you — that is `teammate-check`."
 argument-hint: "[since <YYYY-MM-DD[THH:MM]>] [people <name,name,…>]"
-version: 0.1.0
+version: 0.1.1
 license: MIT
 ---
 
@@ -138,6 +138,7 @@ Tracker: all task lists, status changes and comments since 12 Oct 09:30 (14 of 2
 
 Rules:
 
+- **Name items the way people name them.** A task, ticket or pull request appears as its human key when the project has one (`PROJ-12`, `#318`), otherwise as its title cut to a few words; the link sits on that text. An internal id (an opaque tracker hash, a message id) never appears as text — "scope of a8f3k2x" tells the room nothing, "decision on the export scope" does. When a title is too long or too vague to cut, say what the item is about in a few words of your own.
 - A TL;DR cell holds about eight words at most, so it stays legible on a projected screen; the links and detail go into the person's section.
 - **Hand-offs** and **Open questions** are shared sections because they are what a stand-up actually discusses. Each item appears once.
 - Omit empty parts. **Plan from last time** appears only when a previous cheat sheet exists. **Not attributed** — changes inside the window that no source and no status rule ties to a person — goes after the people, only when it has items.

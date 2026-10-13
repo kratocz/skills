@@ -4,6 +4,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-10-13
 
+### Changed
+
+- **team-standup:** items are named the way people name them — the project's human key or a shortened title, with the link on that text; an opaque tracker id never appears as text, since "scope of <hash>" told its readers nothing in the first real run. (v0.1.1)
+
 ### Added
 
 - **team-standup:** new skill that prepares the cheat sheet a team projects at its stand-up. For each attendee it lists what was done since the last meeting, the current work with due dates, waits in both directions, open questions and what comes next, under a one-line TL;DR per person. It reads the tracker, the team channel, the user's direct messages, the forge and the user's own time tracking. It shares its project map with `teammate-check` and adds attendees, the meeting language, the schedule and how much direct-message content may be shown. Every claim links its source, an actor is named only when a source names one, inferences are marked, credentials are never quoted, and the file is written only to a directory ignored by version control. (v0.1.0)

@@ -7,6 +7,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **team-standup:** items are named the way people name them — the project's human key or a shortened title, with the link on that text; an opaque tracker id never appears as text, since "scope of <hash>" told its readers nothing in the first real run. (v0.1.1)
+- **code-review:** every review agent's brief now forbids requests to external services (third-party APIs, object storage, secret managers, deployed environments), unauthenticated probes included; a refuter checking redirect handling had sent a POST to a live SMS provider's production API. A timer from another session that is stopped at the start of a review is stopped at that work's last activity, or the gap is reported, instead of at "now": one such entry ran 7 h 48 min over about 1 h 45 min of work. A posted batch removes its database containers.
 
 ### Added
 

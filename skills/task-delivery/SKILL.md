@@ -271,9 +271,30 @@ After merging:
   delete the remote branch directly. Never retry the merge on that message.
 - Remove review-state labels — most trackers and GitHub do not drop them on
   merge.
-- Close the tracker task.
+- **Move the tracker task to the status the project prescribes after a
+  merge — which is often not "closed".** Many projects route a merged task to
+  a tester (a `review`, `testing` or QA status) and close it only once the
+  tester is done; read the knowledge file for it before touching the status.
+  Seen 2026-10-13: a merged infra task went straight to `Closed` although the
+  project's knowledge file said in as many words that a merged task stays with
+  the tester; the user had to ask why it skipped the tester. When the change
+  is one the tester cannot observe on their own (infrastructure, secrets,
+  deploy mechanics), do not take that as a reason to skip them: write a
+  **joint test** into the task — you perform the infra step and announce
+  named checkpoints, they check at each one what a user would see, and you
+  confirm the part only the platform shows. A tester will not invent such a
+  test themselves. If there is truly nothing to test, say why in a task
+  comment rather than closing silently.
 - Record follow-ups where the next person will look: open questions, waived
   findings and their new home, and anything the merge deliberately left undone.
+  **Verify each one before you write it down.** A follow-up named in a PR body
+  or a tracker comment reads as a known defect, and the next person will spend
+  time on it. "Component X lacks Y, while its sibling has it" is a difference,
+  not yet a problem: check whether anything in X actually needs Y before
+  calling it worth a look. Seen 2026-10-13: "these jobs mount no keys" went
+  into a PR body and a task comment as a follow-up; a code read afterwards
+  showed neither job ever touches an encrypted value, and both texts needed a
+  correction.
 
 ## 8. Report
 

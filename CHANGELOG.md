@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **retro:** Phase 0 step 3 — under worktree isolation the fresh worktree for repo writes is a dead end, because the guard refuses every git command aimed at it. The session's own worktree becomes the write target instead, when its branch is a throwaway and everything dirty in it is the work being landed: commit by path, keep a backup branch, rebase onto `origin/main`, push to a new branch. (v0.7.7)
 - **skill-dry-run:** step 6 — where the credential could not be removed (MCP tools with their own auth), the agent's own transcript is audited too: every tool call listed by name, mutating ones flagged, shell commands checked for writes; a subagent's calls live in its own `subagents/*.jsonl` file. (v1.1.0)
 - **work-standup:** the description names `team-standup` as its counterpart, so a request for the whole team's stand-up no longer routes to the personal recap on the generic "standup" trigger. (v0.5.2)
 - **teammate-check:** the description names `team-standup` as its counterpart for the whole team's stand-up cheat sheet. (v1.2.1)

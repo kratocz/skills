@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.7.6
+version: 0.7.7
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -143,6 +143,17 @@ Hard rules, valid for the whole skill:
    .claude/worktrees/retro-<date> origin/main`), stage there by path — whether
    the commit is then made follows the hard rules and Phase 3 — and leave the
    user's in-progress files untouched.
+
+   **Under worktree isolation a fresh worktree is a dead end.** The guard lets
+   `git worktree add` through, but then refuses every git command aimed at the
+   new worktree, `-C` included, because it is not the session's own (seen
+   2026-10-13). What worked there: make the session's own worktree the write
+   target. That is safe only when its branch is a throwaway and everything
+   dirty in it is the work you are about to land. Commit that by path, keep
+   the pre-rebase commit on a `backup/<name>` branch, and rebase onto
+   `origin/main`. Then push to a new branch with
+   `git push origin HEAD:refs/heads/<name>`. When the worktree holds anyone
+   else's work, leave it alone and hand the write to the user instead.
 
 4. **Map the existing agent environment** (used to avoid duplicate proposals):
    - project skills: list `.claude/skills/*/SKILL.md`

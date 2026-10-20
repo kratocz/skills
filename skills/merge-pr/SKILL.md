@@ -37,6 +37,16 @@ gh pr checks <N>
 - **Read the checks per job, not the aggregate colour.** Where the repository has no
   branch protection, nothing mechanical stops a red merge — the person clicking is the
   gate. A pending check is a blocker too: report it and stop.
+- **One red check is not the PR's: a failure whose cause is already fixed on the
+  integration branch.** A new advisory against a locked dependency turns a
+  vulnerability scan red on every open PR at once; the fix is a lock bump merged to
+  the integration branch. Re-running the PR's job does not clear it, because a re-run
+  reuses the original run's merge commit, which still carries the old file. Either the
+  author updates the branch, or — when the PR's diff does not touch the files the check
+  flags — the red job says nothing about the merge result: verify that result instead
+  (the test suite on the integration branch plus the PR, and the PR's file list against
+  the flagged files), merge, and say in the report which check was red and why it was
+  waived. Confirm the check goes green on the integration branch after the merge.
 - **`mergeable` / `mergeStateStatus`** — `UNKNOWN` means the platform is still computing;
   re-read rather than proceeding. `CONFLICTING` is the author's to resolve.
 - **Check what the diff touches before choosing the tool.** A PR changing

@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **dm-compose:** a read-only chat backend (Discord through a user-account MCP, or any chat the user's rules restrict to reading) is now a first-class path: the agent measures the draft against the platform limit in the form the backend counts (Discord: 2 000 characters, a mention expands to `<@id>`), hands the exact text over through the clipboard without a trailing newline, and after the user sends it verifies by reading the channel tail — message id, channel rather than thread, attachments compared by SHA-256 with the local files. A teaser trimmed to 1 965 characters by file length had gone out at 1 973. (v1.2.0)
 - **debate-reply:** Discipline — the status given to the opponent's claim (prophecy or estimate, finding or hypothesis) counts as an attribution: use their own label, quoted, or none. Caution stated in an earlier round does not carry over by itself; a later question that called one of their dates "not from God" handed them a fair correction.
 
 ## 2026-10-13

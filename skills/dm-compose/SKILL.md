@@ -1,7 +1,7 @@
 ---
 name: dm-compose
-description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`; whether a teammate has enough work or is waiting on you is `teammate-check`.
-version: 1.1.1
+description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet — including when the agent may only read the chat (Discord) and the user sends by hand. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`; whether a teammate has enough work or is waiting on you is `teammate-check`.
+version: 1.2.0
 license: MIT
 ---
 
@@ -24,6 +24,10 @@ ONE batched call):
 - **ClickUp chat:** `clickup_get_chat_channels`, `clickup_send_chat_message`,
   `clickup_find_member_by_name`
 - **Slack:** `slack_search_users`, `slack_send_message`
+- **Read-only chat** (Discord through a user-account MCP, or any backend the
+  user's rules restrict to reading): `discord_read_messages`,
+  `discord_list_dms`, no send tool. The user sends the message by hand; the
+  agent prepares the exact text and verifies afterwards (steps 6 and 7).
 
 Check project memory and `AGENTS.md` first for a roster with pinned DM channel
 IDs — a pinned ID beats a fresh lookup and costs no API budget. Note the
@@ -92,6 +96,11 @@ Rules that apply to every outward message, and bite hardest here:
   stakeholder, a manager). Name the thing in words.
 - **No greeting mid-conversation** if the thread is already running; a fresh
   proactive message may open with one.
+- **Measure against the platform limit** before showing the draft, in the
+  form the backend counts: Discord allows 2 000 characters per message and
+  expands a mention to `<@id>` (21 characters) on send, so count with the id
+  substituted, not with the display name. Real case (2026-10-21): a teaser
+  trimmed to 1 965 characters by file length was 1 973 as sent.
 
 ### 5. Flag every sentence the user did not say
 
@@ -118,6 +127,12 @@ An approval covers **only the drafted message**. A follow-up, a correction sent
 after it, or a second message to someone else each needs its own go-ahead, even
 when it feels like a natural continuation.
 
+On a read-only backend "send" means hand over: put the exact text into the
+clipboard without a trailing newline (`printf '%s' "$(cat draft.md)" | pbcopy`),
+state the character count, and tell the user to paste it into the right
+channel or DM and send. What the user pastes is what goes out, so apply a
+change to the draft file and re-copy it rather than describing the change.
+
 ### 7. Send and verify
 
 If time has passed since the draft was approved, re-read the channel tail
@@ -126,6 +141,15 @@ re-showing the draft, not sending the approved one.
 
 Send, then report the message id and channel so the user can find it. If the
 backend returns an error, say what was *not* sent rather than retrying blind.
+
+On a read-only backend, verify once the user says it is sent: read the channel
+or DM tail with `discord_read_messages` and `after=<last known message id>`
+(the listing marks replies as "replying to"; `discord_get_replies` on the
+user's own message failed with "Could not fetch message"). Report the message
+id and that it sits in the channel, not in a thread. Check attachments by
+downloading them into an empty scratchpad directory and comparing SHA-256 with
+the local files — the signed URLs expire, so download right after the listing.
+"It is there" is not evidence the right versions went out; the hashes are.
 
 ## Anti-patterns
 
@@ -136,6 +160,7 @@ backend returns an error, say what was *not* sent rather than retrying blind.
 | Three topics in one check-in | The recipient answers the last one. |
 | Draft shown reflowed "for readability" | The draft is the message; what you show is what goes out. |
 | Sending the obvious follow-up after a "send it" | The approval covered one message. |
+| Length measured on the draft file, with `@Name` | Discord sends `<@id>` (21 characters); the approved message crosses the 2 000 limit. |
 
 ## Related
 

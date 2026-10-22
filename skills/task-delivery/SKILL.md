@@ -85,6 +85,19 @@ after the deploy"; the router let the service's `ValueError` escape, so it
 would have been a 500, and the correction arrived only after the user had
 chosen.
 
+**And a code read goes stale when `main` moves under it.** An answer to the
+question round can take days, and you fast-forward or rebase before going on.
+Every claim about code behaviour that you read *before* that step — in the
+option text, in your notes, in the PR body you are about to write — must be
+re-read on the new tree. A merge that touches the same module can change it
+under you. On 2026-10-22 a PR body, a README section and a memory note all
+claimed that an API write was allowed in a status the code no longer
+accepted. The claim was true when the code was read, two days earlier. A
+PR merged in between had narrowed the allowed statuses, and only the
+retro's docs audit caught it, after the PR was out. The check
+is cheap: `git log --oneline <old base>..HEAD -- <files your claims rest on>`.
+Any hit means you re-read those files.
+
 ## 3. Implement, then run the gates and read the *last* run
 
 Follow the surrounding code's idiom over your own preference. Then run the

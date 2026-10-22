@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-22
+
+### Changed
+
+- **debate-reply:** Discipline — the status given to the opponent's claim (prophecy or estimate, finding or hypothesis) counts as an attribution: use their own label, quoted, or none. Caution stated in an earlier round does not carry over by itself; a later question that called one of their dates "not from God" handed them a fair correction.
+
 ## 2026-10-13
 
 ### Changed

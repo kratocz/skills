@@ -111,7 +111,11 @@ only ever existed on the fork — so `git ls-remote --heads origin <branch>` com
 empty whether or not anyone cleaned up, and reading that emptiness as "already deleted" is
 a false conclusion from a true output. For an in-repo branch, check
 `delete_branch_on_merge`: if false, delete it yourself with
-`git push origin --delete <branch>`.
+`git push origin --delete <branch>` — unless the repository visibly keeps merged branches.
+When `git ls-remote --heads origin` lists many branches of already-merged PRs and the
+instructions file says nothing about cleanup, leave the branch and say so in the report
+rather than impose a policy the maintainers do not follow (2026-10-23: one repository held
+57 remote branches, most of them from merged PRs).
 
 **Test-merge every other open PR against the new head.** Landing one PR rebases the
 problem onto its siblings, and the files that collide are usually prose — instructions

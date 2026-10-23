@@ -7,6 +7,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **task-delivery:** a code read goes stale when `main` moves under it. After a long question round, or a fast-forward or rebase, re-read every claim about code behaviour on the new tree before it goes into the PR body (`git log <old base>..HEAD -- <files>` shows whether anything changed). A claim about allowed statuses had gone out wrong after a merge narrowed them in between.
+- **work-reconcile:** uncovered time is measured by subtracting logged entries from the gap-capped activity intervals; re-gap-capping only the timestamps outside them counted gaps that jump over a logged entry and proposed 14 min where 4 were free. Meeting recordings (a Plaud-style recorder) join the sources, because a weekly stand-up with no calendar event was visible only there. Work covered by another project of the same client is now an explicit choice — leave it out, or move it into a free slot of the same day — instead of a silent drop. Also: a check for union bridges made of nothing but a background notification, whole-second Toggl starts, and own writes identified only by the ids the writes returned. (v0.12.0)
 
 ## 2026-10-22
 

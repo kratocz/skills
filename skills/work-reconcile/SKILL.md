@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.11.0
+version: 0.12.0
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -342,6 +342,8 @@ automatically: the flow is always **propose → confirm → write**.
    If the MCP is absent, append a one-line warning "Kalendář nedostupný —
    schůzky vynechány." and skip.
 
+   **B2. Meeting recordings** (if a voice-recorder MCP is present — e.g. a Plaud server exposing `list_files` and `get_note`; probe for it like the others): a recurring meeting nobody put in the calendar — a stand-up, typically — is invisible to source B, but its recording is not. Measured 2026-10-15 and 2026-10-23: the same weekly stand-up had no calendar event in either window, and both times only the recording timed it. List the recordings for `[since, until]` by date; `start_at` is **UTC** and `duration` is in **milliseconds**. The recording title is generated from content, not set by the user, and the recorder also catches personal life (calls, errands, lectures), so read the recording's note before attributing it and keep only those whose content names the project's people, topics or tickets. Two recordings minutes apart on one topic (a meeting and its follow-up chat) form one block spanning both. Each kept recording → a `candidate_block` with `source='recording'`, `start` = `start_at` converted to local, `end` = `start + duration`, `title` from the note, `project_hint` = null (step 5 resolves it from the note), `origin='recording-exact'`. A recording that overlaps a calendar event of the same meeting confirms the event instead of adding a block.
+
    **C. Confirmatory sources** (git always; GitHub/ClickUp if enabled+present):
 
    - **git** (local, free): **not just the current repo** — that is almost
@@ -507,6 +509,8 @@ automatically: the flow is always **propose → confirm → write**.
    differ by more than a few percent. Where the day already carries a full
    tracker load, the difference is moot — nothing is being written there anyway.
 
+   **A bridge in the union can be made of nothing but a notification.** A background task that finishes while its session waits for an answer writes a `queue-operation` line and an `attachment` line and starts no turn. Those lines carry timestamps, and in the union they can land just inside `gap_threshold_min` of another session's last activity and bridge a pause that was a break. Measured 2026-10-23: a notification at 11:02, in a session that had been waiting on a question since 10:44, stretched another session's 10:47 stop to 11:00 — 13 minutes of non-work. Before trusting a bridge, check that a `user` or `assistant` line sits inside it; when none does, cut the stream at the bridge.
+
    **Calendar blocks:** `minutes` = exact `(end - start)` rounded to
    `round_to_min` (no gap-capping — a meeting is contiguous). Set
    `origin='calendar-exact'`.
@@ -518,6 +522,7 @@ automatically: the flow is always **propose → confirm → write**.
    |----------|-------------|-------------------------|
    | `ai-gapcapped` | estimate, from session gaps; names the harness when more than one was read | `~<m>m (AI/codex, gap-capped)` |
    | `calendar-exact` | exact, from a meeting's length | `<m>m (kalendář)` |
+   | `recording-exact` | exact, from a recording's length (step 3 B2) | `<m>m (nahrávka)` |
    | `commit-only` | **no duration known — user must supply one** | `? (jen commit — DOPLŇ ČAS)` |
    | `manual` | supplied by the user | `<m>m (ručně)` |
 
@@ -673,15 +678,14 @@ automatically: the flow is always **propose → confirm → write**.
      span, and on the same window it proposed 29.2 h on top of a period that
      already held 33.3 h.
 
-     Instead **re-run the step 4 gap-capping over just the timestamps that fall
-     outside the busy intervals**. That measures the un-logged work directly
-     rather than inferring it, needs no density assumption, and is bounded in
-     `[0, 1]` by construction:
+     Instead **subtract the busy intervals from the block's activity intervals**. Turn `raw_messages_ts` into intervals with the step 4 rule — each consecutive pair `(a, b)` becomes `[a, b]` when the gap is at most `gap_threshold_min` and `[a, a + edge_pad_min]` when it is longer, plus a trailing `[last, last + edge_pad_min]` — merge them, cut every busy interval out, and sum what is left. That measures the un-logged work directly rather than inferring it, needs no density assumption, is bounded in `[0, 1]` by construction, and hands step 9 the free pieces themselves:
      ```
-     outside       = [t for t in raw_messages_ts if t not inside any busy interval]
-     minutes_left  = gap_capped(outside)        # same G and E as step 4
+     activity      = gap_capped_intervals(raw_messages_ts)   # same G and E as step 4
+     free          = activity minus every busy interval
+     minutes_left  = total length of free
      coverage      = 1 - minutes_left / block_minutes
      ```
+     An earlier version re-ran the gap-capping over only the timestamps that fall outside the busy intervals. That counts every gap that jumps over a logged entry: two outside timestamps ten minutes apart, one on each side of a nine-minute entry, add ten minutes of "un-logged" work the entry already holds. Measured 2026-10-23: 14 min proposed for a stretch where 4 were free.
      For a Calendar block there are no timestamps to re-cap — it is contiguous,
      so `minutes_left` is its span minus the busy overlap.
    - **Overlapping intervals are not the only way a block can already be logged
@@ -740,6 +744,8 @@ automatically: the flow is always **propose → confirm → write**.
      Reserve the full colliding-entry detail (including its `at` field, which
      reveals whether the entry was measured live or entered retrospectively as
      one lump — the latter is far weaker evidence) for a day the user opens.
+
+     **When the user may not overlap entries within one client, a block COVERED by another project of that client is a decision, not a drop.** The minutes are real work, but writing them over the colliding entry bills the same wall-clock twice. Report the parallel minutes per day, then ask the user to choose: (a) leave them out, or (b) move them into a free slot of the same day — placed like any other item in step 9, with descriptions of the work only. When the day has no free slot in the past (a timer still running past midnight), offer the preceding evening of the same working night and say so. Do not settle this silently in either direction: measured 2026-10-23, an earlier run had left such time out, and when the next run asked, the user chose (b) for 114 minutes over three days.
    - **Check the other direction too: time logged that no work backs.** The
      diff above only finds work missing from the tracker; a timer left running
      while the user was away is the mirror error, and nothing else in this
@@ -865,7 +871,7 @@ automatically: the flow is always **propose → confirm → write**.
    user's number is the stronger evidence. Place at **second** precision, too:
    live entries end at arbitrary seconds, so minute-rounded pieces collide with
    them (2026-09-29: five of thirteen pieces, all overlapping by under a minute,
-   all stopped by the guard). Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
+   all stopped by the guard). Send whole seconds: Toggl rejects a `start` with a fractional part with "Stop and duration mismatch" (2026-10-15). Body carries `start` (UTC ISO), `stop` (UTC ISO, the derived or
    original end), `duration` (seconds), `description`, `project_id` (only when
    resolved), `billable` (from `sink.billable`), and `tags` including
    `sink.reconciled_tag` — mirroring `/tracker-log-entry`'s Toggl body:
@@ -897,7 +903,7 @@ automatically: the flow is always **propose → confirm → write**.
    the window sits in the same result set and must not be read as "already
    written" (2026-09-22: one such entry, a day before the window, from the
    previous run). After the batch, re-fetch the window and identify your own
-   writes by the returned ids and `created_with`, not by the tag or the day —
+   writes by the ids the writes returned — not by `created_with`, which the entries listing does not return (checked 2026-10-23), and not by the tag or the day, because
    the user may add entries by hand within minutes of the run (observed the
    same day: a manual entry carrying the same `reconciled_tag` landed three
    minutes after the batch), and the summary must report it as theirs, not

@@ -1,7 +1,7 @@
 ---
 name: kodex
 description: >-
-  Thinking codex — working rules 0–16 plus a pre-delivery self-test (epistemics,
+  Thinking codex — working rules 0–17 plus a pre-delivery self-test (epistemics,
   decisions, output, learning loop, tools). Load at the START of any
   non-trivial analysis, decision, estimate, design, review, or deliverable —
   before forming an opinion — and follow it for the rest of the task. Also use
@@ -112,6 +112,11 @@ get a first pass.
     explicitly, one by one (e.g. `git add README.md`). Always check `git status`
     first. Keep helper and one-off scripts either outside the repository
     (e.g. in a `scratch` folder) or delete them from the repository rigorously.
+17. **Route, don't read.** Your context is for decisions. Material you only
+    pass on — a digest for the next agent, an earlier run's briefs or scripts
+    to adapt — travels by path; read it only where it can change a decision.
+    Brief every subagent to return its verdict, its counts and whatever needs
+    the user's decision, with the rest in a file.
 
 ## Self-test before delivery (non-trivial outputs)
 

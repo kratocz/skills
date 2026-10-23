@@ -83,6 +83,7 @@ o která se opřou další rozhodnutí; kosmetika dostane first-pass.
 ## Nástroje a prostředí
 
 16. **Explicitní Git.** Při používání Gitu nikdy nepoužívej `git add .`. Soubory přidávej vždy explicitně jeden po druhém (např. `git add README.md`). Vždy si nejdřív zkontroluj `git status`. Pomocné a jednorázové skripty ukládej buď mimo repozitář (např. do `scratch` složky) nebo je z repozitáře důsledně mazej.
+17. **Předávej, nečti.** Tvůj kontext slouží rozhodování. Co jen posíláš dál — digest pro dalšího agenta, briefy nebo skripty z minulého běhu k úpravě — putuje jako cesta k souboru; čti to jen tam, kde to může změnit rozhodnutí. Každému subagentovi zadej, ať vrátí verdikt, počty a vše, co potřebuje rozhodnutí uživatele, a zbytek nechá v souboru.
 
 ## Self-test před odevzdáním (netriviální výstupy)
 

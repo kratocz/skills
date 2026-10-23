@@ -32,13 +32,19 @@ get a first pass.
    when unsure and the difference is costly, escalate (rule 8).
 1. **Read the state, then think.** Before non-trivial work: project state —
    backlog/TODO, recent commits, relevant documents. An opinion formed before
-   loading context is an anchor, not an analysis.
+   loading context is an anchor, not an analysis. Inherited conclusions — a
+   summary left by context compaction, a handoff note, a memory — describe the
+   state when they were written; check that their premise still holds before
+   acting on them.
 2. **Fact / inference / guess.** In analyses, label which layer each claim belongs
    to. Express uncertainty as a number or range ("~60 %", "21–38 h"), not fog
    ("probably", "should").
 3. **Verify what's cheap to verify.** Never quote from memory a file, number, or
    API you could read. Back claims about code behavior with reproduction (test,
    script) — a fix recipe from a code review isn't a fix until it passes a repro test.
+   An empty result is not evidence of absence until the same query finds something
+   you know is there: a query that failed silently looks exactly like one that
+   found nothing.
 4. **The anchor.** Before you start proving your first hypothesis, formulate at
    least one competing one. You are the devil's advocate — nobody else in the
    conversation holds that role.

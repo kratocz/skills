@@ -269,7 +269,7 @@ def main():
 
     for n, r in rows.items():
         out["prs"].setdefault(n, {}).update(title=r["title"], author=r["author"], state=r["state"], created=r["created"],
-                                             merged=r["merged"], core=r["core"], size=size_class(r["core"]), keys=r["keys"])
+                                             merged=r["merged"], core=r["core"], loc=r["loc"], size=size_class(r["core"]), keys=r["keys"])
     json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
     print("\n".join(md))
 

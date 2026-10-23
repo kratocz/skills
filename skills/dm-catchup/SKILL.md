@@ -2,7 +2,7 @@
 name: dm-catchup
 description: Catch up on direct messages with a named person across whatever IM the environment offers (ClickUp chat, Slack), including thread replies, then summarize, assess what needs action, and draft a reply for approval. Use when the user says "/dm-catchup", "přečti si zprávy od/s <person>", "co mi psal <person>", "catch up on DMs with <person>", or "shrň konverzaci s <person>".
 argument-hint: "[person] [time-window]"
-version: 1.1.0
+version: 1.2.0
 license: MIT
 ---
 
@@ -98,6 +98,7 @@ Deliver three layers, in this order:
    `origin/main` plus that repository's own agent notes (`AGENTS.md`), not
    the working tree. A request can be days-old news to another session
    while it still looks open in the thread.
+   **A question about the state or value of a named thing — an env var, a secret, a feature flag, a config key — gets a tracker search for that exact name before you answer from code or live state.** The live state says *what is there*; the task that owns the name says *why*, and whose move it is. Real case (2026-10-14): asked for the value of a staging callback secret, the first draft found it unset, explained that with an ADR deferral and offered the work as new — while the name sat in the description of a task assigned to the user, parked by the asker a week earlier and reopened in a task comment five minutes before the question. The user caught it by asking whether we had ever been tasked with it.
 3. **Draft reply** — only for items that need one. Follow outward-message
    rules: continuous paragraphs (no mid-sentence line breaks), no greeting
    mid-conversation, expand abbreviations at first use ("Virtual Private
@@ -134,3 +135,4 @@ the draft, send the edited version verbatim.
   arrive") was "neprošel" ("did not pass") — a red CI run, not a missing
   notification — and three readings were offered before the sender wrote
   "zas ta autooprava".
+- **A channel read returns every credential posted in it into the transcript.** When the person has just posted a key or a password, do not re-read the channel to check for news before replying — send without the re-read and say that you skipped it; when paging deep for history, never quote such values back. The value goes into the secret store through a script the user runs (reading it from the clipboard, printing nothing), never through a tool call (real case 2026-10-14).

@@ -1,6 +1,6 @@
 ---
 name: dependency-diagrams
-description: "Generate task-dependency diagrams from any tracker (ClickUp, GitHub, Jira, Todoist, or a CSV/JSON export): full dependency graph with transitive reduction, group/epic overview, and per-phase detail diagrams, exported as .drawio + SVG + PNG into a stable snapshot directory that is regenerated in place. Use when the user asks to generate, regenerate, or update task dependency diagrams / graphs (\"vygeneruj diagramy závislostí\", \"dependency graph snapshot\", \"task dependency diagrams\")."
+description: "Generate task-dependency diagrams from any tracker (ClickUp, GitHub, Jira, Todoist, or a CSV/JSON export): full dependency graph with transitive reduction, group/epic overview, and per-phase detail diagrams, exported as .drawio + SVG + PNG into a stable snapshot directory that is regenerated in place. Use when the user asks to generate, regenerate, or update task dependency diagrams / graphs (\"vygeneruj diagramy závislostí\", \"dependency graph snapshot\", \"task dependency diagrams\"). Not the critical path through open tasks — that is `critical-path`."
 license: MIT
 ---
 
@@ -45,6 +45,8 @@ magnitude:
 - **Dependency edges** — what changes only when someone founds or rewires
   tasks. Costs **one API call per task**, so a 92-task list is ~92 calls.
 
+On ClickUp the two tiers collapse once a personal API token is set up: the REST route in Step 2 returns statuses and dependency arrays together at one request per 100 tasks, metered per minute rather than against the MCP daily cap. With a token, always fetch everything and skip the scope gate below; it applies to the MCP route only.
+
 **Default to statuses only, and carry the edges over from the committed
 `model.json`.** Refetch edges only when the user asks or when the run has a
 concrete reason to expect the graph moved — new tasks founded, an epic broken
@@ -66,6 +68,7 @@ Collect for every task: stable `id`, short `label` (the task's code like
 
 Per-source recipes:
 
+- **ClickUp (REST, preferred whenever a personal token exists):** `GET https://api.clickup.com/api/v2/list/<list_id>/task?subtasks=true&include_closed=true&page=N` with the header `Authorization: <token>` (no `Bearer`), until `last_page` is true. Each task carries its `dependencies` entries as `{task_id, depends_on}` with `depends_on` the prerequisite, and every edge appears on both endpoints, so dedup the pairs. Measured on one project: 149 tasks, all dependencies, in 2 requests — against ~150 MCP calls for the same data. If the `critical-path` skill is installed, its `clickup_fetch.py` does exactly this fetch and documents the token setup; never ask for the token in the chat. Without a token, fall back to the MCP recipe below.
 - **ClickUp (MCP):** `clickup_filter_tasks` with `list_ids`, `subtasks: true`,
   `include_closed: true` returns names + statuses but **not dependencies** —
   paginate (100/page). Dependencies require per-task `clickup_get_task` with

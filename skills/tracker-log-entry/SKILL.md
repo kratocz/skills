@@ -1,8 +1,8 @@
 ---
 name: tracker-log-entry
-description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/tracker-log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded.
+description: Log a retroactive (already finished) time entry to the configured tracker. Use when the user says "/tracker-log-entry", "log this to Toggl/Clockify", "add a time entry for ...", "track 2 hours retroactively", "zaloguj to do Toggl", or names a past time window they want recorded. For time worked in the current agent session, that is tracker-backfill.
 argument-hint: "[time-window] [description]"
-version: 1.7.0
+version: 1.8.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -87,7 +87,30 @@ backend — unlike `/tracker-start`, no live timer is involved.
    tag IDs — resolve via `GET /workspaces/<id>/tags` and match by name, skip
    silently if no match).
 
-6. **Create the entry.** Keep the API key out of argv (it would land in the
+6. **Check for overlap before writing.** A retroactive window is the one most
+   likely to be covered already — by a parallel session's timer, by an entry
+   the user added by hand, or by a later reconciliation. Fetch the entries of
+   every day the window touches, across **all** projects (Toggl:
+   `GET /api/v9/me/time_entries?start_date=<day>&end_date=<day+1>`), and print
+   any whose `[start, stop)` intersects the window (a running entry covers
+   from its `start` onward). On an intersection, do not write: report it and
+   propose the free remainder instead. Then check the time nobody has logged
+   *yet*: other agent sessions active inside the window (events in
+   `<harness-home>/projects/*/*.jsonl` timestamped within it) whose project
+   bills the same client will be turned into entries later, so cut the window
+   there or name their work in this entry's description — the user decides
+   which. Real case (2026-10-23): a 31-minute window passed the tracker check
+   clean, but a same-client session had been active for 28 of those minutes
+   with nothing logged.
+
+   **When the window is the current session's own past work, use
+   `tracker-backfill` instead.** It splits the transcript into activity blocks
+   from *all* event timestamps and runs both checks above. Reading only the
+   user's own prompts misses activity: answers to in-session dialogs and
+   results from background agents arrive as tool results, so one such block
+   looked 12 minutes shorter than it was.
+
+7. **Create the entry.** Keep the API key out of argv (it would land in the
    process table and transcripts): pass it via a config file / header read
    from stdin, with the key expanded from a shell variable — never as a
    literal in the command.
@@ -127,7 +150,7 @@ backend — unlike `/tracker-start`, no live timer is involved.
    > contain the key *lookup* (`KEY=$(jq -r … config.json)`), never the
    > key literal.
 
-7. **Verify and report** (concise, in the configured language): parse the
+8. **Verify and report** (concise, in the configured language): parse the
    response; on success show the entry id, the window in **local time**, the
    rounded duration in hours, billable flag, and project/tags if attached.
    On HTTP error show the API message verbatim and suggest checking

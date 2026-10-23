@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **oponentura:** the proportionality note no longer lets a purchase recommendation pass as a shopping list. A recommendation that money will follow (vendor, order, delivery and return-window timeline) gets the pass; on 2026-10-22 one found three critical defects, among them a disk burn-in timeline built on 5–6 days for a test that takes at least 10.4.
 - **task-delivery:** a code read goes stale when `main` moves under it. After a long question round, or a fast-forward or rebase, re-read every claim about code behaviour on the new tree before it goes into the PR body (`git log <old base>..HEAD -- <files>` shows whether anything changed). A claim about allowed statuses had gone out wrong after a merge narrowed them in between.
 - **work-reconcile:** uncovered time is measured by subtracting logged entries from the gap-capped activity intervals; re-gap-capping only the timestamps outside them counted gaps that jump over a logged entry and proposed 14 min where 4 were free. Meeting recordings (a Plaud-style recorder) join the sources, because a weekly stand-up with no calendar event was visible only there. Work covered by another project of the same client is now an explicit choice — leave it out, or move it into a free slot of the same day — instead of a silent drop. Also: a check for union bridges made of nothing but a background notification, whole-second Toggl starts, and own writes identified only by the ids the writes returned. (v0.12.0)
 

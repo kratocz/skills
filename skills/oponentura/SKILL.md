@@ -9,7 +9,7 @@ description: Use when a written analysis, note, report, spec or decision documen
 
 A second reader in a **fresh context**, briefed to *refute* the document, not to *check* it. "Check" returns "looks fine"; "refute" returns the three claims that do not survive contact with their own sources. The author then verifies the reviewer's most expensive findings personally — reviewers are wrong too — and records the outcome in the document itself, so the next reader knows what was tested.
 
-Proportionality applies: the pass is for documents where a wrong load-bearing claim costs something. A shopping list does not need one.
+Proportionality applies: the pass is for documents where a wrong load-bearing claim costs something. A shopping list does not need one — but a purchase recommendation that money will follow (which vendor, in what order, on what delivery and return-window timeline) is not a shopping list. On 2026-10-22 a pass over one found three critical defects, among them a burn-in timeline built on 5–6 days for a disk test that takes at least 10.4.
 
 ## The brief (what the subagent receives)
 

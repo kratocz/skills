@@ -21,6 +21,9 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 GEN_DEFAULT = r"(\.min\.(js|css)$|tailwind\.css$|\.po$|\.mo$|(^|/)(uv|poetry|Cargo|Gemfile)\.lock$|package-lock\.json$|yarn\.lock$|pnpm-lock\.yaml$|\.(svg|png|jpe?g|gif|ico|pdf|drawio)$)"
+# Defaults fit Python/Django and JavaScript projects; other stacks pass their own patterns.
+TEST_DEFAULT = r"(/tests/|(^|/)(test_[^/]+|[^/]+_test)\.py$|\.(spec|test)\.[jt]sx?$)"
+MIG_DEFAULT = r"/migrations/"
 SIZES = [(10, "XXS <10 (i18n/test/CI-only)"), (50, "XS 10-50"), (200, "S 50-200"), (600, "M 200-600"),
          (2000, "L 600-2000"), (10**12, "XL 2000+")]
 
@@ -48,11 +51,11 @@ def gh(args):
     raise SystemExit(f"gh failed: {args}")
 
 
-def bucket(path, gen):
+def bucket(path, gen, mig, test):
     if gen.search(path): return "gen"
-    if "/migrations/" in path: return "mig"
+    if mig.search(path): return "mig"
     if path.startswith("docs/") or path.endswith(".md"): return "docs"
-    if "/tests/" in path or re.search(r"(^|/)(test_[^/]+|[^/]+_test)\.py$", path) or re.search(r"\.(spec|test)\.[jt]sx?$", path): return "test"
+    if test.search(path): return "test"
     return "core"
 
 
@@ -88,12 +91,17 @@ def main():
     ap.add_argument("--key-regex", default=r"\b[A-Z]{2,6}-\d{1,4}\b", help="task key pattern in entry text and PR titles")
     ap.add_argument("--review-regex", default=r"\b(CR|review|re-review|code review)\b")
     ap.add_argument("--generated-regex", default=GEN_DEFAULT)
+    ap.add_argument("--test-regex", default=TEST_DEFAULT,
+                    help="paths counted as tests, not core; e.g. Go '_test\\.go$', JVM '(^|/)src/test/'")
+    ap.add_argument("--migration-regex", default=MIG_DEFAULT,
+                    help="paths counted as migrations, not core; e.g. Rails '(^|/)db/migrate/'")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
     tz = ZoneInfo(a.tz)
     holidays = {date.fromisoformat(h) for h in a.holidays.split(",") if h}
     gen = re.compile(a.generated_regex)
+    mig, test = re.compile(a.migration_regex), re.compile(a.test_regex)
     keyre = re.compile(a.key_regex)
     prs = json.loads(gh(["pr", "list", "-R", a.repo, "--state", "all", "--limit", "1000", "--json",
                          "number,title,state,author,createdAt,mergedAt,headRefName"]))
@@ -113,7 +121,7 @@ def main():
         r = rows[p["number"]]
         loc = collections.Counter()
         for f in r["files"]:
-            if len(f) == 3: loc[bucket(f[0], gen)] += int(f[1]) + int(f[2])
+            if len(f) == 3: loc[bucket(f[0], gen, mig, test)] += int(f[1]) + int(f[2])
         r.update(number=p["number"], title=p["title"], state=p["state"], author=p["author"]["login"],
                  created=p["createdAt"], merged=p["mergedAt"], core=loc["core"], loc=dict(loc),
                  keys=expand_keys(p["title"] + " " + p["headRefName"], keyre))
@@ -261,7 +269,7 @@ def main():
 
     for n, r in rows.items():
         out["prs"].setdefault(n, {}).update(title=r["title"], author=r["author"], state=r["state"], created=r["created"],
-                                             merged=r["merged"], core=r["core"], size=size_class(r["core"]), keys=r["keys"])
+                                             merged=r["merged"], core=r["core"], loc=r["loc"], size=size_class(r["core"]), keys=r["keys"])
     json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
     print("\n".join(md))
 

@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-25
+
+### Changed
+
+- **debate-reply:** the hostile-reader pass now also reads the whole cited document for the clause that cuts the other way, and checks whether the closing question presupposes a form of answer the opponent can legitimately reject (an oral agreement, against a demand for "the agreement and its article"); the refuter is asked for the opponent's best one-line reply to each objection and to the closing question. Both gaps were caught by a refuter and by the user, not by the pass.
+
 ## 2026-10-23
 
 ### Added

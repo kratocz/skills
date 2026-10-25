@@ -7,6 +7,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **retro:** areas A and B no longer append every learning to the project's `AGENTS.md`. Each learning goes to its most specific home: the target file's own routing section when it has one, otherwise the target file only for rules that apply to nearly every task, a procedure to that task's doc, an area of the code to its architecture doc or next to the code, and history to the commit message. Seen 2026-10-25: a project `AGENTS.md` that every retro appended to had grown from 43 KB to 207 KB in two months, past the point where any tool read it whole. (v0.8.0)
+- **tracker-backfill:** project ids are taken from a fresh project listing, matched by name, in the same run that writes — never from a context summary, a handoff note or memory; a failed write prints the API's response body; a batch is written one call at a time so a stop halfway can be described and resumed. Seen 2026-10-25: a context-compaction summary carried another client's billable project id under the name of the user's personal non-billable project, and only the tracker's own billable rule refused the write. (v1.9.0)
 
 ## 2026-10-25
 

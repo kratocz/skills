@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.8.0
+version: 1.9.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -178,6 +178,19 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
      -X POST "https://api.clockify.me/api/v1/workspaces/<workspace_id>/time-entries" \
      --data-binary @/path/to/payload.json <<< "X-Api-Key: $KEY"
    ```
+
+   **Take every project id from a fresh project listing, matched by name, in
+   the same run that writes** — never from a context summary, a handoff note
+   or memory. Ids of neighbouring projects look alike, and a wrong one books
+   the time to another client. (Real case, 2026-10-25: a context-compaction
+   summary carried the id of another client's billable project under the
+   name of the user's personal non-billable project; only the tracker's own
+   refusal — "workspace does not allow non-billable entries in billable
+   projects" — stopped the write.) When a write fails, print the API's
+   response body: it names the rule that refused it, and Python's `urllib`
+   hides it behind a bare `HTTP Error 400`. And order a batch so that a stop
+   halfway leaves a state you can describe — one write per call, each
+   reported as it lands — then resume with only the writes that did not.
 
 8. **Verify and report**: re-fetch the day (step 4) and print the timeline
    sorted by start, marking each adjacent pair as `[seamless]`, `[gap Ns]`, or

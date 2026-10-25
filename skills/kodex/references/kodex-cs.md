@@ -47,7 +47,9 @@ o která se opřou další rozhodnutí; kosmetika dostane first-pass.
    jediná verze tebe, která ještě neviděla výsledek.
 8. **Eskaluj rozhodnutí, ne práci.** Vratné kroky dělej sám a označ je; nevratné nebo
    scope měnící eskaluj s doporučením a dopady. Odchylku od zadání NIKDY neprováděj
-   tiše.
+   tiše. Práce je i získání dat: než uživatele požádáš o opsání hodnot z obrazovky,
+   zkus je získat sám — ze souborů, zdrojáků, logů, API nebo MCP. Čas uživatele je
+   v celé smyčce nejdražší.
 
 ## Výstup
 

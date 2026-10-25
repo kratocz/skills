@@ -67,7 +67,10 @@ get a first pass.
    in advance are the only version of you that hasn't seen the outcome yet.
 8. **Escalate decisions, not work.** Do reversible steps yourself and mark them;
    escalate the irreversible or scope-changing with a recommendation and its
-   consequences. NEVER deviate from the assignment silently.
+   consequences. NEVER deviate from the assignment silently. Fetching data is
+   work too: before asking the user to read values off a screen or transcribe
+   them, try to obtain them yourself — files, sources, logs, an API or MCP tool.
+   The user's time is the most expensive resource in the loop.
 
 ## Output
 

@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **kodex:** rule 8 ("escalate decisions, not work") now names fetching data as work: before asking the user to read values off a screen or transcribe them, try files, sources, logs, an API or MCP first. Seen 2026-10-25: the agent asked the user to copy Unreal blueprint values that turned out to be readable straight from the `.uasset` files and the engine sources; the user had to point it out.
 - **debate-reply:** the hostile-reader pass now also reads the whole cited document for the clause that cuts the other way, and checks whether the closing question presupposes a form of answer the opponent can legitimately reject (an oral agreement, against a demand for "the agreement and its article"); the refuter is asked for the opponent's best one-line reply to each objection and to the closing question. Both gaps were caught by a refuter and by the user, not by the pass.
 
 ## 2026-10-23

@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.7.7
+version: 0.8.0
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -179,9 +179,20 @@ of these hold:
   working in the repo — not just to you in this session,
 - equivalent content is not already in the target file (search it to confirm).
 
-The proposed change is: add the fact to the appropriate section of the target
-file (create the section if needed), then delete the memory file and its
-`MEMORY.md` index line.
+The proposed change is: add the fact to its **most specific home**, then
+delete the memory file and its `MEMORY.md` index line.
+
+**Choosing the home.** If the target file has a section that routes content —
+a "where knowledge goes" table, a size budget, a CI size check — follow it.
+Otherwise the target file gets only rules that apply to nearly every task in
+the repo. A procedure for one kind of task goes to the doc for that task (a
+runbook, a `docs/agents/<topic>.md`), how one area of the code works goes into
+that area's architecture doc or next to the code, and the story of how a rule
+came about goes into the commit message, never into a doc. Leave at most a
+one-line pointer in the target file. Real case: a project `AGENTS.md` that
+every retro appended to grew from 43 KB to 207 KB in two months, past the point
+where any tool read it whole, so the rules it held stopped reaching the agents
+they were written for.
 
 **Re-verify "not already covered" against `origin/main` immediately before the
 write lands, not only during analysis.** With parallel sessions the target file
@@ -234,6 +245,8 @@ Review the current conversation for non-obvious, durable, project-relevant
 learnings: commands that proved correct, conventions clarified by the user,
 gotchas discovered while working. Exclude anything one-off, obvious from the
 code, or already recorded (in the target file or in a memory proposed in A).
+Route each learning to its most specific home exactly as in A — the target
+file only for rules that apply to nearly every task.
 
 ### C. Project docs audit (subagent)
 

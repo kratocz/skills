@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-26
+
+### Changed
+
+- **retro:** areas A and B no longer append every learning to the project's `AGENTS.md`. Each learning goes to its most specific home: the target file's own routing section when it has one, otherwise the target file only for rules that apply to nearly every task, a procedure to that task's doc, an area of the code to its architecture doc or next to the code, and history to the commit message. Seen 2026-10-25: a project `AGENTS.md` that every retro appended to had grown from 43 KB to 207 KB in two months, past the point where any tool read it whole. (v0.8.0)
+
 ## 2026-10-25
 
 ### Changed

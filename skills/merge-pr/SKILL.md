@@ -53,7 +53,9 @@ gh pr checks <N>
   `.github/workflows/*` cannot be merged with `gh pr merge` at all: the CLI's OAuth token
   carries `repo` but not `workflow`, and the refusal is about the file paths, not the PR.
   Merge it through the GitHub MCP's `merge_pull_request`, or refresh the token
-  (`gh auth refresh -s workflow`).
+  (`gh auth refresh -s workflow`). The MCP tool's head-SHA guard is the parameter
+  `expectedHeadSha`, its counterpart of `--match-head-commit` — pass it, and the subject
+  and body as `commit_title` / `commit_message`.
 - **Confirm the merge is authorised for this PR, now.** A question, a dialog choice or an
   earlier "looks good" is not a merge directive; neither is a review Approve. If the user
   has not said to merge this PR, stop and ask.
@@ -124,9 +126,14 @@ whoever is nearest. Several PRs from one author routinely touch the same paragra
 
 ```bash
 for each open PR N:
-  git fetch origin pull/<N>/head:pr-<N>-head
-  git merge-tree --write-tree origin/main pr-<N>-head   # non-zero exit + CONFLICT line
+  git fetch -q origin pull/<N>/head
+  git merge-tree --write-tree --name-only origin/main FETCH_HEAD   # non-zero exit + CONFLICT line
 ```
+
+Test against `FETCH_HEAD`, not a named branch such as `pr-<N>-head`. A named ref stays
+behind after every merge, and in a clone shared by several worktrees and sessions they pile
+up in the one `.git` they all share. One clone held 51 of them, 45 for PRs closed long
+before (2026-10-26).
 
 Tell each affected author which file conflicts and where. It costs one command per PR and
 saves them rebasing blind. (Generated build artifacts are a separate case: a lockfile or a

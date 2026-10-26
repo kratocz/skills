@@ -59,6 +59,13 @@ gh pr checks <N>
 - **Confirm the merge is authorised for this PR, now.** A question, a dialog choice or an
   earlier "looks good" is not a merge directive; neither is a review Approve. If the user
   has not said to merge this PR, stop and ask.
+- **A review finding that arrives after the directive does not reopen the approved head.**
+  The directive covers the head the user approved; a fix pushed on top is a new head that
+  needs its own CI run and its own directive. If the finding blocks, stop and report it.
+  Otherwise merge the approved head and record the finding where the next reader looks — the
+  squash body and the tracker task — as an open follow-up. Seen 2026-10-26: an advisory
+  reviewer's nit landed after the user's merge directive; the approved head went in, and the
+  nit went into the squash body and the task comment instead of a silent extra commit.
 
 ## 2. Merge — write the message
 

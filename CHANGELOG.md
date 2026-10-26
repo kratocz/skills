@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **merge-pr:** a review finding that arrives after the merge directive does not reopen the approved head: a blocking one stops the merge, anything else is merged past and recorded as an open follow-up in the squash body and the tracker task. Seen 2026-10-26: an advisory reviewer's nit landed after the directive.
 - **merge-pr:** before telling an author that the merge put their PR into conflict, the test-merge is re-run against the merge's parent; a conflict that was already there is reported as pre-existing. Seen 2026-10-26: all three conflicting files of one PR predated the merge that surfaced them.
 - **tracker-backfill:** a parallel session's work is described from its own events inside the interval, split into blocks, not from its prompt titles or its first and last event, and the gap after a parallel session's last entry is billed only after checking that it did not log itself and go idle. Seen 2026-10-26: a combined entry named the wrong parallel work, and a 12-minute gap proposed for billing held 2 minutes of work. (v1.9.1)
 - **merge-pr:** the test-merge of the remaining open PRs fetches each head into `FETCH_HEAD` instead of a named `pr-<N>-head` branch. Named refs outlived every merge and piled up in the `.git` shared by a clone's worktrees: one clone held 51, 45 of them for PRs closed long before. Pre-flight also names `expectedHeadSha` as the GitHub MCP merge tool's counterpart of `--match-head-commit`.

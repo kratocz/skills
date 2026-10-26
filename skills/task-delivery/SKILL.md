@@ -298,6 +298,18 @@ After merging:
   confirm the part only the platform shows. A tester will not invent such a
   test themselves. If there is truly nothing to test, say why in a task
   comment rather than closing silently.
+- **Decide testability yourself, by tracing the path from the UI to the
+  changed code — do not hand the question to the tester.** Follow what a
+  user can actually do: which page or job reaches the change, and whether
+  an earlier check (a form that re-validates on submit, a cache cleared on
+  save) stops every UI path before it gets there. The same goes for a
+  verification command copied from the task: before you hand it to the user
+  or write it into a tracker comment, make sure its output differs between
+  success and failure. Seen 2026-10-26: a platform fix went to the tester
+  with "decide whether there is anything for you here" and the task's own
+  check command. The command printed a proxy class name whatever the backend
+  was, and a later code read showed no UI path could reach the changed
+  behaviour. Both had to be corrected in a second comment.
 - Record follow-ups where the next person will look: open questions, waived
   findings and their new home, and anything the merge deliberately left undone.
   **Verify each one before you write it down.** A follow-up named in a PR body

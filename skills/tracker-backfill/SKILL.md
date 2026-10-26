@@ -30,10 +30,19 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    `<harness-home>` is `~/.claude` (Claude Code) or `~/.gemini/antigravity-cli`
    (Antigravity CLI) — use the first that exists — and `<slug>` is
    the session's working directory with `/` and `.` replaced by `-` (e.g.
-   `/Users/me/proj` → `-Users-me-proj`). The current session is the most
-   recently modified `.jsonl` in that directory (verify: its most recent
-   events are from right now; if unsure which file is the right
-   one, list candidates and ask).
+   `/Users/me/proj` → `-Users-me-proj`). **In Claude Code, find the file by
+   session id first:** `$CLAUDE_CODE_SESSION_ID` names the current session, and
+   its transcript is `~/.claude/projects/*/$CLAUDE_CODE_SESSION_ID.jsonl`. Only
+   when that variable is unset, fall back to the most recently modified
+   `.jsonl` in the slug directory (verify: its most recent events are from
+   right now; if unsure which file is the right one, list candidates and ask).
+   The fallback breaks in two ways the id does not. A resumed session can get a
+   new id and write to a new file, so a path remembered from earlier in the
+   session points at a transcript that stopped growing. And when the working
+   directory changes mid-session (its worktree was removed, say), the slug
+   derived from it names a different directory altogether. Both happened in one
+   session on 2026-10-26: the old file ended three days before the work being
+   logged.
 
    **Split the transcript into activity blocks — never treat `first → last` as
    one span.** A session can stay open across days (sleep, other projects,
@@ -49,7 +58,8 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    user has said how they work, follow that over the default.
 
    ```bash
-   export FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl \
+   export FILE=$(ls ~/.claude/projects/*/"${CLAUDE_CODE_SESSION_ID:-none}".jsonl 2>/dev/null | head -1)
+   [ -n "$FILE" ] || export FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl \
      ~/.gemini/antigravity-cli/projects/<slug>/*.jsonl 2>/dev/null | head -1)
    python3 << 'EOF'
    import json, os

@@ -290,6 +290,19 @@ looks redundant, migrate it into the repo instead of deleting it. Deleting is
 the only irreversible operation in this skill: memory has no history to
 recover from.
 
+**Before marking a recorded finding "unverified", look for its evidence where
+the session that recorded it kept its artefacts.** A memory saying a defect was
+reproduced is a claim about work you did not see; the code it names can look
+fine on a read and still fail at runtime, which is exactly what a reproduction
+is for. So before downgrading it, search that session's working files — the
+review kit, the findings file, probe logs under the project's local docs
+directory — and only call it unverified when nothing there backs it. Real case
+(2026-10-23): a retro marked a login-lockout finding unverified because the
+settings it read looked correct. The recording session had run a probe that
+failed 3 tests on the main branch and passed all 40 with the fix, and the logs
+sat in its review kit. The wrong label reached the user, who was told the
+already-filed ticket might be baseless.
+
 ### E. Skills — new and improved
 
 **On apply, delegate to skillify when installed.** If the `skillify` skill is

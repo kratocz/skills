@@ -136,6 +136,18 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    session of the same client at 12:55–12:59 and three more at 23:27–23:55. None
    of them had logged anything yet.
 
+   **Read what a parallel session did before you name it or bill its gap.**
+   Its first and last event inside an interval say nothing about the minutes
+   between them, and its last few prompts say little about what it worked on.
+   Split its events into blocks with the same threshold as this session's, read
+   its assistant text inside each block, and take the description of its work
+   from there. Also check whether it logged its own time: a session that
+   backfilled its tail and then sat idle leaves a "gap" after its last entry
+   that is idle time, not unlogged work. Real case (2026-10-26): a combined
+   entry named the parallel session's work from its prompt titles and got it
+   wrong, and a 12-minute gap proposed for billing held 2 minutes of work,
+   because that session had logged itself and gone quiet for ten minutes.
+
 6. **Confirm before writing** (this is billing data — never create entries
    silently): show the proposed entries in **local time** (start–stop,
    duration, description, project) and ask the user to approve. Default

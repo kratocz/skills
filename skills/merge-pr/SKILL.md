@@ -136,7 +136,11 @@ up in the one `.git` they all share. One clone held 51 of them, 45 for PRs close
 before (2026-10-26).
 
 Tell each affected author which file conflicts and where. It costs one command per PR and
-saves them rebasing blind. (Generated build artifacts are a separate case: a lockfile or a
+saves them rebasing blind. Before you say the merge caused it, re-run the same `merge-tree`
+against the merge's parent (`<merge sha>^` in place of `origin/main`): when the PR conflicts
+there too, the conflict was already there and the report says so. The author's fix is the
+same, but "your PR conflicts since #N" sends them reading the wrong diff (2026-10-26: all
+three conflicting files of one PR predated the merge that surfaced them). (Generated build artifacts are a separate case: a lockfile or a
 compiled stylesheet may merge cleanly and still be wrong — compare against a clean rebuild
 if the project says so.)
 

@@ -10,6 +10,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **tracker-backfill:** the context-compaction summary (`"isCompactSummary": true`) is dropped before the transcript is split into activity blocks, and when the thresholds disagree the pause the larger one bridges is read before picking it. Seen 2026-10-26: a compaction event cut a 1 h 44 min idle pause into two sub-hour halves, so the 60-minute default offered it for billing. (v1.9.2)
 - **dm-compose:** the re-read before sending expands every thread in the window again, including threads already read once, not just the channel tail. Seen 2026-10-20: a reply landed in an already-read thread three minutes before the send, and the tail-only re-read missed it. (v1.2.1)
 
 ## 2026-10-26

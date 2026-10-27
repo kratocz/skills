@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.9.1
+version: 1.9.2
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -57,6 +57,18 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    differ; when they agree, the choice is not worth the user's attention. If the
    user has said how they work, follow that over the default.
 
+   **Drop the compaction summary before splitting.** When the harness compacts
+   the context, it writes the summary into the transcript as a `user` event
+   (Claude Code marks it `"isCompactSummary": true`). Nobody was at work at that
+   moment, but the event sits inside whatever pause it fell into and cuts it in
+   two, so each half can stay under the threshold and the whole pause is counted
+   as work. Real case (2026-10-26): a compaction at 13:42 fell inside a pause
+   from 12:47 to 14:31; at 60 minutes the block ran unbroken from 11:32 to 14:36
+   and offered 1 h 45 min of idle time for billing, while 20 and 45 minutes both
+   gave the right 1 h 23 min. The snippet below skips such events. When the
+   thresholds still disagree, read what happens inside the pause that the larger
+   one bridges before picking it.
+
    ```bash
    export FILE=$(ls ~/.claude/projects/*/"${CLAUDE_CODE_SESSION_ID:-none}".jsonl 2>/dev/null | head -1)
    [ -n "$FILE" ] || export FILE=$(ls -t ~/.claude/projects/<slug>/*.jsonl \
@@ -68,8 +80,10 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    ts = []
    with open(os.environ["FILE"]) as f:
        for line in f:
-           try: t = json.loads(line).get("timestamp")
+           try: d = json.loads(line)
            except Exception: continue
+           if d.get("isCompactSummary"): continue
+           t = d.get("timestamp")
            if t: ts.append(datetime.fromisoformat(t.replace("Z", "+00:00")))
    ts.sort()
    blocks = []; s = e = ts[0]

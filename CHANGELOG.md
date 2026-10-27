@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-27
+
+### Changed
+
+- **dm-compose:** the re-read before sending expands every thread in the window again, including threads already read once, not just the channel tail. Seen 2026-10-20: a reply landed in an already-read thread three minutes before the send, and the tail-only re-read missed it. (v1.2.1)
+
 ## 2026-10-26
 
 ### Changed

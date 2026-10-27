@@ -1,7 +1,7 @@
 ---
 name: dm-compose
 description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet — including when the agent may only read the chat (Discord) and the user sends by hand. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`; whether a teammate has enough work or is waiting on you is `teammate-check`.
-version: 1.2.0
+version: 1.2.1
 license: MIT
 ---
 
@@ -43,6 +43,13 @@ drafted "the tech lead will do the fix" was approved, but earlier that day the s
 recipient had been promised the fix "tonight" from a message this session
 never saw; only the re-read caught it, and the draft had to change to correct
 that promise.
+
+The re-read covers threads, not just the tail: expand every message with
+replies (`has_replies` on ClickUp, `reply_count` on Slack) again, including
+threads you already read once. A thread can gain a reply while you draft, and
+the root message looks exactly as it did before. Real case (2026-10-20): the
+CTO answered in a thread at 12:06, the re-read before the 12:09 send fetched
+only the channel tail, and the sent message went out without having seen it.
 
 ### 2. Gather only what you can verify
 
@@ -136,7 +143,7 @@ change to the draft file and re-copy it rather than describing the change.
 ### 7. Send and verify
 
 If time has passed since the draft was approved, re-read the channel tail
-first (step 1): a message that changed what the draft should say means
+and its threads first (step 1): a message that changed what the draft should say means
 re-showing the draft, not sending the approved one.
 
 Send, then report the message id and channel so the user can find it. If the

@@ -57,6 +57,7 @@ The `tracker-*` and `work-*` skills read their configuration from `~/.claude/plu
 
 | Name | Description | Added |
 |---|---|---|
+| [worktree-cleanup](./skills/worktree-cleanup) | Delete accumulated git worktrees without losing anything — commits proven safe (branches kept), worktree-only files rescued including gitignored ones, live sessions found by process working directory, removal by a guarded dry-run-first script, then prune | 2026-10-27 |
 | [task-estimate](./skills/task-estimate) | Estimate open tracker tasks from the project's own history — class means by change-set size from merged PRs and tracked hours, backtested and refuted, a P50–P80 range per task, start and due dates scheduled against real capacity and review latency, written only after approval | 2026-10-23 |
 | [critical-path](./skills/critical-path) | Critical path through open tracker tasks — longest chain by steps and by estimated hours, blocking hubs, waits outside the tracker, estimate coverage; ClickUp via one cheap REST fetch | 2026-10-23 |
 | [team-standup](./skills/team-standup) | Prepare the cheat sheet a team projects at its stand-up — per attendee what was done since the last meeting, what is in progress and by when, who waits on whom, open questions and what comes next, under a one-line TL;DR per person; every claim linked to its source, every inference marked, credentials never quoted, and the file kept out of version control | 2026-10-13 |

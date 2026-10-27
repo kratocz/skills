@@ -4,6 +4,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-10-27
 
+### Added
+
+- **worktree-cleanup:** new skill — deletes a repository's accumulated git worktrees without losing anything. It shows that commits survive (branches are kept; merged-PR and `git cherry` checks name what is not upstream), rescues files that exist only in a worktree — including gitignored ones, which `git status` never reports — finds live agent sessions by process working directory rather than by worktree name or lock, and removes worktrees with a bundled dry-run-first script (`cleanup-worktrees.sh`) that refuses a worktree holding unsaved or unrescued work. Seen 2026-10-27: 39 worktrees held 17 GB on a full disk, nine documents existed only in gitignored worktree directories, and one session started for one worktree was working in another.
+
 ### Changed
 
 - **dm-compose:** the re-read before sending expands every thread in the window again, including threads already read once, not just the channel tail. Seen 2026-10-20: a reply landed in an already-read thread three minutes before the send, and the tail-only re-read missed it. (v1.2.1)

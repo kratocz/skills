@@ -38,7 +38,8 @@ unsaved_in() {  # $1 worktree path, $2 name
   done
   git -C "$1" ls-files --others --ignored --exclude-standard --directory | command grep -Ev "$REGENERABLE" |
   while IFS= read -r e; do
-    if [ -d "$1/$e" ]; then (cd "$1" && find "${e%/}" -type f) | command grep -Ev "$REGENERABLE"; else echo "$e"; fi
+    # "./" keeps a name starting with "-" from being read as a find option
+    if [ -d "$1/$e" ]; then (cd "$1" && find "./${e%/}" -type f | sed 's|^\./||') | command grep -Ev "$REGENERABLE"; else echo "$e"; fi
   done | while IFS= read -r f; do saved "$1" "$f" "$2" || echo "!! $f"; done
 }
 

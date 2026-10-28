@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-29
+
+### Changed
+
+- **task-estimate:** after writing dates, the whole list is compared with a snapshot taken before the write, not just two or three written tasks re-read, because a tracker that reschedules dependent tasks on its own moves tasks nobody wrote. Seen 2026-10-26: setting one task's due date pushed a waiting task onto a Saturday, and two blockers moving three days each shifted a third task by six.
+
 ## 2026-10-27
 
 ### Added

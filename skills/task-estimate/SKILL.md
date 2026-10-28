@@ -103,7 +103,7 @@ One table per person: task, status, estimate, range, class and analogue, start, 
 
 - One update per task carrying the estimate and both dates, where the tracker accepts them together. Writes go before any bulk read; on a rate-limit error stop, do not retry, and list what is unwritten.
 - Change hand-set estimates and dates only where the user approved it in §5.
-- Re-read two or three of the written tasks to confirm the values landed.
+- Re-read the written tasks to confirm the values landed. A tracker that reschedules dependent tasks on its own (ClickUp does) also moves tasks you did not write, onto a weekend if the arithmetic lands there, so compare the dates of the whole list against a snapshot taken before the write and report every change, not only your own.
 - Append every estimate to the local log as one JSON line: task id, date, assignee, estimate, range, class, analogues, `post_hoc`.
 
 ## 7. Recalibrate

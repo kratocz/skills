@@ -98,6 +98,8 @@ retro's docs audit caught it, after the PR was out. The check
 is cheap: `git log --oneline <old base>..HEAD -- <files your claims rest on>`.
 Any hit means you re-read those files.
 
+**When the task's remaining work needs a sibling task that is not done, look for a session already on that sibling before you plan.** A locked worktree named after it, or a busy peer in the agent list, means the work is moving right now, and doing your part beside it produces a second change to the same files. Handing the rest over is then usually right, and the hand-off has to be complete: the requirements, the QA observations that close your task, and every tracker step for *your* task too — the comment with the evidence and the status move — because nobody else will take them once your session ends. Seen 2026-10-29: a backup-encryption task was folded into the parallel session moving the backups; the first hand-off listed all six requirements but not the status move of the handed-over task, and the user had to ask whether that session would flip it.
+
 ## 3. Implement, then run the gates and read the *last* run
 
 Follow the surrounding code's idiom over your own preference. Then run the

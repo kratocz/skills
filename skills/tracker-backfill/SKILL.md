@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.9.2
+version: 1.9.3
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -176,6 +176,14 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    entry named the parallel session's work from its prompt titles and got it
    wrong, and a 12-minute gap proposed for billing held 2 minutes of work,
    because that session had logged itself and gone quiet for ten minutes.
+
+   **The same holds for this session's own pauses.** When you tell the user
+   what happened inside a gap you are leaving out (or billing), take it from a
+   timestamp that dates it — the creation time of a draft, a commit, a tracker
+   entry — not from the order the work was done in. Real case (2026-10-26): a
+   proposal explained a 30-minute pause as the user reviewing an e-mail draft;
+   the draft was created only when the pause ended, and the pause held another
+   client's tracked entry.
 
 6. **Confirm before writing** (this is billing data — never create entries
    silently): show the proposed entries in **local time** (start–stop,

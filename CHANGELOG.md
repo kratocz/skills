@@ -6,6 +6,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **code-review:** an open question that routes a decision outward ("goes to the CTO", "confirm with the client") is checked before it is passed on: the rule it rests on, the size of the risk, and whether a different fix makes the escalation unnecessary. Seen 2026-10-29: both such questions in one review batch dissolved once the user asked why.
 - **code-review:** the PR head is fetched with a forcing `+pull/<N>/head:pr-<N>` and `pr-<N>` is checked against `gh pr view --json headRefOid` before the review reads it, because GitHub updates `refs/pull/<N>/head` asynchronously. Seen 2026-10-27: one fetch moved the PR branch to the new head and created `pr-438` at the previous one.
 - **tracker-stop:** takes an optional stop time (`17:28`) and ends the running entry there instead of now — Toggl via stop + `PUT` with the original `start`, Clockify via `end` — refusing a time before the start or in the future. (v1.7.0)
 - **task-estimate:** after writing dates, the whole list is compared with a snapshot taken before the write, not just two or three written tasks re-read, because a tracker that reschedules dependent tasks on its own moves tasks nobody wrote. Seen 2026-10-26: setting one task's due date pushed a waiting task onto a Saturday, and two blockers moving three days each shifted a third task by six.

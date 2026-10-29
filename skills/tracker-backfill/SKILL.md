@@ -154,7 +154,12 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    (`<harness-home>/projects/*/*.jsonl` modified that day, minus this session)
    for user/assistant events inside each candidate interval, map each session
    to its client by its project directory (and `project_map`), and cut the
-   interval wherever a same-client session was active. Real case (2026-10-07):
+   interval wherever a same-client session was active. Skip transcripts whose
+   events carry an `entrypoint` other than `cli` (e.g. `sdk-py`): those are
+   automated runs, such as a plugin reviewing every commit in the background,
+   not anyone's work. On 2026-10-29 ten of them sat in the session's own
+   project directory, each a few seconds long and timed to a commit, and read
+   like parallel same-client sessions until their first prompt was checked. Real case (2026-10-07):
    Toggl held a single entry for the whole day, yet extending it to the end
    time the user named, and adding the evening block, would have overlapped one
    session of the same client at 12:55–12:59 and three more at 23:27–23:55. None

@@ -138,8 +138,18 @@ the branch, and name the event that will unblock it (a purchase, a release date,
 a trial period ending).
 
 Publish only when: the verdict is written with its accepted trade-offs and
-revival clause, load-bearing claims carry sources and dates, and open `[VERIFY]`
-tags are either resolved or acknowledged in the header.
+revival clause, load-bearing claims carry sources and dates, open `[VERIFY]`
+tags are either resolved or acknowledged in the header, and the verdict has
+survived one **refutation pass in a fresh context**, with its outcome recorded
+in the header. Run it with `oponentura` if it is installed. Otherwise dispatch
+one subagent on the strongest available model tier (e.g. Claude Opus, OpenAI
+Astra), with web access. Hand it only the document and the dated decision rules,
+never your reasoning, and brief it to refute the verdict: which load-bearing
+claim fails against its own source, which accepted trade-off is understated,
+which rule the verdict reads differently from how it was written. Verify its
+most expensive findings yourself before changing anything; a reviewer is wrong
+too. An author re-reading their own verdict supplies the intent the text is
+missing, which is why the pass cannot be done inline.
 
 ## Anti-patterns
 

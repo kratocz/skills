@@ -4,6 +4,10 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ## 2026-10-31
 
+### Changed
+
+- **decision-analysis:** the publish gate now requires one refutation pass in a fresh context, recorded in the document header — through `oponentura` when installed, otherwise a subagent on the strongest available model tier that gets only the document and the dated decision rules and is briefed to refute the verdict. The skill named adversarial checking as a rule it follows but had no step that ran one.
+
 ### Fixed
 
 - **second-opinion:** both model calls work again and run concurrently. Gemini goes through Antigravity CLI (`agy --mode plan --model <gemini-id> -p …`, the id picked from `agy models`, never a Claude one), because Gemini CLI was discontinued on 2026-06-18; GPT goes through `codex exec --sandbox read-only -`, because plain `codex` is the interactive UI and exited with `stdin is not a terminal`.

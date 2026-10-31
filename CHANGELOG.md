@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-10-31
+
+### Fixed
+
+- **second-opinion:** both model calls work again and run concurrently. Gemini goes through Antigravity CLI (`agy --mode plan --model <gemini-id> -p …`, the id picked from `agy models`, never a Claude one), because Gemini CLI was discontinued on 2026-06-18; GPT goes through `codex exec --sandbox read-only -`, because plain `codex` is the interactive UI and exited with `stdin is not a terminal`.
+
 ## 2026-10-29
 
 ### Changed

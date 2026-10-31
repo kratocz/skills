@@ -1,6 +1,6 @@
 # Skills
 
-Personal collection of agent skills by [Petr Kratochvíl](https://krato.cz/) — one source for every harness: Claude Code, Codex, Antigravity CLI, opencode, GitHub Copilot CLI, Gemini CLI, and any other agent that supports the [Agent Skills](https://agentskills.io/) `SKILL.md` standard.
+Personal collection of agent skills by [Petr Kratochvíl](https://krato.cz/) — one source for every harness: Claude Code, Codex, Antigravity CLI, opencode, GitHub Copilot CLI, and any other agent that supports the [Agent Skills](https://agentskills.io/) `SKILL.md` standard.
 
 ## Installation
 

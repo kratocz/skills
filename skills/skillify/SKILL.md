@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: Analyze this session (and, on demand, past session transcripts) for repeatable workflows worth capturing as a skill, propose candidates, and create the approved ones. Use when the user says "/skillify", "skillify", "make a skill from this", "turn this into a skill", "co by z tohohle šlo udělat skill", "udělej z toho skill", or wants to capture a workflow as a reusable skill.
-version: 0.1.3
+version: 0.1.4
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -91,7 +91,12 @@ with these instructions:
 > that recur across sessions (the same kind of multi-step task driven more than
 > once). Return ONLY a compact list: for each workflow, a one-line name, which
 > sessions it appears in, and a ≤1-line piece of evidence. Return no transcript
-> excerpts beyond those one-line evidences.
+> excerpts beyond those one-line evidences. Only read: use no web, network or
+> other-model tool, and send nothing from these files anywhere.
+
+If the harness runs this subagent on a different model provider than the
+session itself, skip the deep scan and say so: transcripts may go to a
+same-machine subagent, never to another service.
 
 Merge the inline and deep findings. A workflow recurring across sessions is a
 stronger signal than one seen once. Drop any candidate already covered by an

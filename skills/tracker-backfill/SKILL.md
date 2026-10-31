@@ -2,7 +2,7 @@
 name: tracker-backfill
 description: Fill gaps in time tracking for THIS agent session, reconstructed from its own transcript and split into activity blocks — works for sessions spanning several days. Use when the user says "/tracker-backfill", "doplň díry v Togglu za tuhle session", "doplň do Toggl práci na tomto", "backfill gaps for this session", or asks whether tracked time matches this session. For a past week or month across many sessions, that is work-reconcile.
 argument-hint: "[date]"
-version: 1.9.3
+version: 1.10.0
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -176,6 +176,24 @@ touch, and create entries for the uncovered intervals — never overlapping anyt
    entry named the parallel session's work from its prompt titles and got it
    wrong, and a 12-minute gap proposed for billing held 2 minutes of work,
    because that session had logged itself and gone quiet for ten minutes.
+
+   **Hand that scan to one subagent when the day is busy.** With more than
+   about five other transcripts modified that day, both checks above go to one
+   read-only subagent on the mid model tier (e.g. Claude Sonnet, OpenAI Terra),
+   so their excerpts never enter this session. Give it the candidate intervals,
+   this session's threshold, `<harness-home>/projects/` and this session's own
+   transcript path to exclude. Give it no web, network or tracker tool, and deny
+   it the config file, which holds the tracker key. It returns one row per
+   other session active inside a candidate interval: session id, project
+   directory, `entrypoint`, each block's start and stop as the transcript's ISO
+   timestamps, a one-line description of the work taken from its assistant
+   text, and every time entry the session wrote with its start and stop — no
+   quotations. Map project directories to clients with `project_map`, convert
+   the times and cut the intervals here, and check each written entry against
+   what step 4 fetched. With five or fewer, do the scan inline. If the harness
+   runs subagents on a different model provider than this session, do it
+   inline regardless: transcripts may go to a same-machine subagent, never to
+   another service.
 
    **The same holds for this session's own pauses.** When you tell the user
    what happened inside a gap you are leaving out (or billing), take it from a

@@ -6,6 +6,9 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **session-recall:** a read-only subagent on the same machine may now read a transcript, provided its brief gives it no web, network or other-provider tool and asks for fields rather than quotations; sending one to an external service stays forbidden. (v1.0.2)
+- **skillify:** the deep-scan subagent is briefed to only read and to send nothing anywhere, and the scan is skipped where the harness would run the subagent on another model provider. (v0.1.4)
+- **tracker-backfill:** with more than about five other transcripts modified that day, the scan for parallel sessions' unlogged time goes to one read-only mid-tier subagent, denied the tracker config, that returns one row per session (id, project directory, entrypoint, blocks, a one-line description, the entries it wrote); mapping to clients and cutting intervals stay in the main thread. (v1.10.0)
 - **code-review:** independent input reads in step 2 go out in one message (the fetch and head check still run first); both refuters run on the strongest model tier and start together when both apply; batch reviewers run on the strongest tier, drafters and implementers on the mid tier.
 - **retro:** Phase 0 reads and Phase 3's three save checks go out in one message (only what depends on the integration branch waits for the fetch); the memory and docs-audit subagents start together when both run, on the mid model tier (the docs audit may use the cheap tier for pure path and command checks). (v0.8.1)
 - **task-delivery:** §1's independent reads and the first reads of an in-flight check go out in one message; the ADR compliance subagent runs on the strongest model tier.

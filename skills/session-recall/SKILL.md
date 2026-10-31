@@ -2,7 +2,7 @@
 name: session-recall
 description: Find the transcript of an earlier agent session — by the `Claude-Session` trailer of a commit, by session UUID, or by topic — and recover what the USER said in it (their prompts verbatim, in order), which commits that session made, and what was said after its last commit and therefore may never have reached the repo. Use when the user says "/session-recall", "načti předchozí session", "dokázal bys načíst session, kde jsme…", "co jsme řešili minule", "víš, jak jsme se bavili o…", "recall the session where we…", "what did we discuss last time", "load the previous conversation about X". Not time tracking over transcripts — that is tracker-backfill / work-reconcile.
 argument-hint: "[commit | session-uuid | topic keywords]"
-version: 1.0.1
+version: 1.0.2
 allowed-tools: Read, Bash
 license: MIT
 ---
@@ -105,9 +105,13 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
    jq -r 'select(.type=="assistant" and .timestamp > "<ISO>") | [.message.content[]?|select(.type=="text")|.text]|join(" ")' "$F" | grep -v '^$' | tail -3
    ```
 
-   Transcripts can be megabytes; never `cat` one, and never dump a transcript
-   into a subagent or an external service — it may hold personal content, keys,
-   and other people's messages. Quote only what answers the question.
+   Transcripts can be megabytes; never `cat` one, and never send one to an
+   external service — another model's CLI, a web tool, a tracker comment — as
+   it may hold personal content, keys, and other people's messages. A read-only
+   subagent on the same machine may read it, provided its brief gives it no
+   web, network or other-provider tool and asks for fields, not quotations; if
+   the harness runs subagents on a different provider than this session, read
+   inline instead. Quote only what answers the question.
 
 4. **Map the session onto the repo.** Which commits did it make, and when did
    the last one land relative to the conversation?

@@ -163,6 +163,19 @@ Then:
 1. `git fetch origin` and **rebase onto current `origin/main`**. Repos with an
    auto-pin CI bot move `main` without human activity, so the base you branched
    from is stale more often than not.
+
+   **This holds before the PR exists, not after.** Once the branch is pushed,
+   a rebase rewrites every commit on it, so the next push must be forced —
+   which an agent's permission classifier may refuse as destructive — and
+   the push now carries everything `main` gained since, so path-filtered
+   workflows run on the branch even though the PR touches none of those
+   paths. CI on a pull request already tests the merge with the current base,
+   so a rebase of an open PR buys nothing unless it has a conflict or needs
+   something only on the new `main`. When it does, say why, and hand the
+   push to the user as `git push --force-with-lease=<branch>:<old head>`.
+   Seen 2026-10-31: a habitual rebase of an open infra PR cost a refused
+   force push, an explanation round, and a red image-scan job on a PR with
+   no application change.
 2. Rename the branch to the project's convention if it does not match — tooling
    often creates a working branch under its own scheme.
 3. Push with upstream tracking.

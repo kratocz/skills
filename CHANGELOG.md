@@ -6,6 +6,22 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 
 ### Changed
 
+- **code-review:** independent input reads in step 2 go out in one message (the fetch and head check still run first); both refuters run on the strongest model tier and start together when both apply; batch reviewers run on the strongest tier, drafters and implementers on the mid tier.
+- **retro:** Phase 0 reads and Phase 3's three save checks go out in one message (only what depends on the integration branch waits for the fetch); the memory and docs-audit subagents start together when both run, on the mid model tier (the docs audit may use the cheap tier for pure path and command checks). (v0.8.1)
+- **task-delivery:** §1's independent reads and the first reads of an in-flight check go out in one message; the ADR compliance subagent runs on the strongest model tier.
+- **geo-page-audit:** the sitemap sample, the sibling-domain checks and the API-based LLM check run concurrently, still one polite sequential stream per host; the refuter runs on the strongest model tier.
+- **dm-catchup:** thread expansions, and the "already closed elsewhere" checks, go out together in one message once the channel read is back. (v1.2.1)
+- **dm-compose:** the DM tail, tracker, forge and fetch reads go out in one message once the recipient's channel is resolved. (v1.2.2)
+- **work-reconcile:** step 3's parallel round now also carries the local session-log scans, the Toggl project list and the existing-entries reads that steps 5 and 7 need; only git waits for the session scan. (v0.12.1)
+- **worktree-cleanup:** above about ten worktrees, the per-worktree commit and file inventory goes to one read-only subagent on the cheap model tier that returns a table and complete file lists; live-session checks, rescue copies and deletion stay in the main thread.
+- **task-estimate:** more than about ten tasks are estimated by mid-tier subagents in groups of 6–10 (shared change sets together, one calibration for all, JSON records back, no tracker write path, inline fallback where subagents cannot reach the tracker); the calibration refuter runs on the strongest model tier.
+- **dependency-diagrams:** the per-task ClickUp fan-out subagents run on the cheap model tier and are denied the tracker's write tools.
+- **client-questions:** the three sweeps run on the cheap model tier, the chat-and-mail sweep on the mid tier when it has to judge what was already answered.
+- **oponentura:** the refuter runs on the strongest available model tier.
+- **token-audit:** the refutation subagent runs on the strongest available model tier. (v1.1.2)
+- **skillify:** the deep-scan subagent runs on the mid model tier. (v0.1.3)
+- **skill-dry-run:** the fresh-context run uses at least the mid model tier and never a model weaker than the one that normally runs the skill. (v1.1.1)
+- **kodex:** rule 5's refutation pass names the strongest available model tier, in both the English and the Czech body.
 - **decision-analysis:** the publish gate now requires one refutation pass in a fresh context, recorded in the document header — through `oponentura` when installed, otherwise a subagent on the strongest available model tier that gets only the document and the dated decision rules and is briefed to refute the verdict. The skill named adversarial checking as a rule it follows but had no step that ran one.
 
 ### Fixed

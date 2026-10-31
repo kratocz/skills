@@ -49,7 +49,8 @@ get a first pass.
    least one competing one. You are the devil's advocate — nobody else in the
    conversation holds that role.
 5. **Adversarially verify non-trivial conclusions.** After finishing an analysis,
-   run one pass aiming to REFUTE it (ideally a subagent in a fresh context; brief it
+   run one pass aiming to REFUTE it (ideally a subagent in a fresh context, on the
+   strongest available model tier, e.g. Claude Opus or OpenAI Astra; brief it
    "refute", not "check"). Hand the refuter only the artifact and the contract it
    has to satisfy, never the reasoning that produced it — a reviewer given
    conclusions returns validation of those conclusions. Mandatory for quantitative

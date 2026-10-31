@@ -22,7 +22,7 @@ If the user is not available to answer, state the assumptions you are proceeding
 
 ## 2. Sweep, in parallel, from three sources
 
-These are independent and each is a broad read, so dispatch them as separate read-only agents rather than doing them in sequence — unless two of them sit behind the same rate-limited API, in which case sweep those two one after the other and give each a call budget.
+These are independent and each is a broad read, so dispatch them as separate read-only agents on the cheap model tier (e.g. Claude Haiku, OpenAI Luna) — the mid tier (e.g. Claude Sonnet, OpenAI Terra) for the chat-and-mail sweep when it has to judge what was already answered — rather than doing them in sequence — unless two of them sit behind the same rate-limited API, in which case sweep those two one after the other and give each a call budget.
 
 **The repository.** Planning and gap-analysis documents; architecture records and their dated amendments; proposals with an "open decisions" section; runbooks carrying "pending" or "to be supplied" markers; and any sample data the other party supplied. Search in every language the project is written in.
 

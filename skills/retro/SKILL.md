@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Session retrospective — turn this session's learnings into durable improvements. Migrates memory facts to AGENTS.md, captures session learnings, audits project *.md docs for staleness, cleans stale memories, proposes new or improved skills, hooks, and permission allowlist entries, learns from blocked or guardrail-gated actions, and closes by checking that the session's work is committed and pushed. Use when the user says "/retro", "retrospektiva", "udělej retro", or asks to consolidate what was learned in this session.
-version: 0.8.0
+version: 0.8.1
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -39,6 +39,11 @@ Hard rules, valid for the whole skill:
   they read as stale filler.
 
 ## Phase 0 — Gather context
+
+Most reads below are independent: `pwd`, the branch, `git fetch`, the memory
+directory (step 2) and the environment map (step 4) can go out together in one
+message. Only what depends on the integration branch waits — the fast-forward
+check, and reading the target file — until `git fetch` has finished.
 
 0. **Confirm where you are, and that it is current.** Run `pwd` and
    `git branch --show-current` — the shell's working directory can differ from
@@ -108,9 +113,12 @@ Hard rules, valid for the whole skill:
    file-writing tool (which skips this validation) and run it as
    `python3 /tmp/<name>.py`; keep it out of the scratchpad when that path
    itself contains the word (2026-09-30) —
-   and dispatch ONE read-only subagent with that path, the target knowledge
-   file, and the session facts. Brief it with the area A and D rules below
-   verbatim, tell it to verify every claim against `origin/main` and to quote
+   and dispatch ONE read-only subagent on the mid model tier (e.g. Claude
+   Sonnet, OpenAI Terra) with that path, the target knowledge file, and the
+   session facts. When area C's docs-audit subagent will run as well, start
+   the two together in one message once the dump is written: they read
+   different material and neither needs the other's result. Brief the memory
+   subagent with the area A and D rules below verbatim, tell it to verify every claim against `origin/main` and to quote
    the AGENTS.md line when it says something is already covered, and demand a
    fixed output shape: `<file> (mtime) — FULL|PARTIAL — fact — section — why not
    covered` for A, `<file> (mtime) — what is stale — evidence — delete|correct`
@@ -251,7 +259,10 @@ file only for rules that apply to nearly every task.
 ### C. Project docs audit (subagent)
 
 Dispatch ONE read-only exploration subagent so doc contents do not fill this
-context window. Instruct it to:
+context window — on the mid model tier (e.g. Claude Sonnet, OpenAI Terra), or
+the cheap tier (e.g. Claude Haiku, OpenAI Luna) when the docs make only path
+and command claims to check — and start it together with Phase 0 step 2's
+memory subagent when that one runs. Instruct it to:
 
 - list the project's `*.md` files (exclude `node_modules`, `vendor`, build
   output, and other third-party directories — **and every nested git worktree**:
@@ -431,7 +442,7 @@ Present candidate items grouped by area, then approve and apply:
 
 Report per area: applied / skipped / failed (one line each). Then:
 
-- **Is this session's work saved?** Check the checkout confirmed in Phase 0 step 0 — not a retro worktree — and report what would be lost if the machine died now. Run all three; none of them covers the others:
+- **Is this session's work saved?** Check the checkout confirmed in Phase 0 step 0 — not a retro worktree — and report what would be lost if the machine died now. Run all three; none of them covers the others, and none depends on another, so issue them together in one message:
   ```bash
   git status --porcelain --branch                                 # uncommitted and untracked files
   git log --oneline --decorate HEAD --branches --not --remotes    # commits that exist on no remote

@@ -2,7 +2,7 @@
 name: skill-dry-run
 description: Prove an already-written skill actually works by executing it end to end against real data, in a clean context, with writes made structurally impossible rather than merely forbidden — fingerprint the target, deny the credential path, dispatch a neutral-prompted fresh-context agent, diff the fingerprint, and re-verify every finding it reports. Use when the user says "/skill-dry-run", "ověř ten skill", "otestuj skill nanečisto", "does this skill actually work", "dry-run the skill", "verify my skill against real data", or has just changed a skill that writes somewhere and wants proof before trusting it. Not for authoring a skill or pressure-testing whether an agent complies with its wording — that is superpowers:writing-skills.
 argument-hint: "<skill-name> [-- <args to pass through>]"
-version: 1.1.0
+version: 1.1.1
 license: MIT
 ---
 
@@ -74,7 +74,10 @@ own text supplies the intent the text is missing.
 
 5. **Dispatch a fresh-context agent.** Never run the verification yourself: you
    have read the skill, and that is precisely the contamination being controlled
-   for. In the prompt:
+   for. Run it on the mid model tier (e.g. Claude Sonnet, OpenAI Terra) at the
+   least, and never below the model that normally runs the skill: a weaker
+   model tolerates ambiguity and hides the defects this step exists to find.
+   In the prompt:
    - name the skill and how to invoke it, with the pass-through arguments;
    - list the prohibitions from step 4 as absolute, above the task itself, and
      name the specific tools and endpoints that are off limits;

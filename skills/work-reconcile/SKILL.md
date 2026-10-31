@@ -2,7 +2,7 @@
 name: work-reconcile
 description: Reconcile the timesheet for a past period (week, month) across all sessions. Reconstructs what you actually worked on — primarily from agent session logs, confirmed by git/GitHub/Calendar/ClickUp — diffs it against what is already logged in Toggl/ClickUp, and after you approve each item writes only the missing time. Use when the user says "/work-reconcile", "doplň výkaz", "dorovnej timesheet", "co jsem zapomněl vykázat", "fill my timesheet", "reconcile my hours", "co chybí ve výkazu za minulý měsíc". For gaps in just the current session, that is tracker-backfill.
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--project <name>] [--dry-run]"
-version: 0.12.0
+version: 0.12.1
 allowed-tools: Read, Bash, ToolSearch, AskUserQuestion, mcp__toggl__toggl_get_time_entries, mcp__toggl__toggl_list_projects, mcp__github__search_pull_requests, mcp__github__search_issues, mcp__github__list_commits, mcp_Google_Calendar__list_events
 license: MIT
 ---
@@ -101,6 +101,11 @@ automatically: the flow is always **propose → confirm → write**.
 3. **Fetch all enabled sources — IN PARALLEL** where they are MCP calls (one
    message, multiple tool_use blocks). Probe each MCP source with `ToolSearch`
    first; if absent, append a warning and skip. Build the list `blocks`.
+   Into that same message put everything else that needs only the window: the
+   local session-log scans of source A (scripts, no MCP), the Toggl project
+   list of step 5, and step 7's existing-entries reads of the trackers in
+   `sink.target`. Only git (source C) waits for a second round, because its
+   repo list comes from the session scan.
 
    **A. Agent session logs** (primary, if
    `effective_config.reconcile.ai_sessions.enabled`):

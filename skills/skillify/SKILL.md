@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: Analyze this session (and, on demand, past session transcripts) for repeatable workflows worth capturing as a skill, propose candidates, and create the approved ones. Use when the user says "/skillify", "skillify", "make a skill from this", "turn this into a skill", "co by z tohohle šlo udělat skill", "udělej z toho skill", or wants to capture a workflow as a reusable skill.
-version: 0.1.2
+version: 0.1.3
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, Task, AskUserQuestion, Skill
 license: MIT
 ---
@@ -64,8 +64,9 @@ Look for two kinds of findings:
 **Inline (all modes except targeted):** review the current conversation for
 both kinds.
 
-**Deep scan (deep mode only):** dispatch ONE read-only exploration subagent over the
-project's past transcripts. First resolve the transcript directory and the
+**Deep scan (deep mode only):** dispatch ONE read-only exploration subagent,
+on the mid model tier (e.g. Claude Sonnet, OpenAI Terra), over the project's
+past transcripts. First resolve the transcript directory and the
 running session's own transcript:
 
 - The scratchpad directory path in your system prompt has the form

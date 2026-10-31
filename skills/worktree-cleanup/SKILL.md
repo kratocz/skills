@@ -26,6 +26,8 @@ du -sh <worktrees-dir>; df -h .
 
 Report the total size and free disk space — that is the reason the user is asking.
 
+**Above roughly ten worktrees, hand steps 2–3's inventory to one read-only subagent** on the cheap model tier (e.g. Claude Haiku, OpenAI Luna), and run step 4 yourself while it works. Fetch first, then give it the worktree list, the main checkout's path and steps 2–3 verbatim. It returns one table row per worktree — branch, commits on no remote, PR state or `git cherry` result, counts of uncommitted, untracked and non-regenerable ignored files — plus, per worktree, the complete untruncated list of files that are missing from the main checkout or differ from it. Its brief forbids every change: no removal, no copying, no script run, no fetch or checkout; use a read-only agent type where the harness has one. The rescue copies of step 3, step 4 and everything after stay with you; afterwards confirm that `git worktree list` still shows the same worktrees. Below that size, do steps 2–3 inline — the subagent's starting context costs more than it saves.
+
 ## 2. Commits: prove they survive
 
 For each worktree: `git -C <wt> rev-list --count HEAD --not --remotes` (fetch first). Commits on no remote are still safe because the branch is kept, but say what they are:

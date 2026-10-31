@@ -2,7 +2,7 @@
 name: dm-catchup
 description: Catch up on direct messages with a named person across whatever IM the environment offers (ClickUp chat, Slack), including thread replies, then summarize, assess what needs action, and draft a reply for approval. Use when the user says "/dm-catchup", "přečti si zprávy od/s <person>", "co mi psal <person>", "catch up on DMs with <person>", or "shrň konverzaci s <person>".
 argument-hint: "[person] [time-window]"
-version: 1.2.0
+version: 1.2.1
 license: MIT
 ---
 
@@ -49,7 +49,9 @@ available, say so and stop.
   every message with `has_replies: true` needs a separate
   `clickup_get_chat_message_replies` call; Slack threads likewise need
   `slack_read_thread`. The newest development is usually IN a thread, not at
-  the top level.
+  the top level. Each thread read depends only on the channel read, not on
+  another thread, so once the channel page is back, issue all of them
+  together in one message.
 - **A channel read is anchored at *now*, so two reads leave an unread gap
   between them — page back to the last message id you already saw before
   claiming anyone did not answer.** Expanding threads proves nothing about the
@@ -97,7 +99,9 @@ Deliver three layers, in this order:
    when the assessment rests on repository state, `git fetch` and read
    `origin/main` plus that repository's own agent notes (`AGENTS.md`), not
    the working tree. A request can be days-old news to another session
-   while it still looks open in the thread.
+   while it still looks open in the thread. These checks — the memory
+   indexes, the fetch, the tracker search below — are independent of one
+   another, so send them together; read `origin/main` once the fetch is done.
    **A question about the state or value of a named thing — an env var, a secret, a feature flag, a config key — gets a tracker search for that exact name before you answer from code or live state.** The live state says *what is there*; the task that owns the name says *why*, and whose move it is. Real case (2026-10-14): asked for the value of a staging callback secret, the first draft found it unset, explained that with an ADR deferral and offered the work as new — while the name sat in the description of a task assigned to the user, parked by the asker a week earlier and reopened in a task comment five minutes before the question. The user caught it by asking whether we had ever been tasked with it.
 3. **Draft reply** — only for items that need one. Follow outward-message
    rules: continuous paragraphs (no mid-sentence line breaks), no greeting

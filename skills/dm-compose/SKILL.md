@@ -1,7 +1,7 @@
 ---
 name: dm-compose
 description: Compose a proactive direct message to a colleague — a status check-in, a nudge, a heads-up, a handover note — by gathering the verifiable state first, asking the user what happened outside the tracker, drafting in the recipient's language, and sending only on an explicit go-ahead. Use when the user says "napiš kolegovi", "zeptej se ho, jak mu to jde", "napiš mu, ať…", "pošli mu zprávu", "draft a DM to X", "ask X how it's going", "message the team about Y", or otherwise wants a message they have not received yet — including when the agent may only read the chat (Discord) and the user sends by hand. Replying to messages that arrived is `dm-catchup`; e-mail through the Gmail MCP is `gmail-compose`; whether a teammate has enough work or is waiting on you is `teammate-check`.
-version: 1.2.1
+version: 1.2.2
 license: MIT
 ---
 
@@ -60,6 +60,11 @@ source you actually read:
 - forge: open and recently merged PRs, review state, labels
 - repo: `git fetch` first, then `git log origin/main` — never the working tree
   of a worktree, which is routinely behind
+
+Once the DM channel is resolved, its tail (step 1), the tracker, the forge and
+the fetch do not depend on one another: send them together in one message, and
+read `git log origin/main` when the fetch is done. The question in step 3 comes
+after all of them.
 
 Write down which of these you checked. The message may state these facts
 plainly; everything else is a question, not an assertion.

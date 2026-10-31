@@ -36,6 +36,10 @@ follow-up migration.
 If a tracker MCP is available, read the task through it rather than from the
 user's paraphrase.
 
+The knowledge file, the task and the forge's list of open PRs do not depend
+on one another, so issue those reads together in one message; the epic and
+the sibling tasks follow once the task has named them.
+
 **When the task is a reviewer's list of follow-ups, check each item against
 the open pull requests before implementing it** — the ones touching the same
 files, including commits other people pushed onto *your own* open PRs. A
@@ -136,7 +140,8 @@ flake, not a finding — say so with both results rather than filing it or
 quietly ignoring it.
 
 **When the task cites ADRs or a design document, run an adversarial
-compliance pass before the PR goes out.** Hand a read-only subagent the diff
+compliance pass before the PR goes out.** Hand a read-only subagent, on the
+strongest available model tier (e.g. Claude Opus, OpenAI Astra), the diff
 (or the branch), the cited ADR sections, the task text with its QA steps and
 the parent epic, and brief it to *refute* compliance, not to confirm it: list
 every requirement sentence, point to the implementing line or write
@@ -225,7 +230,7 @@ row, not every distinct job name.
 
 **Once the pull request is open, the task's state lives outside the session — so a long wait is a place to end it.** The branch, the PR body, the checks, the review threads and the tracker status are all readable from scratch, and a fresh session told "task X, PR #N" picks up from them at a fraction of the context. Resuming the delivery session after a human review or the next morning is the expensive path: the prompt cache expires after an hour, so the first turn back rewrites the session's whole context at twice the input price, and a 30-day transcript audit (2026-10-01) put such rewrites at 16–22 % of all tokens spent, with multi-day sessions carrying most of the cost. When the next step is a wait longer than about an hour, say in the report that the work can continue in a fresh session and name what it should be told.
 
-**Checking on a task in flight.** Between handoffs — review, QA, a teammate's follow-up — the user asks "what is the state of X, anything new, what is left". The answer is only as good as its weakest source, so check every one of them in the same turn:
+**Checking on a task in flight.** Between handoffs — review, QA, a teammate's follow-up — the user asks "what is the state of X, anything new, what is left". The answer is only as good as its weakest source, so check every one of them in the same turn. The four sources do not depend on one another, so send their first reads together in one message; only what a first read reveals — a PR's reviews and runs, a message's thread — needs a second round:
 
 - **Tracker:** the status *and* where it sits in the list's workflow (read the list's available statuses — a status called "review" may be the QA rung, not code review), the assignees (a reassignment to a tester is news in itself), the due date, the comments, and dependencies in both directions (what is waiting on this task).
 - **Forge:** every pull request whose title carries the task ID, found through the search API (`gh api "search/issues?q=repo:<owner>/<repo>+is:pr+<TASK-ID>+in:title"`), not by paging the most recently updated pull requests. Teammates open follow-ups on your task without telling you, and a recency page drops them as soon as other pull requests are busier. For each one: state, reviews, unresolved AI-review findings, and whether the post-merge deploy run actually ran.

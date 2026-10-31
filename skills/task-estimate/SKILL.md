@@ -49,7 +49,7 @@ python3 scripts/calibrate.py --repo OWNER/NAME --since YYYY-MM-DD --commit-autho
 - **Review cost: the aggregate per merged pull request** (it includes batch reviews booked without a PR number), not the per-PR attribution alone. **Lead time** from opening to merge is what a due date must allow after implementation.
 - **Tracked hours per task key are lower bounds**: work booked under another description is missing. A tracked person's own pull requests often show no hours of their own, because entries name the task, not the PR — add the key hours to the PR hours. Build that person's classes by kind of work (application subtask, docs-only, infrastructure S/M/L) from the closed keys and compute a mean per class; where a class has fewer than five closed keys, use the fallback bands in §3.6 for its range.
 
-Write the result as a dated calibration note in the project's local folder, then **refute it before use**: give a fresh-context agent the note, the raw dumps and the contract "these numbers will schedule real work — find what is wrong", and record the outcome in the note's header.
+Write the result as a dated calibration note in the project's local folder, then **refute it before use**: give a fresh-context agent on the strongest available model tier (e.g. Claude Opus, OpenAI Astra) the note, the raw dumps and the contract "these numbers will schedule real work — find what is wrong", and record the outcome in the note's header.
 
 ### When the calibration does not fit the project
 
@@ -83,6 +83,8 @@ Read each task's description **and its comments**; scope changes are usually in 
 7. A task with two assignees gets one estimate per person in that person's unit, scheduled as two steps with an edge in the order the work happens; the tracker field carries their sum in hours, and propose splitting the task. A person with no time data at all gets an expected value over the fallback bands, with the probabilities labelled as guesses, and no dates unless the user supplies their capacity. An unassigned task is estimated in the most likely assignee's unit, labelled so.
 8. A hand-set estimate already inside your range stays; propose a change only when it falls outside.
 9. Record per task: estimate, range, class, analogues, reason, `post_hoc`, and the remaining hours (equal to the estimate for unstarted work).
+
+**More than about ten tasks: fan the estimation out.** Split the tasks into groups of 6–10 and start one subagent per group together, on the mid model tier (e.g. Claude Sonnet, OpenAI Terra). Tasks that share a change set (step 1) stay in one group. Every agent gets the same calibration note, the class table, the fallback bands, the project map from §0, §2's reading rule and steps 1–9 verbatim, and returns step 9's record for each task as JSON — its reply carries only the counts and what needs a decision (a scope gap for the task's owner, step 3). It needs to read tasks, comments and code, never to write: deny it the tracker's write tools and the file holding the tracker's credentials, take §6's snapshot of the list before dispatch, and confirm afterwards that no estimate or date in it changed. Read the merged records for consistency across groups (similar tasks, same class) before §4. If the harness's subagents cannot reach the tracker or its tools — unverified outside Claude Code — estimate inline as above.
 
 ## 4. Schedule
 

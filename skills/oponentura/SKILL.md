@@ -13,7 +13,7 @@ Proportionality applies: the pass is for documents where a wrong load-bearing cl
 
 ## The brief (what the subagent receives)
 
-Dispatch one subagent (general-purpose, with web access when the document cites sources) and give it, verbatim, the document path(s) and this contract:
+Dispatch one subagent on the strongest available model tier (e.g. Claude Opus, OpenAI Astra) — general-purpose, with web access when the document cites sources — and give it, verbatim, the document path(s) and this contract:
 
 **Role.** "Your job is to REFUTE, not to check. Assume the document contains errors and go find them. Do not edit files — report only."
 

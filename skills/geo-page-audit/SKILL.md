@@ -83,6 +83,12 @@ production site.
 
 ### 4. Sample the sitemap for structural SEO defects
 
+Steps 4, 5 and the API half of step 6 hit different hosts and need only what
+step 2 already downloaded, so run them at once: start this step's sample as a
+background script and work on 5 and 6 while it runs. Each production host
+still gets one sequential stream with a delay; the chat-UI half of step 6 waits
+for the user.
+
 Pull the sitemap index → the product sitemap. **`<loc>` values are often wrapped
 in `<![CDATA[…]]>`** — a regex that keeps the wrapper produces a run of
 `curl: (3) bad range in URL` and, if you suppress stderr, a silent page of
@@ -168,8 +174,8 @@ numbers, the mechanism (CSS rule, JS handler), the blocking caveat, the
 by-catch findings, the sibling domains, and what is explicitly **not** covered.
 Label fact vs inference per claim.
 
-Then dispatch **one subagent whose brief is to refute it** — hand it the
-document and the contract it must satisfy (who reads it, what decision rides on
+Then dispatch **one subagent whose brief is to refute it**, on the strongest
+available model tier (e.g. Claude Opus, OpenAI Astra) — hand it the document and the contract it must satisfy (who reads it, what decision rides on
 it), never your reasoning. Tell it to re-measure every number itself, to hunt
 for a counter-example in a wider sample, and to say plainly if it finds nothing.
 

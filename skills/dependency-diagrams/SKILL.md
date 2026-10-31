@@ -73,9 +73,11 @@ Per-source recipes:
   `include_closed: true` returns names + statuses but **not dependencies** —
   paginate (100/page). Dependencies require per-task `clickup_get_task` with
   `include: ["dependencies"]`. For large lists fan the per-task calls out to
-  parallel subagents (~20 IDs each, each writing a JSON fragment to the
-  scratchpad) — the per-task payload includes the full description, so pulling
-  ~70 of them into the main context is what you are avoiding. Each edge appears
+  parallel subagents on the cheap model tier (e.g. Claude Haiku, OpenAI Luna),
+  ~20 IDs each, each writing a JSON fragment to the scratchpad — the per-task
+  payload includes the full description, so pulling ~70 of them into the main
+  context is what you are avoiding. They only read: deny them the tracker's
+  write tools rather than just asking them not to write. Each edge appears
   in **both** endpoint tasks' arrays → dedup `(task_id, depends_on)` pairs;
   `depends_on` is the prerequisite. That redundancy is also your safety net:
   if some tasks fail to fetch, their edges still arrive from the other side.

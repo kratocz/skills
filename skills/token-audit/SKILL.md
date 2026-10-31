@@ -2,7 +2,7 @@
 name: token-audit
 description: Find what actually drives token cost across agent sessions and measure whether a change to how you work reduced it — price-weighted shares, cache rewrites after idle gaps vs model switches, cost by context size, multi-day sessions, tool-result and skill residency, subagents against doing the same work inline — then refute the conclusions in a fresh context and compare against a saved baseline. Use when the user asks "kde mi utíkají tokeny", "jak ušetřit tokeny", "zanalyzuj spotřebu tokenů z logů", "zabralo to?", "přeměř token audit", "where do my tokens go", "why is my usage so high", "did the change reduce token use". Not the general usage dashboard (tokens per project, skill, subagent, top prompts) — that is the `session-report` plugin.
 license: MIT
-version: 1.1.1
+version: 1.1.2
 ---
 
 # Token audit
@@ -48,7 +48,7 @@ Two traps observed in real data: `hook_success` attachments can make up half of 
 
 ## 4. Refute before concluding
 
-Quantitative conclusions are the ones most likely to flatter the analyst. Dispatch a fresh-context subagent with the script, its output and your list of claims — not your reasoning — briefed to **refute** them against the raw transcripts. Known weak points to point it at:
+Quantitative conclusions are the ones most likely to flatter the analyst. Dispatch a fresh-context subagent on the strongest available model tier (e.g. Claude Opus, OpenAI Astra) with the script, its output and your list of claims — not your reasoning — briefed to **refute** them against the raw transcripts. Known weak points to point it at:
 
 - the subagent counterfactual is an upper bound (inline work might take fewer turns than a subagent does);
 - characters-per-token (2.33) was calibrated on one machine's transcripts; to re-check it, take requests that immediately follow a single large tool result and divide that result's characters by the growth in context (`cache_read + cache_creation + input`) between the two requests — the median over a hundred such pairs is the ratio;

@@ -31,7 +31,8 @@ o která se opřou další rozhodnutí; kosmetika dostane first-pass.
 4. **Kotva.** Než začneš dokazovat první hypotézu, zformuluj aspoň jednu konkurenční.
    Devils-advocate jsi ty — nikdo jiný tu roli v konverzaci nemá.
 5. **Adversarial verify netriviálních závěrů.** Po dokončení analýzy jeden průchod
-   s cílem ji VYVRÁTIT (ideálně subagent v čerstvém kontextu; zadání „vyvrať",
+   s cílem ji VYVRÁTIT (ideálně subagent v čerstvém kontextu na nejsilnějším
+   dostupném modelu, např. Claude Opus nebo OpenAI Astra; zadání „vyvrať",
    ne „zkontroluj"). Vyvraceči předej jen artefakt a kontrakt, který má splnit,
    nikdy úvahu, která k němu vedla — recenzent, který dostane závěry, vrátí
    potvrzení těch závěrů. U kvantitativních analýz povinně — čísla umí být

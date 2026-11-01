@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-11-01
+
+### Changed
+
+- **merge-pr:** where the harness's permission classifier refuses the remote branch delete (or the project's notes say it does), hand the exact command to the user instead of retrying; a refusal can also spill over onto the next, unrelated command.
+
 ## 2026-10-31
 
 ### Changed

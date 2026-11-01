@@ -121,6 +121,10 @@ empty whether or not anyone cleaned up, and reading that emptiness as "already d
 a false conclusion from a true output. For an in-repo branch, check
 `delete_branch_on_merge`: if false, delete it yourself with
 `git push origin --delete <branch>` — unless the repository visibly keeps merged branches.
+Where the harness's permission classifier refuses that delete, or the project's notes say it
+does, hand the exact command to the user instead of retrying it: a refusal is not negotiable
+by rewording, and it can spill over (2026-11-01: right after a refused branch delete, an
+unrelated read-only cluster query was refused with the same "destructive git" reason).
 When `git ls-remote --heads origin` lists many branches of already-merged PRs and the
 instructions file says nothing about cleanup, leave the branch and say so in the report
 rather than impose a policy the maintainers do not follow (2026-10-23: one repository held

@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-11-03
+
+### Changed
+
+- **repo:** `bin/check-skill-drift.py` also lists repo skills deployed as identical copies when most of the others are live symlinks, since edits to the clone never reach such a copy.
+
 ## 2026-11-01
 
 ### Changed

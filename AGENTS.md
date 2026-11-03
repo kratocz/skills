@@ -53,7 +53,7 @@ A collection of portable [Agent Skills](https://agentskills.io/) — one directo
 
 ## Dev loop
 
-Edit in a working clone. Symlinked installs (above) see changes immediately; copy installs refresh with `npx skills add . -g -y --all` — which also flattens any symlinks back into copies, so re-run the symlink loop after it. Verify discovery with `npx skills add . --list` (every skill must appear). `bin/check-skill-drift.py` reports deployed skills under `~/.agents/skills/` that have drifted from this clone (silent when nothing differs), so run it when an installed skill may be a stale copy. When adding a skill, also add a row to the README table.
+Edit in a working clone. Symlinked installs (above) see changes immediately; copy installs refresh with `npx skills add . -g -y --all` — which also flattens any symlinks back into copies, so re-run the symlink loop after it. Verify discovery with `npx skills add . --list` (every skill must appear). `bin/check-skill-drift.py` reports deployed skills under `~/.agents/skills/` that have drifted from this clone, and, on a machine that otherwise runs live symlinks, those deployed as identical copies (silent when nothing differs), so run it when an installed skill may be a stale copy. When adding a skill, also add a row to the README table.
 
 **Changelog.** `CHANGELOG.md` is date-grouped and scope-prefixed (skill name, or `repo` for collection-wide changes). Every `feat`/`fix` commit — and any other change that alters an installed skill's behavior or config contract — adds a line under today's date in the same push; typo/refactor/chore noise stays out. There are no repo-level versions or tags; the complete per-skill history remains `git log -- skills/<name>/`.
 

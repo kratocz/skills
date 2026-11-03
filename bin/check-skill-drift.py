@@ -48,16 +48,25 @@ def main():
                   if os.path.isdir(os.path.join(REPO, n))}
     live_names = set(os.listdir(LIVE))
 
-    drifted, missing = [], []
+    drifted, missing, copies, linked = [], [], [], 0
     for name in sorted(repo_names):
         live_path = os.path.join(LIVE, name)
         if name not in live_names:
             missing.append(name)
             continue
         if os.path.islink(live_path):
+            linked += 1
             continue  # a symlink cannot drift
         if files_under(os.path.join(REPO, name)) != files_under(live_path):
             drifted.append(name)
+        else:
+            copies.append(name)
+
+    # An identical copy is no drift today, but on a machine that otherwise
+    # runs live symlinks the next edit to the clone never reaches it.
+    # pr-rebase-sweep sat as a copy for three weeks unnoticed (2026-10-31).
+    if linked <= len(copies):
+        copies = []
 
     # Deployed, not a symlink, not in the repo and not installed by the CLI:
     # someone hand-wrote a skill straight into the deployment directory.
@@ -72,7 +81,7 @@ def main():
         and os.path.isdir(os.path.join(LIVE, n))
     )
 
-    if not (drifted or missing or unversioned):
+    if not (drifted or missing or copies or unversioned):
         return 0
 
     lines = ["Skill drift detected between ~/.agents/skills (deployed) and "
@@ -85,6 +94,11 @@ def main():
             "~/.agents version into the repo, commit, push.")
     if missing:
         lines.append("  In the repo but not deployed: " + ", ".join(missing))
+    if copies:
+        lines.append(
+            "  Deployed as copies, not live symlinks: " + ", ".join(copies) + "\n"
+            "    Identical for now, but edits to the clone will not reach them; "
+            "replace each with a symlink into the clone.")
     if unversioned:
         lines.append(
             "  Hand-placed, in neither the repo nor the CLI lock: "

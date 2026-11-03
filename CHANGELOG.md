@@ -7,6 +7,7 @@ Notable, user-visible changes to the skills in this collection, grouped by the d
 ### Changed
 
 - **repo:** `bin/check-skill-drift.py` also lists repo skills deployed as identical copies when most of the others are live symlinks, since edits to the clone never reach such a copy.
+- **token-audit:** a regenerated baseline is checked against the original's request and session counts, since transcripts past the retention period are gone and the survivors overstate long sessions; a re-measure whose subagent share moved reads the gate against main-thread cost and absolute tokens as well. (v1.1.3)
 
 ## 2026-11-01
 

@@ -2,7 +2,7 @@
 name: token-audit
 description: Find what actually drives token cost across agent sessions and measure whether a change to how you work reduced it — price-weighted shares, cache rewrites after idle gaps vs model switches, cost by context size, multi-day sessions, tool-result and skill residency, subagents against doing the same work inline — then refute the conclusions in a fresh context and compare against a saved baseline. Use when the user asks "kde mi utíkají tokeny", "jak ušetřit tokeny", "zanalyzuj spotřebu tokenů z logů", "zabralo to?", "přeměř token audit", "where do my tokens go", "why is my usage so high", "did the change reduce token use". Not the general usage dashboard (tokens per project, skill, subagent, top prompts) — that is the `session-report` plugin.
 license: MIT
-version: 1.1.2
+version: 1.1.3
 ---
 
 # Token audit
@@ -21,7 +21,7 @@ Before running anything, write down what the measurement is for and what result 
 python3 <skill-dir>/scripts/token_audit.py --since 30d --json <durable-path>/token-audit-<date>.json
 ```
 
-`--since` / `--until` take `Nd` or an ISO date and filter by **request timestamp** (file modification time only pre-selects files). `--projects` points elsewhere than `~/.claude/projects`. `--baseline <file.json>` prints each metric next to an earlier run and lists metrics present in only one of the two — a baseline from an older script version is not comparable on those, so regenerate it over the original window with the current script rather than reading the delta. (A key collision in the first version of this script turned an 18 % → 23 % rise into a reported 20 % → 2 % fall.)
+`--since` / `--until` take `Nd` or an ISO date and filter by **request timestamp** (file modification time only pre-selects files). `--projects` points elsewhere than `~/.claude/projects`. `--baseline <file.json>` prints each metric next to an earlier run and lists metrics present in only one of the two — a baseline from an older script version is not comparable on those, so regenerate it over the original window with the current script rather than reading the delta. (A key collision in the first version of this script turned an 18 % → 23 % rise into a reported 20 % → 2 % fall.) Regenerating works only while the old transcripts are still on disk. The harness deletes transcripts after its retention period (`cleanupPeriodDays` in Claude Code), and what survives is biased toward long sessions that kept being written to. Before trusting a regenerated baseline, compare its request and session counts with the original's. When they fall short, keep the original JSON, provided its metric keys match the current output. Seen 2026-10-31: the regenerated September held 93 of 339 sessions and overstated idle rewrites (20.6 % against 18.0 %) and the `>400k` share (50.3 % against 45.4 %).
 
 Save the JSON somewhere that survives the session — a project's notes, the user's memory directory — never a scratch directory: without it there is nothing to compare against later.
 
@@ -59,4 +59,4 @@ Record which claims survived, and correct the ones that did not before reporting
 
 ## 5. Report
 
-Conclusion first: the one or two drivers worth acting on, each with its share and its lever. Label every number as measured or estimated, give ranges where the refutation pass moved a figure, and end with what would change the recommendation. For a re-measure, read the result against the rule from step 1 — met, not met, or confounded (e.g. the model mix changed).
+Conclusion first: the one or two drivers worth acting on, each with its share and its lever. Label every number as measured or estimated, give ranges where the refutation pass moved a figure, and end with what would change the recommendation. For a re-measure, read the result against the rule from step 1 — met, not met, or confounded (e.g. the model mix changed). The cache-rewrite and context-size metrics count main threads only, while every share is of the whole total, so a change in the subagent share moves them without any change in habit. When `main_thread_share` differs much between the two runs, also read the gate against main-thread cost (the metric divided by `main_thread_share`) and in absolute tokens (the share times `total_M`), and call the result confounded when the readings disagree. Seen 2026-10-31: subagents grew from 11.6 % to 48.6 % of cost, and idle rewrites fell to 6.8 % of the total, under a 10 % gate, while still making up 13.2 % of main-thread cost.

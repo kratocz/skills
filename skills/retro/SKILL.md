@@ -127,6 +127,14 @@ check, and reading the target file — until `git fetch` has finished.
    (2026-09-03, 119 files / 328 KB): reading inline would have cost ~90k
    tokens of context; the subagent returned 4 + 35 candidates in one page.
 
+   **Dispatch area C only after step 0's fast-forward has landed.** A docs
+   audit started against a checkout that is behind reports what upstream
+   already fixed: on 2026-11-05 the audit went out in the same message as
+   `git fetch`, the checkout turned out to be three commits behind, and the
+   first finding was a README state line another session had updated
+   minutes earlier. When the memory subagent is ready first, hold it until
+   the fast-forward is done and start both then.
+
    **Keep that dump somewhere that outlives the day — it is the only record of
    what the memory directory held.** Memory is not versioned, so once a file is
    deleted its content exists nowhere else; the dump is the sole artefact that
@@ -169,6 +177,11 @@ check, and reading the target file — until `git fetch` has finished.
      `.claude/settings.local.json`, plus any hookify rule files
      (search for `.claude/hookify*` and `.claude/**/hookify*`)
    - permissions: `permissions.allow` in both settings files
+
+   Under worktree isolation read these with separate plain commands — `ls`
+   for the skills, one `cat` per settings file: a `for` loop over the two
+   settings files with `cat … || echo '(missing)'` was refused as a command
+   the guard cannot verify (2026-11-05), the same way step 2 describes.
 
 ## Phase 1 — Analysis (read-only)
 

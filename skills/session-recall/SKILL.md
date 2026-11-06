@@ -71,6 +71,17 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
      Then confirm with Step 3 — a high count can be a session that merely read
      the file the earlier session wrote.
 
+     When the current repo's slugs have no hit, widen the search to
+     `$H/projects/*/`: the topic may have been discussed while the user worked
+     in another project. On 2026-11-06 a question asked in `imperator` had been
+     settled three weeks earlier in a course repo's worktree. Across all
+     projects, raw counts cannot tell the session that discussed the topic from
+     the ones whose compaction summaries or pasted review diffs merely repeat
+     the word. Rank by the user's typed prompts instead: run Step 3's filter on
+     each file and keep the prompts that match the topic word **and** a second
+     word, e.g. `select($t|test("chatgpt";"i")) | select($t|test("voice|mcp|tmux";"i"))`.
+     The user's own questions then show directly which session it was.
+
    Exclude the running session. In Claude Code its UUID is the second-to-last
    component of the scratchpad path in your system prompt; elsewhere it is the
    transcript under the current slug with the newest mtime.

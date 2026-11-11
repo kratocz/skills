@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-11-12
+
+### Added
+
+- **course-recordings:** new skill — online course lesson recordings into a private study set: download, small versions for NotebookLM, whisper transcripts, subtitles aligning an external transcript's text to whisper's timing and embedded without re-encoding, the lecture/Q&A boundary, and summaries written from a transcript with participants relabelled so their names never reach the subagents.
+
 ## 2026-11-03
 
 ### Changed

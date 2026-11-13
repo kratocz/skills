@@ -176,5 +176,16 @@ Two things this skill exists to prevent, both from the founding case (2026-09-24
   `tool_result`** — that is a typed prompt with an attachment or pasted text;
   the filter above keeps it. An array with `tool_result` is a tool round-trip,
   not the user.
-- **No transcript found** — say so; offer the commit history as the only
-  record and be explicit that the conversation itself is unrecoverable.
+- **No transcript found** — transcripts older than the retention period are
+  deleted (seen 2026-11-13: none left from before mid-September, though
+  `cleanupPeriodDays` now reads 365). Before calling the conversation lost,
+  look where its traces outlive it:
+  - `<harness-home>/history.jsonl` keeps the user's typed prompts with
+    `project` and a millisecond `timestamp`, and reaches back further than the
+    transcripts. The prompts name the topic, the day and the worktree.
+  - The memory directories `<harness-home>/projects/*/memory/` and the
+    gitignored notes of the project the prompt names (`docs.local/` and the
+    like) hold what that session wrote down.
+  On 2026-11-13 this recovered the reasons behind an assessment of a colleague
+  from 2026-09-01 whose transcript was gone. Only the assistant's spoken
+  answers are truly lost; say so, and offer the commit history as well.

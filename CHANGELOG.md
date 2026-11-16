@@ -2,6 +2,12 @@
 
 Notable, user-visible changes to the skills in this collection, grouped by the date they landed on `main` and prefixed with the affected skill (or `repo` for collection-wide changes). Mechanical noise — typos, refactors without behavior change — is omitted; the complete history of a single skill is `git log -- skills/<name>/`.
 
+## 2026-11-16
+
+### Added
+
+- **gmail-compose:** new skill — draft, send and verify e-mail through the Gmail MCP connector. Carries the trap that motivates it: a message passed as plain `body` has every bare domain linkified on the way out, its visible text replaced by a google.com/url redirect in the stored sent copy. The skill always sends `htmlBody`, generated from the approved Markdown by a bundled `scripts/md2html.py` that breaks bare domains with a span and refuses a link whose text is a URL or a domain; verifies drafts with `list_drafts` + `DRAFT_VIEW_FULL` and sent mail with `get_message`; replaces a reply draft with a new `create_draft` because `update_draft` detaches it from its thread and drops attachments; and documents attachment references and inline images.
+
 ## 2026-11-03
 
 ### Changed
